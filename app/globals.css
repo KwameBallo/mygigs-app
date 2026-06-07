@@ -40,6 +40,82 @@ body {
     );
 }
 
+/* Leaflet map: dark theme + MyGigs price pins. */
+.leaflet-container {
+  background: var(--surface-2);
+  font-family: inherit;
+}
+.mg-pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 9px;
+  border-radius: 9999px;
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, -100%);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+.mg-pin--active {
+  background: var(--brand);
+  color: #000;
+  border-color: var(--brand);
+  transform: translate(-50%, -100%) scale(1.12);
+  z-index: 500;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+.leaflet-popup-content {
+  margin: 12px 14px;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--muted);
+}
+.mg-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mg-popup__genre {
+  font-size: 11px;
+  color: var(--brand);
+}
+.mg-popup__meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+.mg-popup__link {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand);
+}
+.leaflet-control-attribution {
+  background: rgba(7, 7, 8, 0.7) !important;
+  color: var(--muted) !important;
+}
+.leaflet-control-attribution a {
+  color: var(--muted) !important;
+}
+.leaflet-bar a {
+  background: var(--surface) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+
 /* Shared form input styling. */
 .input {
   width: 100%;
