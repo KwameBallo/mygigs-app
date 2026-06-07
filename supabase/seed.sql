@@ -3,10 +3,10 @@
 -- NEVER run this against dstcrrylnjxjuqvmslaw (Fresh Ones).
 --
 -- Vult de app met demo-data, gekoppeld aan het account
--- kwameballo@gmail.com, zodat dat account bij inloggen alles
+-- ballokwame@gmail.com, zodat dat account bij inloggen alles
 -- gevuld ziet (boeker- EN artiest-kant).
 --
--- Vereist: log minstens 1x in met kwameballo@gmail.com zodat
+-- Vereist: log minstens 1x in met ballokwame@gmail.com zodat
 -- het account in auth.users bestaat. Veilig om opnieuw te draaien.
 -- Raakt auth.users en genres NIET aan.
 -- =============================================================
@@ -53,7 +53,7 @@ begin
   end loop;
 end $$;
 
--- ---------- Alle data gekoppeld aan kwameballo@gmail.com ----------
+-- ---------- Alle data gekoppeld aan ballokwame@gmail.com ----------
 do $$
 declare
   uid uuid;
@@ -71,14 +71,14 @@ declare
   cities text[] := array['Amsterdam','Rotterdam','Utrecht','Den Haag','Eindhoven'];
   venues text[] := array['Club NL','Loods 6','De Marktkantine','Paradiso','Warehouse 22'];
 begin
-  select id into uid from auth.users where lower(email) = 'kwameballo@gmail.com';
+  select id into uid from auth.users where lower(email) = 'ballokwame@gmail.com';
   if uid is null then
-    raise exception 'Account kwameballo@gmail.com niet gevonden in auth.users. Log eerst 1x in/registreer met dat e-mailadres en draai daarna deze seed opnieuw.';
+    raise exception 'Account ballokwame@gmail.com niet gevonden in auth.users. Log eerst 1x in/registreer met dat e-mailadres en draai daarna deze seed opnieuw.';
   end if;
 
   -- Profiel borgen (rol both = boeker + artiest)
   insert into profiles (id, email, full_name, role)
-  values (uid, 'kwameballo@gmail.com', 'Kwame', 'both')
+  values (uid, 'ballokwame@gmail.com', 'Kwame', 'both')
   on conflict (id) do update set role = 'both', full_name = coalesce(profiles.full_name, 'Kwame');
 
   -- Artiest koppelen aan dit account (voorkeur: Kwamé K), alleen als nog geen artiest
