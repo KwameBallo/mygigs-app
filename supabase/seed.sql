@@ -220,15 +220,6 @@ begin
         insert into messages(conversation_id, sender_id, body, read_at, created_at)
         values (c_id, uid, 'Top, ik hoor graag van je!', now(), now() - interval '50 minutes');
       end if;
-
-      -- Openstaand bod van de artiest in het eerste gesprek (Kwame kan accepteren)
-      if idx = 1 and a.user_id is not null and a.user_id <> uid then
-        insert into messages(
-          conversation_id, sender_id, body,
-          offer_amount, offer_event_date, offer_status, read_at, created_at)
-        values (c_id, a.user_id, 'Bod uitgebracht',
-          g::int, evd, 'pending', null, now() - interval '30 minutes');
-      end if;
     end if;
   end loop;
 

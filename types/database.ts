@@ -397,9 +397,6 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
-          offer_amount: number | null
-          offer_event_date: string | null
-          offer_status: string | null
           read_at: string | null
           sender_id: string
         }
@@ -408,9 +405,6 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
-          offer_amount?: number | null
-          offer_event_date?: string | null
-          offer_status?: string | null
           read_at?: string | null
           sender_id: string
         }
@@ -419,9 +413,6 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
-          offer_amount?: number | null
-          offer_event_date?: string | null
-          offer_status?: string | null
           read_at?: string | null
           sender_id?: string
         }
