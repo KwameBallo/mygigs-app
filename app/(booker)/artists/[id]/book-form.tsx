@@ -11,7 +11,7 @@ export function BookForm({
   baseGage: number
   isLoggedIn: boolean
 }) {
-  const { gage, serviceFee, total } = priceBreakdown(baseGage)
+  const { gage, total } = priceBreakdown(baseGage)
 
   if (!isLoggedIn) {
     return (
@@ -66,7 +66,6 @@ export function BookForm({
 
       <div className="rounded-xl border border-border bg-surface-2 p-4 text-sm">
         <Row label="Gage" value={formatEuro(gage)} />
-        <Row label="Servicekosten (7%)" value={formatEuro(serviceFee)} />
         <div className="my-2 border-t border-border" />
         <Row label="Totaal" value={formatEuro(total)} strong />
       </div>

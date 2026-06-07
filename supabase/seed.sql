@@ -63,8 +63,8 @@ begin
         a.id, any_booker,
         (current_date + (d * 12) + 4)::date,
         coalesce(a.base_gage, 500),
-        round(coalesce(a.base_gage, 500) * 0.07),
-        coalesce(a.base_gage, 500) + round(coalesce(a.base_gage, 500) * 0.07),
+        0,
+        coalesce(a.base_gage, 500),
         'accepted',
         (array['Amsterdam','Rotterdam','Utrecht','Den Haag','Eindhoven'])[1 + (d % 5)],
         (array['Paradiso','Club NL','TivoliVredenburg','Loods 6','Warehouse 22'])[1 + (d % 5)],
@@ -131,6 +131,14 @@ begin
   values (uid, 'ballokwame@gmail.com', 'Kwame', 'both')
   on conflict (id) do update set role = 'both', full_name = coalesce(profiles.full_name, 'Kwame');
 
+  -- Actief artiestenabonnement zodat de artiest-kant volledig werkt.
+  update profiles set
+    subscription_status = 'active',
+    subscription_plan = 'yearly',
+    subscription_trial_end = now() - interval '1 day',
+    subscription_current_period_end = now() + interval '11 months'
+  where id = uid;
+
   -- Artiest koppelen aan dit account (voorkeur: Kwamé K), alleen als nog geen artiest
   if not exists (select 1 from artists where user_id = uid) then
     update artists set user_id = uid
@@ -164,8 +172,8 @@ begin
     idx := idx + 1;
     st := statuses[idx];
     g := coalesce(a.base_gage, 500);
-    fee := round(g * 0.07);
-    tot := g + fee;
+    fee := 0;
+    tot := g;
     if st in ('completed','paid','declined') then
       evd := current_date - (idx * 7);
     else
@@ -212,14 +220,23 @@ begin
         insert into messages(conversation_id, sender_id, body, read_at, created_at)
         values (c_id, uid, 'Top, ik hoor graag van je!', now(), now() - interval '50 minutes');
       end if;
+
+      -- Openstaand bod van de artiest in het eerste gesprek (Kwame kan accepteren)
+      if idx = 1 and a.user_id is not null and a.user_id <> uid then
+        insert into messages(
+          conversation_id, sender_id, body,
+          offer_amount, offer_event_date, offer_status, read_at, created_at)
+        values (c_id, a.user_id, 'Bod uitgebracht',
+          g::int, evd, 'pending', null, now() - interval '30 minutes');
+      end if;
     end if;
   end loop;
 
   -- ===== ARTIEST-KANT (Kwame's eigen artiest) =====
   if my_art is not null then
     g := coalesce((select base_gage from artists where id = my_art), 500);
-    fee := round(g * 0.07);
-    tot := g + fee;
+    fee := 0;
+    tot := g;
 
     -- Open aanvraag + ongelezen bericht aan Kwame (de artiest)
     insert into bookings(

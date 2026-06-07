@@ -1,5 +1,5 @@
-// Platform service fee charged on top of the artist's gage.
-export const SERVICE_FEE_RATE = 0.07
+// Geen boekingsfee meer: het verdienmodel is een artiestenabonnement.
+export const SERVICE_FEE_RATE = 0
 
 export type PriceBreakdown = {
   gage: number
@@ -7,10 +7,9 @@ export type PriceBreakdown = {
   total: number
 }
 
-// Booker pays gage + 7%. Artist receives the gage; platform keeps the fee.
+// Boeker betaalt de gage 1-op-1; het platform verdient via abonnementen.
 export function priceBreakdown(gage: number): PriceBreakdown {
-  const serviceFee = Math.round(gage * SERVICE_FEE_RATE * 100) / 100
-  return { gage, serviceFee, total: gage + serviceFee }
+  return { gage, serviceFee: 0, total: gage }
 }
 
 const euro = new Intl.NumberFormat("nl-NL", {

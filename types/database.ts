@@ -329,6 +329,9 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          offer_amount: number | null
+          offer_event_date: string | null
+          offer_status: string | null
           read_at: string | null
           sender_id: string
         }
@@ -337,6 +340,9 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          offer_amount?: number | null
+          offer_event_date?: string | null
+          offer_status?: string | null
           read_at?: string | null
           sender_id: string
         }
@@ -345,6 +351,9 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          offer_amount?: number | null
+          offer_event_date?: string | null
+          offer_status?: string | null
           read_at?: string | null
           sender_id?: string
         }
@@ -459,6 +468,12 @@ export type Database = {
           id: string
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_current_period_end: string | null
+          subscription_plan: string | null
+          subscription_status: Database["public"]["Enums"]["subscription_status"]
+          subscription_trial_end: string | null
           updated_at: string
         }
         Insert: {
@@ -471,6 +486,12 @@ export type Database = {
           id: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_current_period_end?: string | null
+          subscription_plan?: string | null
+          subscription_status?: Database["public"]["Enums"]["subscription_status"]
+          subscription_trial_end?: string | null
           updated_at?: string
         }
         Update: {
@@ -483,6 +504,12 @@ export type Database = {
           id?: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_current_period_end?: string | null
+          subscription_plan?: string | null
+          subscription_status?: Database["public"]["Enums"]["subscription_status"]
+          subscription_trial_end?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -560,6 +587,12 @@ export type Database = {
         | "paid"
       payment_status: "pending" | "held" | "released" | "refunded" | "failed"
       payout_status: "scheduled" | "paid" | "failed"
+      subscription_status:
+        | "inactive"
+        | "trialing"
+        | "active"
+        | "past_due"
+        | "canceled"
       user_role: "booker" | "artist" | "both" | "admin"
     }
     CompositeTypes: {
@@ -699,6 +732,13 @@ export const Constants = {
       ],
       payment_status: ["pending", "held", "released", "refunded", "failed"],
       payout_status: ["scheduled", "paid", "failed"],
+      subscription_status: [
+        "inactive",
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+      ],
       user_role: ["booker", "artist", "both", "admin"],
     },
   },

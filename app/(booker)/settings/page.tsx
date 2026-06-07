@@ -1,5 +1,7 @@
+import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getProfile } from "@/lib/auth"
+import { PLANS, hasActiveSubscription } from "@/lib/subscriptions"
 import { updateAccount } from "./actions"
 
 const ROLE_LABEL: Record<string, string> = {
@@ -9,9 +11,35 @@ const ROLE_LABEL: Record<string, string> = {
   admin: "Beheerder",
 }
 
+const SUB_STATUS_LABEL: Record<string, string> = {
+  inactive: "Geen abonnement",
+  trialing: "Proefperiode",
+  active: "Actief",
+  past_due: "Betaling mislukt",
+  canceled: "Opgezegd",
+}
+
 export default async function SettingsPage() {
   const profile = await getProfile()
   if (!profile) redirect("/login?next=/settings")
+
+  const subActive = hasActiveSubscription(profile.subscription_status)
+  const subPlan = profile.subscription_plan
+    ? PLANS[profile.subscription_plan as keyof typeof PLANS]
+    : null
+  const periodEnd = profile.subscription_current_period_end
+    ? new Date(profile.subscription_current_period_end).toLocaleDateString(
+        "nl-NL",
+        { day: "numeric", month: "long", year: "numeric" },
+      )
+    : null
+  const trialEnd = profile.subscription_trial_end
+    ? new Date(profile.subscription_trial_end).toLocaleDateString("nl-NL", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
@@ -50,6 +78,44 @@ export default async function SettingsPage() {
             Opslaan
           </button>
         </form>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <h2 className="text-lg font-semibold">Artiestenabonnement</h2>
+        <div className="mt-4 flex items-center gap-2 text-sm text-muted">
+          <span>Status:</span>
+          <span
+            className={`rounded-full px-3 py-1 text-xs ${
+              subActive
+                ? "bg-brand/10 text-brand"
+                : "bg-surface-2 text-foreground"
+            }`}
+          >
+            {SUB_STATUS_LABEL[profile.subscription_status] ??
+              profile.subscription_status}
+          </span>
+        </div>
+        {subActive ? (
+          <p className="mt-3 text-sm text-muted">
+            {subPlan ? `${subPlan.label} (${subPlan.period}).` : ""}{" "}
+            {profile.subscription_status === "trialing" && trialEnd
+              ? `Proefperiode tot ${trialEnd}.`
+              : periodEnd
+                ? `Verlengt op ${periodEnd}.`
+                : ""}
+          </p>
+        ) : (
+          <p className="mt-3 text-sm text-muted">
+            Sluit een abonnement af om als artiest op de tool te staan. Geen
+            boekingsfee, je houdt je volledige gage.
+          </p>
+        )}
+        <Link
+          href="/subscribe"
+          className="mt-4 inline-block rounded-full border border-border px-6 py-2.5 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+        >
+          {subActive ? "Abonnement beheren" : "Word artiest"}
+        </Link>
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
