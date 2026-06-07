@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
-import type { Tables, Enums } from "@/types/database"
+import type { Tables } from "@/types/database"
+import { isCategory } from "@/lib/data/suppliers-meta"
 
 export type Supplier = Tables<"suppliers">
-export type SupplierCategory = Enums<"supplier_category">
 
 export type SupplierFilters = {
   q?: string
@@ -10,25 +10,11 @@ export type SupplierFilters = {
   city?: string
 }
 
-export const SUPPLIER_CATEGORIES: { value: SupplierCategory; label: string }[] =
-  [
-    { value: "sound", label: "Geluid" },
-    { value: "light", label: "Licht" },
-    { value: "stage", label: "Podium" },
-    { value: "dj_gear", label: "DJ-apparatuur" },
-    { value: "backline", label: "Backline" },
-    { value: "other", label: "Overig" },
-  ]
-
-export function categoryLabel(value: string | null): string {
-  return (
-    SUPPLIER_CATEGORIES.find((c) => c.value === value)?.label ?? "Overig"
-  )
-}
-
-function isCategory(value: string): value is SupplierCategory {
-  return SUPPLIER_CATEGORIES.some((c) => c.value === value)
-}
+export {
+  SUPPLIER_CATEGORIES,
+  categoryLabel,
+  type SupplierCategory,
+} from "@/lib/data/suppliers-meta"
 
 export async function getSuppliers(
   filters: SupplierFilters = {},

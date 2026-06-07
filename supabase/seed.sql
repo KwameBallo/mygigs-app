@@ -287,30 +287,30 @@ end $$;
 
 -- ---------- Leveranciers van apparatuur (mock directory) ----------
 insert into suppliers
-  (name, category, city, description, day_rate, contact_email, contact_phone, website_url, rating, reviews_count)
+  (name, category, city, lat, lng, description, day_rate, contact_email, contact_phone, website_url, rating, reviews_count)
 values
-  ('Amsterdam Sound Rental', 'sound', 'Amsterdam',
+  ('Amsterdam Sound Rental', 'sound', 'Amsterdam', 52.3676, 4.9041,
    'Complete PA-systemen voor clubs en festivals. Levering en opbouw mogelijk.',
    450, 'info@amsterdamsound.nl', '+31 20 123 4567', 'https://amsterdamsound.nl', 4.8, 24),
-  ('LightLab Rotterdam', 'light', 'Rotterdam',
+  ('LightLab Rotterdam', 'light', 'Rotterdam', 51.9244, 4.4777,
    'Moving heads, LED-pars en complete lichtshows met operator.',
    600, 'boekingen@lightlab.nl', '+31 10 765 4321', 'https://lightlab.nl', 4.6, 17),
-  ('Podium & Truss Utrecht', 'stage', 'Utrecht',
+  ('Podium & Truss Utrecht', 'stage', 'Utrecht', 52.0907, 5.1214,
    'Modulaire podia, trussconstructies en overkappingen voor elk formaat.',
    800, 'verhuur@podiumtruss.nl', '+31 30 222 1188', 'https://podiumtruss.nl', 4.7, 12),
-  ('DJ Gear Direct', 'dj_gear', 'Amsterdam',
+  ('DJ Gear Direct', 'dj_gear', 'Amsterdam', 52.3600, 4.8852,
    'Pioneer CDJ-3000, DJM-mengpanelen en booth-monitoren. Zelfde dag op te halen.',
    175, 'hello@djgeardirect.nl', '+31 20 998 7766', 'https://djgeardirect.nl', 4.9, 31),
-  ('Backline Brothers', 'backline', 'Eindhoven',
+  ('Backline Brothers', 'backline', 'Eindhoven', 51.4416, 5.4697,
    'Versterkers, drumstellen en toetsen voor live bands. Vakkundig advies.',
    300, 'info@backlinebros.nl', '+31 40 556 3322', null, 4.5, 9),
-  ('Den Haag Stage & Sound', 'sound', 'Den Haag',
+  ('Den Haag Stage & Sound', 'sound', 'Den Haag', 52.0705, 4.3007,
    'Geluid en monitoring voor theaters en zalen tot 800 personen.',
    520, 'contact@dhstagesound.nl', '+31 70 345 6789', 'https://dhstagesound.nl', 4.4, 8),
-  ('Festival Lights NL', 'light', 'Utrecht',
+  ('Festival Lights NL', 'light', 'Utrecht', 52.1009, 5.0919,
    'Grote lichtproducties voor festivals, inclusief rigging en bediening.',
    1200, 'sales@festivallights.nl', null, 'https://festivallights.nl', 4.8, 15),
-  ('Mobiele DJ-booth Verhuur', 'dj_gear', 'Rotterdam',
+  ('Mobiele DJ-booth Verhuur', 'dj_gear', 'Rotterdam', 51.9100, 4.4900,
    'Kant-en-klare DJ-booths inclusief geluid voor bruiloften en privéfeesten.',
    250, 'verhuur@djbooth.nl', '+31 6 1234 5678', null, 4.7, 21);
 
