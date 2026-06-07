@@ -100,6 +100,16 @@ export function ClockIcon({ className }: IconProps) {
   )
 }
 
+export function SpeakerIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="5" y="2.5" width="14" height="19" rx="2" />
+      <circle cx="12" cy="15" r="3.5" />
+      <circle cx="12" cy="6.5" r="1.2" />
+    </svg>
+  )
+}
+
 export type IconName =
   | "map"
   | "calendar"
@@ -110,6 +120,7 @@ export type IconName =
   | "euro"
   | "settings"
   | "clock"
+  | "speaker"
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
   switch (name) {
@@ -131,5 +142,7 @@ export function Icon({ name, className }: { name: IconName; className?: string }
       return <SettingsIcon className={className} />
     case "clock":
       return <ClockIcon className={className} />
+    case "speaker":
+      return <SpeakerIcon className={className} />
   }
 }

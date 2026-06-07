@@ -148,6 +148,74 @@ export type Database = {
           },
         ]
       }
+      suppliers: {
+        Row: {
+          category: Database["public"]["Enums"]["supplier_category"]
+          city: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          day_rate: number | null
+          description: string | null
+          id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          name: string
+          rating: number
+          reviews_count: number
+          updated_at: string
+          user_id: string | null
+          website_url: string | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["supplier_category"]
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          day_rate?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name: string
+          rating?: number
+          reviews_count?: number
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["supplier_category"]
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          day_rate?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          rating?: number
+          reviews_count?: number
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           address: string | null
@@ -587,6 +655,13 @@ export type Database = {
         | "paid"
       payment_status: "pending" | "held" | "released" | "refunded" | "failed"
       payout_status: "scheduled" | "paid" | "failed"
+      supplier_category:
+        | "sound"
+        | "light"
+        | "stage"
+        | "dj_gear"
+        | "backline"
+        | "other"
       subscription_status:
         | "inactive"
         | "trialing"
@@ -732,6 +807,14 @@ export const Constants = {
       ],
       payment_status: ["pending", "held", "released", "refunded", "failed"],
       payout_status: ["scheduled", "paid", "failed"],
+      supplier_category: [
+        "sound",
+        "light",
+        "stage",
+        "dj_gear",
+        "backline",
+        "other",
+      ],
       subscription_status: [
         "inactive",
         "trialing",

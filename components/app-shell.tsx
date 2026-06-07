@@ -35,6 +35,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       label: "Favorieten",
       icon: "heart",
     } as NavItem,
+    suppliers: {
+      href: "/suppliers",
+      label: "Apparatuur",
+      icon: "speaker",
+    } as NavItem,
     dashboard: {
       href: "/dashboard",
       label: "Dashboard",
@@ -68,8 +73,14 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   sections.push({
     title: isArtist ? "Algemeen" : undefined,
     items: isBooker
-      ? [items.discover, items.bookings, items.messages, items.favorites]
-      : [items.discover, items.messages],
+      ? [
+          items.discover,
+          items.bookings,
+          items.messages,
+          items.favorites,
+          items.suppliers,
+        ]
+      : [items.discover, items.messages, items.suppliers],
   })
   sections.push({ title: "Account", items: [items.settings] })
 
