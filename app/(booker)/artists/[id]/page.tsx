@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { SiteHeader } from "@/components/site-header"
 import { Stars } from "@/components/stars"
 import { BookForm } from "./book-form"
 import { getArtist, getArtistReviews } from "@/lib/data/artists"
@@ -34,9 +33,7 @@ export default async function ArtistPage({
   ].filter((l) => l.url)
 
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+    <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
         <Link href="/discover" className="text-sm text-muted hover:text-foreground">
           ← Terug naar ontdekken
         </Link>
@@ -142,7 +139,6 @@ export default async function ArtistPage({
             />
           </aside>
         </div>
-      </main>
-    </>
+    </main>
   )
 }

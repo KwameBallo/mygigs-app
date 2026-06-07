@@ -1,4 +1,3 @@
-import { SiteHeader } from "@/components/site-header"
 import { DiscoverClient } from "./discover-client"
 import { getArtists, getGenres } from "@/lib/data/artists"
 
@@ -16,13 +15,10 @@ export default async function DiscoverPage({
   ])
 
   return (
-    <>
-      <SiteHeader />
-      <DiscoverClient
-        artists={artists}
-        genres={genres}
-        filters={{ q, genre, city }}
-      />
-    </>
+    <DiscoverClient
+      artists={artists}
+      genres={genres}
+      filters={{ q, genre, city }}
+    />
   )
 }

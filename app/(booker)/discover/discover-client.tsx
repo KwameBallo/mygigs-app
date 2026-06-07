@@ -32,7 +32,7 @@ export function DiscoverClient({
   const [view, setView] = useState<"list" | "map">("list")
 
   return (
-    <div className="flex h-[calc(100vh-65px)] flex-col">
+    <div className="flex h-full flex-col">
       {/* Filter bar */}
       <div className="border-b border-border bg-background px-4 py-3">
         <form

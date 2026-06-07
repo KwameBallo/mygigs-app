@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { SiteHeader } from "@/components/site-header"
 import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
@@ -22,9 +21,7 @@ export default async function BookingsPage() {
   const list = bookings ?? []
 
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
+    <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Mijn boekingen</h1>
 
         {list.length === 0 ? (
@@ -78,7 +75,6 @@ export default async function BookingsPage() {
             })}
           </div>
         )}
-      </main>
-    </>
+    </main>
   )
 }

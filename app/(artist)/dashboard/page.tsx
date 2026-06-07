@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { SiteHeader } from "@/components/site-header"
 import { Stars } from "@/components/stars"
 import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
@@ -23,9 +22,7 @@ export default async function DashboardPage() {
 
   if (!artist) {
     return (
-      <>
-        <SiteHeader />
-        <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center">
           <h1 className="text-3xl font-semibold tracking-tight">
             Maak je artiestprofiel
           </h1>
@@ -39,8 +36,7 @@ export default async function DashboardPage() {
           >
             Bekijk de marktplaats
           </Link>
-        </main>
-      </>
+      </main>
     )
   }
 
@@ -57,9 +53,7 @@ export default async function DashboardPage() {
     .reduce((sum, b) => sum + b.gage, 0)
 
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+    <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">
@@ -159,8 +153,7 @@ export default async function DashboardPage() {
             </div>
           )}
         </section>
-      </main>
-    </>
+    </main>
   )
 }
 
