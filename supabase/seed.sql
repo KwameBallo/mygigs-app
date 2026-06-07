@@ -81,16 +81,22 @@ update artists set
   instagram_handle = lower(regexp_replace(stage_name, '[^a-zA-Z0-9]', '', 'g')),
   instagram_url = 'https://instagram.com/'
     || lower(regexp_replace(stage_name, '[^a-zA-Z0-9]', '', 'g')),
+  tiktok_handle = lower(regexp_replace(stage_name, '[^a-zA-Z0-9]', '', 'g')),
+  tiktok_url = 'https://tiktok.com/@'
+    || lower(regexp_replace(stage_name, '[^a-zA-Z0-9]', '', 'g')),
   instagram_followers = (2000 + floor(random() * 15000))::int,
+  tiktok_followers = (1500 + floor(random() * 25000))::int,
   spotify_followers = (1000 + floor(random() * 40000))::int;
 
 -- Top 3 artiesten (op rating) worden "befaamd" met ruim 20.000 volgers
 update artists a set
   instagram_followers = v.f,
+  tiktok_followers = v.t,
   spotify_followers = v.s
 from (
   select id,
     (22000 + floor(random() * 28000))::int as f,
+    (40000 + floor(random() * 160000))::int as t,
     (60000 + floor(random() * 140000))::int as s,
     row_number() over (order by (stage_name = 'Kwamé K') desc, rating desc) as rn
   from artists

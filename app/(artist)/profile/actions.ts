@@ -30,6 +30,7 @@ export async function saveArtistProfile(formData: FormData) {
     bio: str("bio"),
     equipment: str("equipment"),
     instagram_url: str("instagram_url"),
+    tiktok_url: str("tiktok_url"),
     spotify_url: str("spotify_url"),
     soundcloud_url: str("soundcloud_url"),
     mixcloud_url: str("mixcloud_url"),

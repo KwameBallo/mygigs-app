@@ -40,6 +40,7 @@ export default async function ArtistPage({
 
   const links = [
     { label: "Instagram", url: artist.instagram_url },
+    { label: "TikTok", url: artist.tiktok_url },
     { label: "Spotify", url: artist.spotify_url },
     { label: "SoundCloud", url: artist.soundcloud_url },
     { label: "Mixcloud", url: artist.mixcloud_url },
@@ -90,7 +91,12 @@ export default async function ArtistPage({
                   {artist.home_city && <span>{artist.home_city}</span>}
                   {artist.instagram_followers > 0 && (
                     <span>
-                      {formatFollowers(artist.instagram_followers)} volgers
+                      {formatFollowers(artist.instagram_followers)} op Instagram
+                    </span>
+                  )}
+                  {artist.tiktok_followers > 0 && (
+                    <span>
+                      {formatFollowers(artist.tiktok_followers)} op TikTok
                     </span>
                   )}
                   <span>{artist.bookings_30d} boekingen (30d)</span>

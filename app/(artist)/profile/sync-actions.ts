@@ -10,6 +10,10 @@ import {
   fetchInstagramFollowers,
   instagramConfigured,
 } from "@/lib/integrations/instagram"
+import {
+  fetchTiktokFollowers,
+  tiktokConfigured,
+} from "@/lib/integrations/tiktok"
 
 export type SyncState = {
   ok: boolean
@@ -28,7 +32,9 @@ export async function syncSocials(
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("id, spotify_url, instagram_url, instagram_handle")
+    .select(
+      "id, spotify_url, instagram_url, instagram_handle, tiktok_url, tiktok_handle",
+    )
     .eq("user_id", user.id)
     .maybeSingle()
   if (!artist) return { ok: false, message: "Geen artiestprofiel gevonden." }
@@ -37,6 +43,8 @@ export async function syncSocials(
     spotify_followers?: number
     instagram_followers?: number
     instagram_handle?: string
+    tiktok_followers?: number
+    tiktok_handle?: string
   } = {}
   const done: string[] = []
   const skipped: string[] = []
@@ -61,6 +69,18 @@ export async function syncSocials(
     skipped.push("Instagram (koppeling niet geconfigureerd)")
   } else if (igInput) {
     skipped.push("Instagram (kon profiel niet ophalen)")
+  }
+
+  const ttInput = artist.tiktok_url ?? artist.tiktok_handle
+  const tiktok = await fetchTiktokFollowers(ttInput)
+  if (tiktok) {
+    update.tiktok_followers = tiktok.followers
+    update.tiktok_handle = tiktok.handle
+    done.push(`TikTok (${tiktok.followers.toLocaleString("nl-NL")})`)
+  } else if (!tiktokConfigured()) {
+    skipped.push("TikTok (koppeling niet geconfigureerd)")
+  } else if (ttInput) {
+    skipped.push("TikTok (kon profiel niet ophalen)")
   }
 
   if (Object.keys(update).length > 0) {

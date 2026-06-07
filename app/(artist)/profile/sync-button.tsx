@@ -9,9 +9,11 @@ const initial: SyncState = { ok: false, message: "" }
 export function SyncSocials({
   instagramFollowers,
   spotifyFollowers,
+  tiktokFollowers,
 }: {
   instagramFollowers: number
   spotifyFollowers: number
+  tiktokFollowers: number
 }) {
   const [state, action, pending] = useActionState(syncSocials, initial)
 
@@ -35,11 +37,17 @@ export function SyncSocials({
         </form>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="mt-4 grid grid-cols-3 gap-3">
         <div className="rounded-xl bg-surface-2 p-3">
           <p className="text-xs text-muted">Instagram</p>
           <p className="mt-0.5 text-lg font-semibold">
             {formatFollowers(instagramFollowers)}
+          </p>
+        </div>
+        <div className="rounded-xl bg-surface-2 p-3">
+          <p className="text-xs text-muted">TikTok</p>
+          <p className="mt-0.5 text-lg font-semibold">
+            {formatFollowers(tiktokFollowers)}
           </p>
         </div>
         <div className="rounded-xl bg-surface-2 p-3">

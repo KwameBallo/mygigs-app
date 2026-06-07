@@ -31,6 +31,7 @@ export default async function ProfilePage() {
           <SyncSocials
             instagramFollowers={artist.instagram_followers ?? 0}
             spotifyFollowers={artist.spotify_followers ?? 0}
+            tiktokFollowers={artist.tiktok_followers ?? 0}
           />
         </div>
       )}
@@ -101,17 +102,27 @@ export default async function ProfilePage() {
           />
         </Field>
 
-        <Field label="Instagram">
-          <input
-            name="instagram_url"
-            defaultValue={artist?.instagram_url ?? ""}
-            placeholder="https://instagram.com/jouwnaam"
-            className="input h-11"
-          />
-          <span className="text-xs text-muted">
-            Sla op en klik daarna op &ldquo;Synchroniseer nu&rdquo; om je volgers op te halen.
-          </span>
-        </Field>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <Field label="Instagram">
+            <input
+              name="instagram_url"
+              defaultValue={artist?.instagram_url ?? ""}
+              placeholder="https://instagram.com/jouwnaam"
+              className="input h-11"
+            />
+          </Field>
+          <Field label="TikTok">
+            <input
+              name="tiktok_url"
+              defaultValue={artist?.tiktok_url ?? ""}
+              placeholder="https://tiktok.com/@jouwnaam"
+              className="input h-11"
+            />
+          </Field>
+        </div>
+        <span className="-mt-2 text-xs text-muted">
+          Sla op en klik daarna op &ldquo;Synchroniseer nu&rdquo; om je volgers op te halen.
+        </span>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Field label="Spotify">

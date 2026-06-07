@@ -67,6 +67,9 @@ export type Database = {
           spotify_followers: number
           spotify_url: string | null
           stage_name: string
+          tiktok_followers: number
+          tiktok_handle: string | null
+          tiktok_url: string | null
           updated_at: string
           user_id: string | null
         }
@@ -93,6 +96,9 @@ export type Database = {
           spotify_followers?: number
           spotify_url?: string | null
           stage_name: string
+          tiktok_followers?: number
+          tiktok_handle?: string | null
+          tiktok_url?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -119,6 +125,9 @@ export type Database = {
           spotify_followers?: number
           spotify_url?: string | null
           stage_name?: string
+          tiktok_followers?: number
+          tiktok_handle?: string | null
+          tiktok_url?: string | null
           updated_at?: string
           user_id?: string | null
         }
