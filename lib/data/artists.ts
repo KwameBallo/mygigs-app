@@ -1,0 +1,61 @@
+import { createClient } from "@/lib/supabase/server"
+import type { Tables } from "@/types/database"
+
+export type Genre = Tables<"genres">
+export type Artist = Tables<"artists"> & { genres: Genre | null }
+
+export type ArtistFilters = {
+  q?: string
+  genre?: string
+  city?: string
+}
+
+export async function getGenres(): Promise<Genre[]> {
+  const supabase = await createClient()
+  const { data } = await supabase.from("genres").select("*").order("name")
+  return data ?? []
+}
+
+export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]> {
+  const supabase = await createClient()
+  let query = supabase
+    .from("artists")
+    .select("*, genres(*)")
+    .order("online", { ascending: false })
+    .order("rating", { ascending: false })
+
+  if (filters.q) {
+    query = query.ilike("stage_name", `%${filters.q}%`)
+  }
+  if (filters.city) {
+    query = query.ilike("home_city", `%${filters.city}%`)
+  }
+  if (filters.genre) {
+    const genreId = Number(filters.genre)
+    if (!Number.isNaN(genreId)) query = query.eq("genre_id", genreId)
+  }
+
+  const { data } = await query
+  return (data as Artist[] | null) ?? []
+}
+
+export async function getArtist(id: string): Promise<Artist | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("artists")
+    .select("*, genres(*)")
+    .eq("id", id)
+    .maybeSingle()
+  return (data as Artist | null) ?? null
+}
+
+export async function getArtistReviews(artistId: string) {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("artist_id", artistId)
+    .order("created_at", { ascending: false })
+    .limit(10)
+  return data ?? []
+}
