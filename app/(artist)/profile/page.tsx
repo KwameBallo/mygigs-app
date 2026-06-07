@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getGenres } from "@/lib/data/artists"
 import { saveArtistProfile } from "./actions"
+import { SyncSocials } from "./sync-button"
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -24,6 +25,15 @@ export default async function ProfilePage() {
       <p className="mt-2 text-sm text-muted">
         Dit is wat boekers zien op je publieke profiel.
       </p>
+
+      {artist && (
+        <div className="mt-6">
+          <SyncSocials
+            instagramFollowers={artist.instagram_followers ?? 0}
+            spotifyFollowers={artist.spotify_followers ?? 0}
+          />
+        </div>
+      )}
 
       <form action={saveArtistProfile} className="mt-8 flex flex-col gap-5">
         <Field label="Artiestnaam" required>
@@ -99,7 +109,7 @@ export default async function ProfilePage() {
             className="input h-11"
           />
           <span className="text-xs text-muted">
-            Automatisch volgers synchroniseren via koppeling volgt binnenkort.
+            Sla op en klik daarna op &ldquo;Synchroniseer nu&rdquo; om je volgers op te halen.
           </span>
         </Field>
 
