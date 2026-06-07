@@ -1,20 +1,87 @@
 import Link from "next/link"
 import { Logo } from "@/components/logo"
-import { SidebarNav, BottomNav, type NavItem } from "@/components/sidebar-nav"
+import {
+  SidebarNav,
+  BottomNav,
+  type NavItem,
+  type NavSection,
+} from "@/components/sidebar-nav"
 import { LogoutIcon } from "@/components/icons"
 import { getProfile } from "@/lib/auth"
+import { getUnreadCount } from "@/lib/data/messages"
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const profile = await getProfile()
   const isArtist = profile?.role === "artist" || profile?.role === "both"
+  const isBooker =
+    !profile || profile.role === "booker" || profile.role === "both"
+  const unread = profile ? await getUnreadCount(profile.id) : 0
 
-  const items: NavItem[] = [
-    { href: "/discover", label: "Zoek", icon: "map" },
-    { href: "/bookings", label: "Boekingen", icon: "calendar" },
-    ...(isArtist
-      ? [{ href: "/dashboard", label: "Dashboard", icon: "dashboard" as const }]
-      : []),
-  ]
+  const items = {
+    discover: { href: "/discover", label: "Ontdek", icon: "map" } as NavItem,
+    bookings: {
+      href: "/bookings",
+      label: "Boekingen",
+      icon: "calendar",
+    } as NavItem,
+    messages: {
+      href: "/messages",
+      label: "Berichten",
+      icon: "chat",
+      badge: unread,
+    } as NavItem,
+    favorites: {
+      href: "/favorites",
+      label: "Favorieten",
+      icon: "heart",
+    } as NavItem,
+    dashboard: {
+      href: "/dashboard",
+      label: "Dashboard",
+      icon: "dashboard",
+    } as NavItem,
+    availability: {
+      href: "/availability",
+      label: "Agenda",
+      icon: "clock",
+    } as NavItem,
+    earnings: {
+      href: "/earnings",
+      label: "Verdiensten",
+      icon: "euro",
+    } as NavItem,
+    profile: { href: "/profile", label: "Mijn profiel", icon: "user" } as NavItem,
+    settings: {
+      href: "/settings",
+      label: "Instellingen",
+      icon: "settings",
+    } as NavItem,
+  }
+
+  const sections: NavSection[] = []
+  if (isArtist) {
+    sections.push({
+      title: "Artiest",
+      items: [items.dashboard, items.availability, items.earnings, items.profile],
+    })
+  }
+  sections.push({
+    title: isArtist ? "Algemeen" : undefined,
+    items: isBooker
+      ? [items.discover, items.bookings, items.messages, items.favorites]
+      : [items.discover, items.messages],
+  })
+  sections.push({ title: "Account", items: [items.settings] })
+
+  const bottomItems: NavItem[] = isArtist
+    ? [
+        items.dashboard,
+        items.availability,
+        items.messages,
+        items.earnings,
+        items.profile,
+      ]
+    : [items.discover, items.bookings, items.messages, items.favorites]
 
   const initials = (profile?.full_name ?? profile?.email ?? "?")
     .slice(0, 1)
@@ -23,12 +90,12 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-dvh overflow-hidden">
       {/* Desktop sidebar */}
-      <aside className="hidden w-60 flex-none flex-col border-r border-border bg-surface px-3 py-5 lg:flex">
+      <aside className="hidden w-64 flex-none flex-col border-r border-border bg-surface px-3 py-5 lg:flex">
         <div className="px-2">
           <Logo />
         </div>
-        <div className="mt-8 flex-1">
-          <SidebarNav items={items} />
+        <div className="mt-8 flex-1 overflow-y-auto">
+          <SidebarNav sections={sections} />
         </div>
         <div className="border-t border-border pt-4">
           {profile ? (
@@ -91,7 +158,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Mobile bottom nav */}
         <div className="border-t border-border bg-surface lg:hidden">
-          <BottomNav items={items} />
+          <BottomNav items={bottomItems} />
         </div>
       </div>
     </div>

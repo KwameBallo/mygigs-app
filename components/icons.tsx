@@ -64,7 +64,52 @@ export function LogoutIcon({ className }: IconProps) {
   )
 }
 
-export type IconName = "map" | "calendar" | "dashboard" | "heart" | "user"
+export function ChatIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12Z" />
+      <path d="M8.5 11h.01M12 11h.01M15.5 11h.01" />
+    </svg>
+  )
+}
+
+export function EuroIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M16 7a5.5 5.5 0 0 0-8 7 5.5 5.5 0 0 0 8 3.5" />
+      <path d="M4 10.5h7M4 13.5h6" />
+    </svg>
+  )
+}
+
+export function SettingsIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7.7 1.6 1.6 0 0 1-3.2 0 1.6 1.6 0 0 0-2.7-.7l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-.7-2.7 1.6 1.6 0 0 1 0-3.2 1.6 1.6 0 0 0 .7-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 2.7-.7 1.6 1.6 0 0 1 3.2 0 1.6 1.6 0 0 0 2.7.7l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8Z" />
+    </svg>
+  )
+}
+
+export function ClockIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  )
+}
+
+export type IconName =
+  | "map"
+  | "calendar"
+  | "dashboard"
+  | "heart"
+  | "user"
+  | "chat"
+  | "euro"
+  | "settings"
+  | "clock"
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
   switch (name) {
@@ -78,5 +123,13 @@ export function Icon({ name, className }: { name: IconName; className?: string }
       return <HeartIcon className={className} />
     case "user":
       return <UserIcon className={className} />
+    case "chat":
+      return <ChatIcon className={className} />
+    case "euro":
+      return <EuroIcon className={className} />
+    case "settings":
+      return <SettingsIcon className={className} />
+    case "clock":
+      return <ClockIcon className={className} />
   }
 }
