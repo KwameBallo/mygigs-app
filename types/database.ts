@@ -1,0 +1,681 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      artist_availability: {
+        Row: {
+          artist_id: string
+          date: string
+          id: string
+          status: Database["public"]["Enums"]["availability_status"]
+        }
+        Insert: {
+          artist_id: string
+          date: string
+          id?: string
+          status?: Database["public"]["Enums"]["availability_status"]
+        }
+        Update: {
+          artist_id?: string
+          date?: string
+          id?: string
+          status?: Database["public"]["Enums"]["availability_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_availability_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artists: {
+        Row: {
+          avatar_url: string | null
+          base_gage: number
+          bio: string | null
+          bookings_30d: number
+          created_at: string
+          equipment: string | null
+          genre_id: number | null
+          home_city: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          mixcloud_url: string | null
+          online: boolean
+          rating: number
+          reviews_count: number
+          soundcloud_url: string | null
+          spotify_url: string | null
+          stage_name: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          base_gage?: number
+          bio?: string | null
+          bookings_30d?: number
+          created_at?: string
+          equipment?: string | null
+          genre_id?: number | null
+          home_city?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          mixcloud_url?: string | null
+          online?: boolean
+          rating?: number
+          reviews_count?: number
+          soundcloud_url?: string | null
+          spotify_url?: string | null
+          stage_name: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          base_gage?: number
+          bio?: string | null
+          bookings_30d?: number
+          created_at?: string
+          equipment?: string | null
+          genre_id?: number | null
+          home_city?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          mixcloud_url?: string | null
+          online?: boolean
+          rating?: number
+          reviews_count?: number
+          soundcloud_url?: string | null
+          spotify_url?: string | null
+          stage_name?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artists_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "genres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artists_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          address: string | null
+          artist_id: string
+          booker_id: string
+          city: string | null
+          created_at: string
+          end_time: string | null
+          event_date: string
+          gage: number
+          id: string
+          message: string | null
+          service_fee: number
+          start_time: string | null
+          status: Database["public"]["Enums"]["booking_status"]
+          total: number
+          updated_at: string
+          venue_name: string | null
+        }
+        Insert: {
+          address?: string | null
+          artist_id: string
+          booker_id: string
+          city?: string | null
+          created_at?: string
+          end_time?: string | null
+          event_date: string
+          gage: number
+          id?: string
+          message?: string | null
+          service_fee: number
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          total: number
+          updated_at?: string
+          venue_name?: string | null
+        }
+        Update: {
+          address?: string | null
+          artist_id?: string
+          booker_id?: string
+          city?: string | null
+          created_at?: string
+          end_time?: string | null
+          event_date?: string
+          gage?: number
+          id?: string
+          message?: string | null
+          service_fee?: number
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          total?: number
+          updated_at?: string
+          venue_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_booker_id_fkey"
+            columns: ["booker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          artist_id: string
+          booker_id: string
+          booking_id: string | null
+          created_at: string
+          id: string
+        }
+        Insert: {
+          artist_id: string
+          booker_id: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          artist_id?: string
+          booker_id?: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_booker_id_fkey"
+            columns: ["booker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorites: {
+        Row: {
+          artist_id: string
+          booker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          artist_id: string
+          booker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          artist_id?: string
+          booker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_booker_id_fkey"
+            columns: ["booker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genres: {
+        Row: {
+          id: number
+          name: string
+          slug: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          slug: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          booking_id: string
+          created_at: string
+          currency: string
+          id: string
+          provider: string | null
+          provider_ref: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          provider?: string | null
+          provider_ref?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          provider?: string | null
+          provider_ref?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payouts: {
+        Row: {
+          amount: number
+          artist_id: string
+          booking_id: string | null
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["payout_status"]
+        }
+        Insert: {
+          amount: number
+          artist_id: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["payout_status"]
+        }
+        Update: {
+          amount?: number
+          artist_id?: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["payout_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          city: string | null
+          company: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          artist_id: string
+          booker_id: string | null
+          booking_id: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewer_name: string | null
+        }
+        Insert: {
+          artist_id: string
+          booker_id?: string | null
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewer_name?: string | null
+        }
+        Update: {
+          artist_id?: string
+          booker_id?: string | null
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewer_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_booker_id_fkey"
+            columns: ["booker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      is_artist_owner: { Args: { a_id: string }; Returns: boolean }
+    }
+    Enums: {
+      availability_status: "available" | "booked"
+      booking_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "cancelled"
+        | "completed"
+        | "paid"
+      payment_status: "pending" | "held" | "released" | "refunded" | "failed"
+      payout_status: "scheduled" | "paid" | "failed"
+      user_role: "booker" | "artist" | "both" | "admin"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      availability_status: ["available", "booked"],
+      booking_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "cancelled",
+        "completed",
+        "paid",
+      ],
+      payment_status: ["pending", "held", "released", "refunded", "failed"],
+      payout_status: ["scheduled", "paid", "failed"],
+      user_role: ["booker", "artist", "both", "admin"],
+    },
+  },
+} as const
