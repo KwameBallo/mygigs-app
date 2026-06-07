@@ -2,8 +2,18 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Stars } from "@/components/stars"
 import { BookForm } from "./book-form"
-import { getArtist, getArtistReviews } from "@/lib/data/artists"
+import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
 import { getProfile } from "@/lib/auth"
+
+const MONTHS = [
+  "jan", "feb", "mrt", "apr", "mei", "jun",
+  "jul", "aug", "sep", "okt", "nov", "dec",
+]
+
+function formatShowDate(date: string) {
+  const d = new Date(date)
+  return { day: d.getDate(), month: MONTHS[d.getMonth()] }
+}
 
 export default async function ArtistPage({
   params,
@@ -11,9 +21,10 @@ export default async function ArtistPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [artist, reviews, profile] = await Promise.all([
+  const [artist, reviews, shows, profile] = await Promise.all([
     getArtist(id),
     getArtistReviews(id),
+    getPublicShows(id),
     getProfile(),
   ])
 
@@ -137,6 +148,48 @@ export default async function ArtistPage({
               baseGage={artist.base_gage}
               isLoggedIn={!!profile}
             />
+
+            <section className="mt-6 rounded-3xl border border-border bg-surface p-6">
+              <h2 className="text-lg font-semibold tracking-tight">
+                Aankomende shows
+              </h2>
+              {shows.length === 0 ? (
+                <p className="mt-3 text-sm text-muted">
+                  Geen openbare optredens gepland.
+                </p>
+              ) : (
+                <ul className="mt-4 flex flex-col gap-3">
+                  {shows.map((show) => {
+                    const { day, month } = formatShowDate(show.event_date)
+                    return (
+                      <li
+                        key={show.id}
+                        className="flex items-center gap-4 rounded-2xl border border-border bg-surface-2 p-3"
+                      >
+                        <div className="flex h-12 w-12 flex-col items-center justify-center rounded-xl bg-surface text-center">
+                          <span className="text-base font-semibold leading-none">
+                            {day}
+                          </span>
+                          <span className="text-[10px] uppercase text-muted">
+                            {month}
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">
+                            {show.venue_name ?? "Locatie volgt"}
+                          </p>
+                          <p className="truncate text-xs text-muted">
+                            {[show.city, show.start_time?.slice(0, 5)]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </section>
           </aside>
         </div>
     </main>

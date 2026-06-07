@@ -4,7 +4,9 @@ import { Stars } from "@/components/stars"
 import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
-import { updateBookingStatus } from "./actions"
+import { updateBookingStatus, toggleBookingPublic } from "./actions"
+
+const PUBLIC_STATUSES = ["accepted", "paid", "completed"]
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -116,6 +118,33 @@ export default async function DashboardPage() {
                         <p className="mt-2 max-w-lg text-sm text-muted">
                           “{b.message}”
                         </p>
+                      )}
+                      {PUBLIC_STATUSES.includes(b.status) && (
+                        <form action={toggleBookingPublic} className="mt-3">
+                          <input type="hidden" name="booking_id" value={b.id} />
+                          <input
+                            type="hidden"
+                            name="is_public"
+                            value={String(!b.is_public)}
+                          />
+                          <button
+                            type="submit"
+                            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                              b.is_public
+                                ? "border-brand/50 bg-brand/10 text-brand"
+                                : "border-border text-muted hover:border-brand/50"
+                            }`}
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${
+                                b.is_public ? "bg-brand" : "bg-muted"
+                              }`}
+                            />
+                            {b.is_public
+                              ? "Zichtbaar voor fans"
+                              : "Toon op publiek profiel"}
+                          </button>
+                        </form>
                       )}
                     </div>
                     <div className="flex items-center gap-3">

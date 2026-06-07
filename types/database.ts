@@ -138,6 +138,7 @@ export type Database = {
           event_date: string
           gage: number
           id: string
+          is_public: boolean
           message: string | null
           service_fee: number
           start_time: string | null
@@ -156,6 +157,7 @@ export type Database = {
           event_date: string
           gage: number
           id?: string
+          is_public?: boolean
           message?: string | null
           service_fee: number
           start_time?: string | null
@@ -174,6 +176,7 @@ export type Database = {
           event_date?: string
           gage?: number
           id?: string
+          is_public?: boolean
           message?: string | null
           service_fee?: number
           start_time?: string | null

@@ -22,6 +22,7 @@ do $$
 declare
   a record;
   d int;
+  any_booker uuid;
   names text[] := array['Sanne','Daan','Lotte','Bram','Fleur','Tim','Noor','Joris'];
   comments text[] := array[
     'Top avond, de dansvloer ging helemaal los!',
@@ -30,6 +31,8 @@ declare
     'Goede communicatie vooraf en een strakke set.',
     'Perfecte muziekkeuze voor ons feest.'];
 begin
+  select id into any_booker from profiles order by created_at limit 1;
+
   for a in select id, base_gage from artists loop
     for d in 1..3 loop
       insert into reviews(artist_id, rating, comment, reviewer_name, created_at)
@@ -48,6 +51,26 @@ begin
         a.id,
         (current_date + ((d * 5) + 3))::date,
         (case when d % 3 = 0 then 'booked' else 'available' end)::availability_status
+      );
+    end loop;
+
+    -- Twee openbare aankomende optredens per artiest (zichtbaar voor fans)
+    for d in 1..2 loop
+      insert into bookings(
+        artist_id, booker_id, event_date, gage, service_fee, total,
+        status, city, venue_name, start_time, is_public, created_at)
+      values (
+        a.id, any_booker,
+        (current_date + (d * 12) + 4)::date,
+        coalesce(a.base_gage, 500),
+        round(coalesce(a.base_gage, 500) * 0.07),
+        coalesce(a.base_gage, 500) + round(coalesce(a.base_gage, 500) * 0.07),
+        'accepted',
+        (array['Amsterdam','Rotterdam','Utrecht','Den Haag','Eindhoven'])[1 + (d % 5)],
+        (array['Paradiso','Club NL','TivoliVredenburg','Loods 6','Warehouse 22'])[1 + (d % 5)],
+        (array['21:00','22:30']::time[])[d],
+        true,
+        now()
       );
     end loop;
   end loop;

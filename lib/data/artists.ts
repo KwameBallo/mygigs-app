@@ -49,6 +49,21 @@ export async function getArtist(id: string): Promise<Artist | null> {
   return (data as Artist | null) ?? null
 }
 
+// Public upcoming shows for an artist (privacy: no booker, no price).
+export async function getPublicShows(artistId: string) {
+  const supabase = await createClient()
+  const today = new Date().toISOString().slice(0, 10)
+  const { data } = await supabase
+    .from("bookings")
+    .select("id, event_date, city, venue_name, start_time")
+    .eq("artist_id", artistId)
+    .eq("is_public", true)
+    .in("status", ["accepted", "paid", "completed"])
+    .gte("event_date", today)
+    .order("event_date", { ascending: true })
+  return data ?? []
+}
+
 export async function getArtistReviews(artistId: string) {
   const supabase = await createClient()
   const { data } = await supabase
