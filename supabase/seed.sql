@@ -76,6 +76,27 @@ begin
   end loop;
 end $$;
 
+-- ---------- Social-volgers voor ALLE artiesten (mock) ----------
+update artists set
+  instagram_handle = lower(regexp_replace(stage_name, '[^a-zA-Z0-9]', '', 'g')),
+  instagram_url = 'https://instagram.com/'
+    || lower(regexp_replace(stage_name, '[^a-zA-Z0-9]', '', 'g')),
+  instagram_followers = (2000 + floor(random() * 15000))::int,
+  spotify_followers = (1000 + floor(random() * 40000))::int;
+
+-- Top 3 artiesten (op rating) worden "befaamd" met ruim 20.000 volgers
+update artists a set
+  instagram_followers = v.f,
+  spotify_followers = v.s
+from (
+  select id,
+    (22000 + floor(random() * 28000))::int as f,
+    (60000 + floor(random() * 140000))::int as s,
+    row_number() over (order by (stage_name = 'Kwamé K') desc, rating desc) as rn
+  from artists
+) v
+where a.id = v.id and v.rn <= 3;
+
 -- ---------- Alle data gekoppeld aan ballokwame@gmail.com ----------
 do $$
 declare

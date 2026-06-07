@@ -54,6 +54,9 @@ export type Database = {
           genre_id: number | null
           home_city: string | null
           id: string
+          instagram_followers: number
+          instagram_handle: string | null
+          instagram_url: string | null
           lat: number | null
           lng: number | null
           mixcloud_url: string | null
@@ -61,6 +64,7 @@ export type Database = {
           rating: number
           reviews_count: number
           soundcloud_url: string | null
+          spotify_followers: number
           spotify_url: string | null
           stage_name: string
           updated_at: string
@@ -76,6 +80,9 @@ export type Database = {
           genre_id?: number | null
           home_city?: string | null
           id?: string
+          instagram_followers?: number
+          instagram_handle?: string | null
+          instagram_url?: string | null
           lat?: number | null
           lng?: number | null
           mixcloud_url?: string | null
@@ -83,6 +90,7 @@ export type Database = {
           rating?: number
           reviews_count?: number
           soundcloud_url?: string | null
+          spotify_followers?: number
           spotify_url?: string | null
           stage_name: string
           updated_at?: string
@@ -98,6 +106,9 @@ export type Database = {
           genre_id?: number | null
           home_city?: string | null
           id?: string
+          instagram_followers?: number
+          instagram_handle?: string | null
+          instagram_url?: string | null
           lat?: number | null
           lng?: number | null
           mixcloud_url?: string | null
@@ -105,6 +116,7 @@ export type Database = {
           rating?: number
           reviews_count?: number
           soundcloud_url?: string | null
+          spotify_followers?: number
           spotify_url?: string | null
           stage_name?: string
           updated_at?: string

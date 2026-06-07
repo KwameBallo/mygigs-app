@@ -91,6 +91,18 @@ export default async function ProfilePage() {
           />
         </Field>
 
+        <Field label="Instagram">
+          <input
+            name="instagram_url"
+            defaultValue={artist?.instagram_url ?? ""}
+            placeholder="https://instagram.com/jouwnaam"
+            className="input h-11"
+          />
+          <span className="text-xs text-muted">
+            Automatisch volgers synchroniseren via koppeling volgt binnenkort.
+          </span>
+        </Field>
+
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Field label="Spotify">
             <input

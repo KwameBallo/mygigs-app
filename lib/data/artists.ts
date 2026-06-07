@@ -8,6 +8,7 @@ export type ArtistFilters = {
   q?: string
   genre?: string
   city?: string
+  minFollowers?: number
 }
 
 export async function getGenres(): Promise<Genre[]> {
@@ -33,6 +34,11 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
   if (filters.genre) {
     const genreId = Number(filters.genre)
     if (!Number.isNaN(genreId)) query = query.eq("genre_id", genreId)
+  }
+  if (filters.minFollowers && filters.minFollowers > 0) {
+    query = query
+      .gte("instagram_followers", filters.minFollowers)
+      .order("instagram_followers", { ascending: false })
   }
 
   const { data } = await query

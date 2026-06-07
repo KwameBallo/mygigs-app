@@ -4,6 +4,7 @@ import { Stars } from "@/components/stars"
 import { BookForm } from "./book-form"
 import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
 import { getProfile } from "@/lib/auth"
+import { formatFollowers } from "@/lib/utils/format"
 
 const MONTHS = [
   "jan", "feb", "mrt", "apr", "mei", "jun",
@@ -38,6 +39,7 @@ export default async function ArtistPage({
     .toUpperCase()
 
   const links = [
+    { label: "Instagram", url: artist.instagram_url },
     { label: "Spotify", url: artist.spotify_url },
     { label: "SoundCloud", url: artist.soundcloud_url },
     { label: "Mixcloud", url: artist.mixcloud_url },
@@ -86,6 +88,11 @@ export default async function ArtistPage({
                 <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted">
                   <Stars rating={artist.rating} count={artist.reviews_count} />
                   {artist.home_city && <span>{artist.home_city}</span>}
+                  {artist.instagram_followers > 0 && (
+                    <span>
+                      {formatFollowers(artist.instagram_followers)} volgers
+                    </span>
+                  )}
                   <span>{artist.bookings_30d} boekingen (30d)</span>
                 </div>
                 {artist.bio && (
