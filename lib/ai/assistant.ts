@@ -13,6 +13,16 @@ export type DjOption = {
   rating: number | null
 }
 
+// Kernpunten uit de algemene voorwaarden voor artiesten op MyGigs.
+const DJ_TERMS = [
+  "Aanmelden en een profiel maken is gratis.",
+  "MyGigs rekent 7% commissie per boeking; die wordt ingehouden op je gage.",
+  "Betalingen lopen via escrow: het geld van de boeker staat vast tot na het optreden.",
+  "Uitbetaling volgt na een succesvol afgerond optreden.",
+  "De gage die je instelt is je tarief; de boeker betaalt dat bedrag, jij ontvangt het minus 7%.",
+  "Je bent zelf verantwoordelijk voor juiste profielinformatie en het nakomen van geaccepteerde boekingen.",
+]
+
 const DJ_SYSTEM =
   "Je bent de profielcoach van MyGigs voor DJ's en artiesten. " +
   "Je helpt iemand een sterk, boekbaar artiestprofiel op te bouwen. " +
@@ -21,7 +31,11 @@ const DJ_SYSTEM =
   "het best passende genre, een realistische gage op basis van ervaring, volgers en regio, " +
   "en welke socials, demo's en foto's ze moeten tonen. " +
   "Stel maximaal 1-2 gerichte vragen als belangrijke info ontbreekt. " +
-  "Antwoord kort en concreet in het Nederlands. Gebruik geen em-dash."
+  "Wijs de DJ ook op de belangrijkste algemene voorwaarden, vooral bij vragen over geld, " +
+  "gage, uitbetaling of aanmelden. Vat ze kort en duidelijk samen, verzin geen extra regels. " +
+  "De algemene voorwaarden voor artiesten zijn:\n" +
+  DJ_TERMS.map((t) => `- ${t}`).join("\n") +
+  "\nAntwoord kort en concreet in het Nederlands. Gebruik geen em-dash."
 
 function consumentSystem(djs: DjOption[]): string {
   const list =
@@ -59,7 +73,9 @@ function fallbackReply(mode: AssistantMode): string {
       "2. Schrijf een bio van 2-3 zinnen: wie je bent, je sound, en waar je al gedraaid hebt.\n" +
       "3. Kies 1 hoofdgenre zodat boekers je makkelijk vinden.\n" +
       "4. Zet een realistische gage neer op basis van je ervaring en volgers.\n" +
-      "5. Koppel je Instagram, Spotify en een demo-set."
+      "5. Koppel je Instagram, Spotify en een demo-set.\n\n" +
+      "Goed om te weten (algemene voorwaarden):\n" +
+      DJ_TERMS.map((t) => `- ${t}`).join("\n")
     )
   }
   return (
