@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import { createBooking } from "./actions"
 import {
@@ -6,6 +9,8 @@ import {
   formatPercent,
   ARTIST_COMMISSION_RATE,
 } from "@/lib/utils/pricing"
+
+type BookingType = "prive" | "zakelijk"
 
 export function BookForm({
   artistId,
@@ -16,14 +21,13 @@ export function BookForm({
   baseGage: number
   isLoggedIn: boolean
 }) {
+  const [type, setType] = useState<BookingType>("prive")
   const { gage, total } = priceBreakdown(baseGage)
 
   if (!isLoggedIn) {
     return (
       <div className="rounded-2xl border border-border bg-surface p-6">
-        <p className="text-sm text-muted">
-          Log in om deze artiest te boeken.
-        </p>
+        <p className="text-sm text-muted">Log in om deze artiest te boeken.</p>
         <Link
           href={`/login?next=/artists/${artistId}`}
           className="mt-4 inline-block rounded-full bg-brand px-6 py-2.5 font-medium text-black transition hover:bg-brand-strong"
@@ -42,13 +46,52 @@ export function BookForm({
       <input type="hidden" name="artist_id" value={artistId} />
       <h2 className="text-lg font-semibold tracking-tight">Boek deze artiest</h2>
 
+      {/* Privé of zakelijk */}
+      <div>
+        <span className="text-sm font-medium">Type boeking</span>
+        <div className="mt-1.5 grid grid-cols-2 gap-2">
+          <TypeOption
+            value="prive"
+            title="Privé"
+            desc="Bruiloft, verjaardag, feest"
+            active={type === "prive"}
+            onSelect={setType}
+          />
+          <TypeOption
+            value="zakelijk"
+            title="Zakelijk"
+            desc="Bedrijfsfeest, congres, opening"
+            active={type === "zakelijk"}
+            onSelect={setType}
+          />
+        </div>
+      </div>
+      <input type="hidden" name="booking_type" value={type} />
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium">Gelegenheid</span>
+        <input
+          name="occasion"
+          type="text"
+          placeholder={
+            type === "zakelijk" ? "Bijv. bedrijfsfeest" : "Bijv. verjaardag"
+          }
+          className="input"
+        />
+      </label>
+
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">Datum</span>
         <input name="event_date" type="date" required className="input" />
       </label>
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">Stad</span>
-        <input name="city" type="text" placeholder="Amsterdam" className="input" />
+        <input
+          name="city"
+          type="text"
+          placeholder="Amsterdam"
+          className="input"
+        />
       </label>
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">Locatie / venue</span>
@@ -59,6 +102,43 @@ export function BookForm({
           className="input"
         />
       </label>
+
+      {/* Zakelijke factuurgegevens */}
+      {type === "zakelijk" && (
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-2 p-4">
+          <p className="text-sm font-medium">Factuurgegevens</p>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs text-muted">Bedrijfsnaam</span>
+            <input
+              name="company_name"
+              type="text"
+              placeholder="Bedrijf B.V."
+              className="input h-10"
+            />
+          </label>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs text-muted">BTW-nummer</span>
+              <input
+                name="vat_number"
+                type="text"
+                placeholder="NL000000000B00"
+                className="input h-10"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs text-muted">Factuur-e-mail</span>
+              <input
+                name="invoice_email"
+                type="email"
+                placeholder="factuur@bedrijf.nl"
+                className="input h-10"
+              />
+            </label>
+          </div>
+        </div>
+      )}
+
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">Bericht (optioneel)</span>
         <textarea
@@ -89,6 +169,35 @@ export function BookForm({
         Je betaalt pas na acceptatie. Geld staat veilig in escrow.
       </p>
     </form>
+  )
+}
+
+function TypeOption({
+  value,
+  title,
+  desc,
+  active,
+  onSelect,
+}: {
+  value: BookingType
+  title: string
+  desc: string
+  active: boolean
+  onSelect: (v: BookingType) => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(value)}
+      className={`rounded-xl border p-3 text-left transition ${
+        active
+          ? "border-brand bg-brand/10"
+          : "border-border bg-surface-2 hover:border-brand/40"
+      }`}
+    >
+      <span className="block text-sm font-medium">{title}</span>
+      <span className="block text-xs text-muted">{desc}</span>
+    </button>
   )
 }
 

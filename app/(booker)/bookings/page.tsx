@@ -55,6 +55,9 @@ export default async function BookingsPage() {
                         {artist?.stage_name ?? "Artiest"}
                       </h3>
                       <StatusBadge status={b.status} />
+                      <span className="rounded-full border border-border bg-surface-2 px-2.5 py-0.5 text-xs text-muted">
+                        {b.booking_type === "zakelijk" ? "Zakelijk" : "Privé"}
+                      </span>
                     </div>
                     <p className="mt-1 text-sm text-muted">
                       {new Date(b.event_date).toLocaleDateString("nl-NL", {

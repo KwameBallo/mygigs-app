@@ -495,57 +495,72 @@ export type Database = {
           address: string | null
           artist_id: string
           booker_id: string
+          booking_type: Database["public"]["Enums"]["booking_type"]
           city: string | null
+          company_name: string | null
           created_at: string
           end_time: string | null
           event_date: string
           gage: number
           id: string
+          invoice_email: string | null
           is_public: boolean
           message: string | null
+          occasion: string | null
           service_fee: number
           start_time: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total: number
           updated_at: string
+          vat_number: string | null
           venue_name: string | null
         }
         Insert: {
           address?: string | null
           artist_id: string
           booker_id: string
+          booking_type?: Database["public"]["Enums"]["booking_type"]
           city?: string | null
+          company_name?: string | null
           created_at?: string
           end_time?: string | null
           event_date: string
           gage: number
           id?: string
+          invoice_email?: string | null
           is_public?: boolean
           message?: string | null
+          occasion?: string | null
           service_fee: number
           start_time?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total: number
           updated_at?: string
+          vat_number?: string | null
           venue_name?: string | null
         }
         Update: {
           address?: string | null
           artist_id?: string
           booker_id?: string
+          booking_type?: Database["public"]["Enums"]["booking_type"]
           city?: string | null
+          company_name?: string | null
           created_at?: string
           end_time?: string | null
           event_date?: string
           gage?: number
           id?: string
+          invoice_email?: string | null
           is_public?: boolean
           message?: string | null
+          occasion?: string | null
           service_fee?: number
           start_time?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total?: number
           updated_at?: string
+          vat_number?: string | null
           venue_name?: string | null
         }
         Relationships: [
@@ -934,6 +949,7 @@ export type Database = {
         | "cancelled"
         | "completed"
         | "paid"
+      booking_type: "prive" | "zakelijk"
       payment_status: "pending" | "held" | "released" | "refunded" | "failed"
       payout_status: "scheduled" | "paid" | "failed"
       supplier_category:
@@ -1087,6 +1103,7 @@ export const Constants = {
         "completed",
         "paid",
       ],
+      booking_type: ["prive", "zakelijk"],
       payment_status: ["pending", "held", "released", "refunded", "failed"],
       payout_status: ["scheduled", "paid", "failed"],
       supplier_category: [

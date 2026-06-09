@@ -11,6 +11,24 @@ export async function createBooking(formData: FormData) {
   const venue = String(formData.get("venue_name") ?? "").trim() || null
   const message = String(formData.get("message") ?? "").trim() || null
 
+  const bookingType =
+    String(formData.get("booking_type") ?? "prive") === "zakelijk"
+      ? "zakelijk"
+      : "prive"
+  const occasion = String(formData.get("occasion") ?? "").trim() || null
+  const companyName =
+    bookingType === "zakelijk"
+      ? String(formData.get("company_name") ?? "").trim() || null
+      : null
+  const vatNumber =
+    bookingType === "zakelijk"
+      ? String(formData.get("vat_number") ?? "").trim() || null
+      : null
+  const invoiceEmail =
+    bookingType === "zakelijk"
+      ? String(formData.get("invoice_email") ?? "").trim() || null
+      : null
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -42,6 +60,11 @@ export async function createBooking(formData: FormData) {
     gage,
     service_fee: commission,
     total,
+    booking_type: bookingType,
+    occasion,
+    company_name: companyName,
+    vat_number: vatNumber,
+    invoice_email: invoiceEmail,
   })
 
   if (error) {
