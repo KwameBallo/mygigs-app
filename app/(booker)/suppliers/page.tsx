@@ -1,4 +1,5 @@
 import { getSuppliers } from "@/lib/data/suppliers"
+import { AdSlot } from "@/components/ad-slot"
 import { SuppliersClient } from "./suppliers-client"
 
 type SearchParams = Promise<{
@@ -16,6 +17,10 @@ export default async function SuppliersPage({
   const suppliers = await getSuppliers({ q, category, city })
 
   return (
-    <SuppliersClient suppliers={suppliers} filters={{ q, category, city }} />
+    <SuppliersClient
+      suppliers={suppliers}
+      filters={{ q, category, city }}
+      ad={<AdSlot placement="discover" />}
+    />
   )
 }

@@ -22,9 +22,11 @@ const SuppliersMap = dynamic(
 export function SuppliersClient({
   suppliers,
   filters,
+  ad,
 }: {
   suppliers: Supplier[]
   filters: { q?: string; category?: string; city?: string }
+  ad?: React.ReactNode
 }) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [view, setView] = useState<"list" | "map">("list")
@@ -89,6 +91,8 @@ export function SuppliersClient({
               Zoek
             </button>
           </form>
+
+          {ad && <div className="mt-3">{ad}</div>}
         </div>
       </div>
 
