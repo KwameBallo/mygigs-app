@@ -56,7 +56,7 @@ export default async function Home() {
         </section>
 
         <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-12">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <SideCard
               tag="Voor consumenten"
               title="Ontdek & boek"
@@ -71,6 +71,13 @@ export default async function Home() {
               body="Maak een artiestprofiel aan, toon je demo's en volgers, en ontvang boekingsaanvragen. Aanmelden is gratis: MyGigs verdient 7% per boeking."
               cta="Word DJ"
               href="/login?mode=signup"
+            />
+            <SideCard
+              tag="Voor bedrijven"
+              title="Zakelijk boeken"
+              body="Boek artiesten voor je bedrijfsevent met factuur op naam, BTW-aftrek en één aanspreekpunt. Sla je factuurgegevens eenmalig op."
+              cta="Naar zakelijk"
+              href="/zakelijk"
             />
           </div>
         </section>

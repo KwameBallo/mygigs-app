@@ -17,6 +17,12 @@ export async function SiteHeader() {
           >
             Ontdek
           </Link>
+          <Link
+            href="/zakelijk"
+            className="hidden rounded-full px-3 py-2 text-muted transition hover:text-foreground sm:block"
+          >
+            Zakelijk
+          </Link>
           {profile ? (
             <>
               {isArtist && (
