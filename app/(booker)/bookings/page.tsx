@@ -4,7 +4,12 @@ import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
 
-export default async function BookingsPage() {
+export default async function BookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ shortlist?: string; created?: string }>
+}) {
+  const { shortlist } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -23,6 +28,13 @@ export default async function BookingsPage() {
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">Mijn boekingen</h1>
+
+        {shortlist === "1" && (
+          <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/10 p-4 text-sm text-brand">
+            Je aanvraag is naar alle geselecteerde acts gestuurd. Je ziet
+            hieronder per artiest de status.
+          </div>
+        )}
 
         {list.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">

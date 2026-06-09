@@ -520,6 +520,7 @@ export type Database = {
           message: string | null
           occasion: string | null
           service_fee: number
+          shortlist_id: string | null
           start_time: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total: number
@@ -544,6 +545,7 @@ export type Database = {
           message?: string | null
           occasion?: string | null
           service_fee: number
+          shortlist_id?: string | null
           start_time?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total: number
@@ -568,6 +570,7 @@ export type Database = {
           message?: string | null
           occasion?: string | null
           service_fee?: number
+          shortlist_id?: string | null
           start_time?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total?: number

@@ -240,15 +240,25 @@ export function DiscoverClient({
             view === "map" ? "hidden" : "flex"
           } w-full flex-col overflow-y-auto lg:flex lg:w-[440px] lg:flex-none lg:border-r lg:border-border`}
         >
-          <div className="px-4 py-3 text-sm text-muted">
-            {count}{" "}
-            {isClubs
-              ? count === 1
-                ? "club"
-                : "clubs"
-              : count === 1
-                ? "artiest"
-                : "artiesten"}
+          <div className="flex items-center justify-between gap-2 px-4 py-3 text-sm text-muted">
+            <span>
+              {count}{" "}
+              {isClubs
+                ? count === 1
+                  ? "club"
+                  : "clubs"
+                : count === 1
+                  ? "artiest"
+                  : "artiesten"}
+            </span>
+            {!isClubs && (
+              <Link
+                href="/shortlist"
+                className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-medium text-foreground transition hover:border-brand/50 hover:text-brand"
+              >
+                Meerdere tegelijk aanvragen
+              </Link>
+            )}
           </div>
           {count === 0 ? (
             <div className="m-4 rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
