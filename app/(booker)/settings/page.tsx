@@ -2,6 +2,11 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getProfile } from "@/lib/auth"
 import { PLANS, hasActiveSubscription } from "@/lib/subscriptions"
+import {
+  ARTIST_COMMISSION_RATE,
+  SUPPLIER_COMMISSION_RATE,
+  formatPercent,
+} from "@/lib/utils/pricing"
 import { updateAccount } from "./actions"
 
 const ROLE_LABEL: Record<string, string> = {
@@ -81,7 +86,7 @@ export default async function SettingsPage() {
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
-        <h2 className="text-lg font-semibold">Artiestenabonnement</h2>
+        <h2 className="text-lg font-semibold">Organisatorenabonnement</h2>
         <div className="mt-4 flex items-center gap-2 text-sm text-muted">
           <span>Status:</span>
           <span
@@ -106,16 +111,35 @@ export default async function SettingsPage() {
           </p>
         ) : (
           <p className="mt-3 text-sm text-muted">
-            Sluit een abonnement af om als artiest op de tool te staan. Geen
-            boekingsfee, je houdt je volledige gage.
+            Sluit een abonnement af om als club of organisator events te
+            plaatsen. Start met een gratis proefperiode.
           </p>
         )}
         <Link
           href="/subscribe"
           className="mt-4 inline-block rounded-full border border-border px-6 py-2.5 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
         >
-          {subActive ? "Abonnement beheren" : "Word artiest"}
+          {subActive ? "Abonnement beheren" : "Bekijk abonnementen"}
         </Link>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <h2 className="text-lg font-semibold">Verdienmodel</h2>
+        <p className="mt-1 text-sm text-muted">
+          Zo verdient MyGigs aan de verschillende partijen.
+        </p>
+        <ul className="mt-4 flex flex-col gap-2 text-sm">
+          <FeeRow label="Clubs & organisatoren" value="Abonnement" />
+          <FeeRow
+            label="Artiesten"
+            value={`${formatPercent(ARTIST_COMMISSION_RATE)} commissie per boeking`}
+          />
+          <FeeRow
+            label="Leveranciers"
+            value={`${formatPercent(SUPPLIER_COMMISSION_RATE)} commissie`}
+          />
+          <FeeRow label="Drankmerken" value="Advertentiekosten" />
+        </ul>
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
@@ -133,5 +157,14 @@ export default async function SettingsPage() {
         </form>
       </section>
     </main>
+  )
+}
+
+function FeeRow({ label, value }: { label: string; value: string }) {
+  return (
+    <li className="flex items-center justify-between rounded-xl bg-surface-2 px-4 py-2.5">
+      <span className="text-muted">{label}</span>
+      <span className="font-medium">{value}</span>
+    </li>
   )
 }

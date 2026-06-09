@@ -1,7 +1,41 @@
-import { getAd, type AdPlacement } from "@/lib/data/ads"
+import { getAd, type AdPlacement, type Ad } from "@/lib/data/ads"
+
+// Voorbeeld-advertenties zodat je ook zonder data in de database ziet waar en
+// hoe advertenties verschijnen. Worden alleen getoond als er geen echte
+// advertentie voor de plek bestaat.
+const DEMO_ADS: Record<AdPlacement, Pick<Ad, "brand_name" | "title" | "image_url" | "target_url">> = {
+  events_top: {
+    brand_name: "Heineken",
+    title: "Proost op het beste feest van je week",
+    image_url:
+      "https://images.unsplash.com/photo-1618183479302-1e0aa382c36b?w=400",
+    target_url: "https://heineken.com",
+  },
+  event_detail: {
+    brand_name: "Red Bull",
+    title: "Red Bull geeft je vleugels op de dansvloer",
+    image_url:
+      "https://images.unsplash.com/photo-1622543925917-763c34d1a86e?w=400",
+    target_url: "https://redbull.com",
+  },
+  discover: {
+    brand_name: "Bacardi",
+    title: "Do What Moves You",
+    image_url:
+      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400",
+    target_url: "https://bacardi.com",
+  },
+  sidebar: {
+    brand_name: "Jägermeister",
+    title: "Best Nights are Jäger Nights",
+    image_url:
+      "https://images.unsplash.com/photo-1551751299-1b51cab2694c?w=400",
+    target_url: "https://jagermeister.com",
+  },
+}
 
 // Server component: haalt één actieve advertentie op voor de plek en toont
-// een sponsored banner. Rendert niets als er geen advertentie is.
+// een sponsored banner. Valt terug op een voorbeeld-advertentie.
 export async function AdSlot({
   placement,
   className,
@@ -9,8 +43,9 @@ export async function AdSlot({
   placement: AdPlacement
   className?: string
 }) {
-  const ad = await getAd(placement)
-  if (!ad) return null
+  const real = await getAd(placement)
+  const ad = real ?? DEMO_ADS[placement]
+  const isDemo = !real
 
   const inner = (
     <div className="relative flex min-h-[88px] items-center gap-4 overflow-hidden rounded-2xl border border-border bg-surface-2 p-4 transition hover:border-brand/40">
@@ -24,7 +59,7 @@ export async function AdSlot({
       )}
       <div className="min-w-0 flex-1">
         <span className="text-[10px] font-medium uppercase tracking-wide text-muted">
-          Advertentie · {ad.brand_name}
+          Advertentie{isDemo ? " · voorbeeld" : ""} · {ad.brand_name}
         </span>
         {ad.title && (
           <p className="mt-0.5 truncate text-sm font-semibold">{ad.title}</p>

@@ -29,12 +29,12 @@ export default async function SubscribePage() {
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">
-        Word artiest op MyGigs
+        Organiseer events op MyGigs
       </h1>
       <p className="mt-2 max-w-xl text-muted">
-        Geen boekingsfee meer. Je sluit een abonnement af en houdt je volledige
-        gage. Start met {TRIAL_DAYS} dagen gratis, daarna kies je maandelijks of
-        jaarlijks.
+        Clubs en organisatoren plaatsen hun locaties en events met een
+        abonnement. Boek artiesten, vul je line-up en bereik bezoekers. Start met{" "}
+        {TRIAL_DAYS} dagen gratis, daarna kies je maandelijks of jaarlijks.
       </p>
 
       {active && (
@@ -46,13 +46,13 @@ export default async function SubscribePage() {
           <p className="mt-1 text-sm text-muted">
             {profile.subscription_status === "trialing" && trialEnd
               ? `Je proefperiode loopt tot ${trialEnd}.`
-              : "Je abonnement is actief. Je kunt de tool volledig gebruiken."}
+              : "Je abonnement is actief. Je kunt events plaatsen."}
           </p>
           <Link
-            href="/profile"
+            href="/events/manage"
             className="mt-3 inline-block rounded-full bg-brand px-5 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
           >
-            Naar mijn profiel
+            Naar mijn events
           </Link>
         </div>
       )}

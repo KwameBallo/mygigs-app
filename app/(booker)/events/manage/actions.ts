@@ -1,7 +1,22 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { hasActiveSubscription } from "@/lib/subscriptions"
+
+// Events plaatsen vereist een actief organisatorenabonnement.
+async function requireSubscription(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+): Promise<boolean> {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("subscription_status")
+    .eq("id", userId)
+    .maybeSingle()
+  return hasActiveSubscription(profile?.subscription_status)
+}
 
 function str(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim()
@@ -28,6 +43,8 @@ export async function createClub(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return
+
+  if (!(await requireSubscription(supabase, user.id))) redirect("/subscribe")
 
   await supabase.from("clubs").insert({
     user_id: user.id,
@@ -56,6 +73,8 @@ export async function createEvent(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return
+
+  if (!(await requireSubscription(supabase, user.id))) redirect("/subscribe")
 
   // Veiligheid: alleen events maken bij een eigen locatie.
   const { data: club } = await supabase

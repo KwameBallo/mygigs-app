@@ -1,9 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { hasActiveSubscription } from "@/lib/subscriptions"
 
 export async function saveArtistProfile(formData: FormData) {
   const supabase = await createClient()
@@ -47,18 +45,7 @@ export async function saveArtistProfile(formData: FormData) {
   if (existing) {
     await supabase.from("artists").update(fields).eq("id", existing.id)
   } else {
-    // Artiest worden vereist een abonnement: zonder actief abonnement of
-    // proefperiode mag er geen artiestprofiel aangemaakt worden.
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("subscription_status")
-      .eq("id", user.id)
-      .maybeSingle()
-
-    if (!hasActiveSubscription(profile?.subscription_status)) {
-      redirect("/subscribe")
-    }
-
+    // Artiest worden is gratis: MyGigs verdient via 7% commissie per boeking.
     await supabase.from("artists").insert({ user_id: user.id, ...fields })
     await supabase
       .from("profiles")

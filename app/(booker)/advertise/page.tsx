@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { getProfile } from "@/lib/auth"
 import { getMyAds, AD_PLACEMENTS, placementLabel } from "@/lib/data/ads"
+import { formatEuro } from "@/lib/utils/pricing"
 import { createAd, toggleAd, deleteAd } from "./actions"
 
 export default async function AdvertisePage() {
@@ -17,6 +18,25 @@ export default async function AdvertisePage() {
         bezoekers die op zoek zijn naar feesten en artiesten.
       </p>
 
+      {/* Tarieven */}
+      <div className="mt-5 rounded-2xl border border-border bg-surface p-4">
+        <p className="text-sm font-semibold">Tarieven</p>
+        <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+          {AD_PLACEMENTS.map((p) => (
+            <li
+              key={p.value}
+              className="flex items-center justify-between rounded-xl bg-surface-2 px-4 py-2.5 text-sm"
+            >
+              <span className="text-muted">{p.label}</span>
+              <span className="font-medium">
+                {formatEuro(p.price)}
+                <span className="text-xs font-normal text-muted"> /week</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       {/* Nieuwe advertentie */}
       <section className="mt-6">
         <h2 className="text-sm font-semibold text-muted">Nieuwe advertentie</h2>
@@ -31,7 +51,7 @@ export default async function AdvertisePage() {
             <select name="placement" className="input h-10 w-full">
               {AD_PLACEMENTS.map((p) => (
                 <option key={p.value} value={p.value}>
-                  {p.label}
+                  {p.label} — {formatEuro(p.price)}/week
                 </option>
               ))}
             </select>

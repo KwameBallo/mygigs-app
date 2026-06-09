@@ -4,15 +4,24 @@ import type { Tables, Enums } from "@/types/database"
 export type Ad = Tables<"ads">
 export type AdPlacement = Enums<"ad_placement">
 
-export const AD_PLACEMENTS: { value: AdPlacement; label: string }[] = [
-  { value: "events_top", label: "Bovenaan de agenda" },
-  { value: "event_detail", label: "Op de eventpagina" },
-  { value: "discover", label: "Op de ontdek-pagina" },
-  { value: "sidebar", label: "Zijbalk" },
+// price = advertentiekosten per week (drankmerken betalen voor de plek).
+export const AD_PLACEMENTS: {
+  value: AdPlacement
+  label: string
+  price: number
+}[] = [
+  { value: "events_top", label: "Bovenaan de agenda", price: 250 },
+  { value: "event_detail", label: "Op de eventpagina", price: 150 },
+  { value: "discover", label: "Op de ontdek-pagina", price: 200 },
+  { value: "sidebar", label: "Zijbalk", price: 100 },
 ]
 
 export function placementLabel(value: string): string {
   return AD_PLACEMENTS.find((p) => p.value === value)?.label ?? value
+}
+
+export function placementPrice(value: string): number | null {
+  return AD_PLACEMENTS.find((p) => p.value === value)?.price ?? null
 }
 
 // Eén actieve advertentie voor een plek (gewogen, willekeurige rotatie).

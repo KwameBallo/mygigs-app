@@ -30,7 +30,7 @@ export async function createBooking(formData: FormData) {
     redirect(`/artists/${artistId}?error=notfound`)
   }
 
-  const { gage, serviceFee, total } = priceBreakdown(artist.base_gage)
+  const { gage, commission, total } = priceBreakdown(artist.base_gage)
 
   const { error } = await supabase.from("bookings").insert({
     artist_id: artistId,
@@ -40,7 +40,7 @@ export async function createBooking(formData: FormData) {
     venue_name: venue,
     message,
     gage,
-    service_fee: serviceFee,
+    service_fee: commission,
     total,
   })
 

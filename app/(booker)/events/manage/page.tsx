@@ -9,11 +9,14 @@ import {
 import { getGenres } from "@/lib/data/artists"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatEventDate, formatTime } from "@/lib/utils/format"
+import { hasActiveSubscription } from "@/lib/subscriptions"
 import { createClub, createEvent, deleteEvent } from "./actions"
 
 export default async function ManageEventsPage() {
   const profile = await getProfile()
   if (!profile) redirect("/login?next=/events/manage")
+
+  const subActive = hasActiveSubscription(profile.subscription_status)
 
   const [clubs, events, artists, genres] = await Promise.all([
     getMyClubs(profile.id),
@@ -30,6 +33,24 @@ export default async function ManageEventsPage() {
       <p className="mt-1 text-sm text-muted">
         Maak een locatie aan en upload je eigen events met line-up.
       </p>
+
+      {!subActive && (
+        <div className="mt-5 rounded-2xl border border-brand/40 bg-brand/5 p-5">
+          <p className="text-sm font-medium text-brand">
+            Abonnement vereist
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            Om locaties en events te plaatsen heb je een organisatoren-abonnement
+            nodig. Start met een gratis proefperiode.
+          </p>
+          <Link
+            href="/subscribe"
+            className="mt-3 inline-block rounded-full bg-brand px-5 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
+          >
+            Bekijk abonnementen
+          </Link>
+        </div>
+      )}
 
       {/* ---- Locaties ---- */}
       <section className="mt-6">

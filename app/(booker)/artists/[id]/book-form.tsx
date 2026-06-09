@@ -1,6 +1,11 @@
 import Link from "next/link"
 import { createBooking } from "./actions"
-import { priceBreakdown, formatEuro } from "@/lib/utils/pricing"
+import {
+  priceBreakdown,
+  formatEuro,
+  formatPercent,
+  ARTIST_COMMISSION_RATE,
+} from "@/lib/utils/pricing"
 
 export function BookForm({
   artistId,
@@ -67,7 +72,11 @@ export function BookForm({
       <div className="rounded-xl border border-border bg-surface-2 p-4 text-sm">
         <Row label="Gage" value={formatEuro(gage)} />
         <div className="my-2 border-t border-border" />
-        <Row label="Totaal" value={formatEuro(total)} strong />
+        <Row label="Jij betaalt" value={formatEuro(total)} strong />
+        <p className="mt-2 text-xs text-muted">
+          Je betaalt de gage 1-op-1. MyGigs rekent{" "}
+          {formatPercent(ARTIST_COMMISSION_RATE)} commissie bij de artiest.
+        </p>
       </div>
 
       <button
