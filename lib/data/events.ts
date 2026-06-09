@@ -1,5 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import type { Tables } from "@/types/database"
+import {
+  DEMO_CLUBS,
+  DEMO_EVENTS,
+  filterDemoClubs,
+  filterDemoEvents,
+} from "./events-demo"
 
 export type Club = Tables<"clubs">
 
@@ -49,10 +55,15 @@ export async function getEvents(
   }
 
   const { data } = await query
-  return (data as EventListItem[] | null) ?? []
+  const rows = (data as EventListItem[] | null) ?? []
+  // Val terug op voorbeeld-data zolang er nog geen echte events zijn.
+  return rows.length > 0 ? rows : filterDemoEvents(filters)
 }
 
 export async function getEvent(id: string): Promise<EventListItem | null> {
+  if (id.startsWith("demo-")) {
+    return DEMO_EVENTS.find((e) => e.id === id) ?? null
+  }
   const supabase = await createClient()
   const { data } = await supabase
     .from("events")
@@ -75,10 +86,14 @@ export async function getClubs(filters: ClubFilters = {}): Promise<Club[]> {
   if (filters.city) query = query.ilike("city", `%${filters.city}%`)
 
   const { data } = await query
-  return data ?? []
+  const rows = data ?? []
+  return rows.length > 0 ? rows : filterDemoClubs(filters)
 }
 
 export async function getClub(id: string): Promise<Club | null> {
+  if (id.startsWith("demo-")) {
+    return DEMO_CLUBS.find((c) => c.id === id) ?? null
+  }
   const supabase = await createClient()
   const { data } = await supabase
     .from("clubs")
@@ -91,6 +106,9 @@ export async function getClub(id: string): Promise<Club | null> {
 export async function getClubEvents(
   clubId: string,
 ): Promise<EventListItem[]> {
+  if (clubId.startsWith("demo-")) {
+    return DEMO_EVENTS.filter((e) => e.club_id === clubId)
+  }
   const supabase = await createClient()
   const today = new Date().toISOString().slice(0, 10)
   const { data } = await supabase
