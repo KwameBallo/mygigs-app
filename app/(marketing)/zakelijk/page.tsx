@@ -2,9 +2,9 @@ import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 
 export const metadata = {
-  title: "Zakelijk artiesten boeken | MyGigs",
+  title: "Zakelijk DJ's boeken | MyGigs",
   description:
-    "Boek DJ's, bands en artiesten voor je bedrijfsevent. Factuur op naam, BTW-aftrek, één aanspreekpunt en geverifieerde acts.",
+    "Boek DJ's voor je bedrijfsevent. Factuur op naam, BTW-aftrek, één aanspreekpunt en geverifieerde DJ's.",
 }
 
 // Placeholder-namen: vervang door echte klantlogo's zodra die er zijn.
@@ -30,20 +30,19 @@ export default function ZakelijkPage() {
             Voor bedrijven & organisaties
           </span>
           <h1 className="text-balance text-4xl font-semibold leading-[1.07] tracking-tight sm:text-6xl">
-            Zakelijk artiesten boeken,{" "}
+            Zakelijk DJ&apos;s boeken,{" "}
             <span className="text-brand">zonder gedoe.</span>
           </h1>
           <p className="mt-6 max-w-xl text-balance text-lg text-muted">
             Van bedrijfsfeest tot productlancering of congres. Boek geverifieerde
-            DJ&apos;s, bands en artiesten met factuur op naam, BTW-aftrek en één
-            aanspreekpunt.
+            DJ&apos;s met factuur op naam, BTW-aftrek en één aanspreekpunt.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/discover"
               className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
             >
-              Bekijk artiesten
+              Bekijk DJ&apos;s
             </Link>
             <Link
               href="/login?mode=signup"
@@ -87,7 +86,7 @@ export default function ZakelijkPage() {
               body="Alles via MyGigs: aanvraag, contract, betaling en uitbetaling. Geen losse afspraken."
             />
             <Benefit
-              title="Geverifieerde acts"
+              title="Geverifieerde DJ's"
               body="Boek met vertrouwen dankzij geverifieerde profielen, reviews en aantal eerdere boekingen."
             />
           </div>
@@ -101,8 +100,8 @@ export default function ZakelijkPage() {
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
             <Step
               step="01"
-              title="Kies je act"
-              body="Filter op type act, genre, stad en budget. Vergelijk reviews en eerdere boekingen."
+              title="Kies je DJ"
+              body="Filter op genre, stad en budget. Vergelijk reviews en eerdere boekingen."
             />
             <Step
               step="02"
@@ -131,13 +130,13 @@ export default function ZakelijkPage() {
               href="/discover"
               className="mt-8 inline-block rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
             >
-              Bekijk artiesten
+              Bekijk DJ&apos;s
             </Link>
           </div>
         </section>
 
         <footer className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 text-center text-xs text-muted">
-          MyGigs. Het boekingsplatform voor artiesten en events.
+          MyGigs. Het boekingsplatform voor DJ&apos;s en events.
         </footer>
       </main>
     </>

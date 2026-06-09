@@ -4,7 +4,6 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { createShortlist } from "./actions"
 import { formatEuro } from "@/lib/utils/pricing"
-import { ACT_LABEL } from "@/lib/utils/acts"
 import type { Artist } from "@/lib/data/artists"
 
 type BookingType = "prive" | "zakelijk"
@@ -50,10 +49,10 @@ export function ShortlistClient({
       {/* Acts kiezen */}
       <section>
         <h2 className="text-lg font-semibold tracking-tight">
-          1. Kies je acts
+          1. Kies je DJ&apos;s
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Selecteer meerdere artiesten. Iedereen krijgt dezelfde aanvraag.
+          Selecteer meerdere DJ&apos;s. Iedereen krijgt dezelfde aanvraag.
         </p>
         <input
           value={search}
@@ -97,8 +96,7 @@ export function ShortlistClient({
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{a.stage_name}</p>
                     <p className="truncate text-xs text-muted">
-                      {ACT_LABEL[a.act_type]}
-                      {a.home_city ? ` · ${a.home_city}` : ""}
+                      {a.home_city ?? "DJ"}
                     </p>
                   </div>
                   <span className="flex-none text-sm font-semibold text-brand">
@@ -110,7 +108,7 @@ export function ShortlistClient({
           })}
           {filtered.length === 0 && (
             <li className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
-              Geen artiesten gevonden.
+              Geen DJ&apos;s gevonden.
             </li>
           )}
         </ul>
@@ -135,12 +133,12 @@ export function ShortlistClient({
           ) : (
             <>
               <p className="font-medium">
-                {selectedArtists.length} act
-                {selectedArtists.length === 1 ? "" : "s"} geselecteerd
+                {selectedArtists.length} DJ
+                {selectedArtists.length === 1 ? "" : "'s"} geselecteerd
               </p>
               <p className="mt-1 text-xs text-muted">
                 Totale gage als iedereen accepteert: {formatEuro(totalGage)}. Je
-                betaalt alleen de acts die je daadwerkelijk boekt.
+                betaalt alleen de DJ&apos;s die je daadwerkelijk boekt.
               </p>
             </>
           )}
@@ -224,11 +222,11 @@ export function ShortlistClient({
           disabled={selected.size === 0}
           className="rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Stuur naar {selected.size || ""} act
-          {selected.size === 1 ? "" : "s"}
+          Stuur naar {selected.size || ""} DJ
+          {selected.size === 1 ? "" : "'s"}
         </button>
         <p className="text-center text-xs text-muted">
-          Elke act ontvangt een losse aanvraag. Je kiest later wie je definitief
+          Elke DJ ontvangt een losse aanvraag. Je kiest later wie je definitief
           boekt.{" "}
           <Link href="/discover" className="text-brand hover:underline">
             Of zoek verder

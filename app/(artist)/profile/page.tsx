@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getGenres } from "@/lib/data/artists"
-import { ACT_TYPES, ACT_LABEL } from "@/lib/utils/acts"
 import { saveArtistProfile } from "./actions"
 import { SyncSocials } from "./sync-button"
 
@@ -21,7 +20,7 @@ export default async function ProfilePage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">
-        {artist ? "Mijn profiel" : "Maak je artiestprofiel"}
+        {artist ? "Mijn profiel" : "Maak je DJ-profiel"}
       </h1>
       <p className="mt-2 text-sm text-muted">
         Dit is wat boekers zien op je publieke profiel.
@@ -38,7 +37,7 @@ export default async function ProfilePage() {
       )}
 
       <form action={saveArtistProfile} className="mt-8 flex flex-col gap-5">
-        <Field label="Artiestnaam" required>
+        <Field label="DJ-naam" required>
           <input
             name="stage_name"
             required
@@ -46,20 +45,6 @@ export default async function ProfilePage() {
             placeholder="DJ Voorbeeld"
             className="input h-11"
           />
-        </Field>
-
-        <Field label="Type act">
-          <select
-            name="act_type"
-            defaultValue={artist?.act_type ?? "dj"}
-            className="input h-11"
-          >
-            {ACT_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {ACT_LABEL[t]}
-              </option>
-            ))}
-          </select>
         </Field>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

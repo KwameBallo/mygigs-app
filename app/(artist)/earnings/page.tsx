@@ -28,7 +28,7 @@ export default async function EarningsPage() {
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">Verdiensten</h1>
         <p className="mt-3 text-muted">
-          Je hebt nog geen artiestprofiel. Maak er eerst een aan.
+          Je hebt nog geen DJ-profiel. Maak er eerst een aan.
         </p>
         <Link
           href="/profile"

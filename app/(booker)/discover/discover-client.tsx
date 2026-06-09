@@ -6,7 +6,6 @@ import dynamic from "next/dynamic"
 import { Stars } from "@/components/stars"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatFollowers } from "@/lib/utils/format"
-import { ACT_TYPES, ACT_LABEL } from "@/lib/utils/acts"
 import { aiSearch } from "./ai-actions"
 import type { MapPoint } from "./discover-map"
 import type { Artist, Genre } from "@/lib/data/artists"
@@ -57,16 +56,11 @@ export function DiscoverClient({
   const genreName = filters.genre
     ? genres.find((g) => String(g.id) === filters.genre)?.name
     : undefined
-  const actName =
-    filters.act && filters.act in ACT_LABEL
-      ? ACT_LABEL[filters.act as keyof typeof ACT_LABEL]
-      : undefined
   const chips = [
     filters.minFollowers && Number(filters.minFollowers) > 0
       ? `≥ ${formatFollowers(Number(filters.minFollowers))} volgers`
       : null,
     filters.city ? `📍 ${filters.city}` : null,
-    actName ? `🎤 ${actName}` : null,
     genreName ? `🎵 ${genreName}` : null,
     filters.q ? `"${filters.q}"` : null,
   ].filter(Boolean) as string[]
@@ -106,7 +100,7 @@ export function DiscoverClient({
       {/* Type-toggle: artiesten of clubs */}
       <div className="border-b border-border bg-surface px-4 pt-4">
         <div className="mx-auto flex max-w-6xl gap-2">
-          <TypeTab label="Artiesten" type="artists" filters={filters} active={!isClubs} />
+          <TypeTab label="DJ's" type="artists" filters={filters} active={!isClubs} />
           <TypeTab label="Clubs" type="clubs" filters={filters} active={isClubs} />
         </div>
       </div>
@@ -197,20 +191,6 @@ export function DiscoverClient({
           />
           {!isClubs && (
             <select
-              name="act"
-              defaultValue={filters.act ?? ""}
-              className="input h-10 sm:max-w-[10rem]"
-            >
-              <option value="">Alle acts</option>
-              {ACT_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {ACT_LABEL[t]}
-                </option>
-              ))}
-            </select>
-          )}
-          {!isClubs && (
-            <select
               name="genre"
               defaultValue={filters.genre ?? ""}
               className="input h-10 sm:max-w-[10rem]"
@@ -248,8 +228,8 @@ export function DiscoverClient({
                   ? "club"
                   : "clubs"
                 : count === 1
-                  ? "artiest"
-                  : "artiesten"}
+                  ? "DJ"
+                  : "DJ's"}
             </span>
             {!isClubs && (
               <Link
@@ -263,7 +243,7 @@ export function DiscoverClient({
           {count === 0 ? (
             <div className="m-4 rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
               <p className="font-medium">
-                {isClubs ? "Geen clubs gevonden" : "Geen artiesten gevonden"}
+                {isClubs ? "Geen clubs gevonden" : "Geen DJ's gevonden"}
               </p>
               <Link
                 href={isClubs ? "/discover?type=clubs" : "/discover"}
@@ -421,9 +401,6 @@ function ListCard({
           </div>
           <div className="mt-auto flex items-center justify-between gap-2 pt-1">
             <div className="flex min-w-0 items-center gap-1.5">
-              <span className="rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 text-xs text-brand">
-                {ACT_LABEL[artist.act_type]}
-              </span>
               {artist.genres && (
                 <span className="truncate rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">
                   {artist.genres.name}

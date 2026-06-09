@@ -15,13 +15,13 @@ export default async function Home() {
 
         <section className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 pb-16 pt-20 text-center sm:pt-28">
           <span className="mb-6 rounded-full border border-border bg-surface px-4 py-1.5 text-xs text-muted">
-            Artiesten en DJ&apos;s rechtstreeks boeken
+            DJ&apos;s rechtstreeks boeken
           </span>
           <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
-            Boek artiesten <span className="text-brand">rechtstreeks.</span>
+            Boek DJ&apos;s <span className="text-brand">rechtstreeks.</span>
           </h1>
           <p className="mt-6 max-w-xl text-balance text-lg text-muted">
-            MyGigs koppelt boekers rechtstreeks aan artiesten. Filter op locatie,
+            MyGigs koppelt boekers rechtstreeks aan DJ&apos;s. Filter op locatie,
             genre, budget en datum. Transparante tarieven, veilige betaling via
             escrow. Geen tussenkomst van boekingskantoren.
           </p>
@@ -30,13 +30,13 @@ export default async function Home() {
               href="/discover"
               className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
             >
-              Boek een artiest
+              Boek een DJ
             </Link>
             <Link
               href="/login?mode=signup"
               className="rounded-full border border-border bg-surface px-7 py-3.5 font-medium transition hover:border-brand/50"
             >
-              Word artiest
+              Word DJ
             </Link>
           </div>
 
@@ -66,16 +66,16 @@ export default async function Home() {
               primary
             />
             <SideCard
-              tag="Voor DJ's & artiesten"
+              tag="Voor DJ's"
               title="Word geboekt"
-              body="Maak een artiestprofiel aan, toon je demo's en volgers, en ontvang boekingsaanvragen. Aanmelden is gratis: MyGigs verdient 7% per boeking."
+              body="Maak een DJ-profiel aan, toon je demo's en volgers, en ontvang boekingsaanvragen. Aanmelden is gratis: MyGigs verdient 7% per boeking."
               cta="Word DJ"
               href="/login?mode=signup"
             />
             <SideCard
               tag="Voor bedrijven"
               title="Zakelijk boeken"
-              body="Boek artiesten voor je bedrijfsevent met factuur op naam, BTW-aftrek en één aanspreekpunt. Sla je factuurgegevens eenmalig op."
+              body="Boek DJ's voor je bedrijfsevent met factuur op naam, BTW-aftrek en één aanspreekpunt. Sla je factuurgegevens eenmalig op."
               cta="Naar zakelijk"
               href="/zakelijk"
             />
@@ -86,7 +86,7 @@ export default async function Home() {
           <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-12">
             <div className="mb-6 flex items-end justify-between">
               <h2 className="text-2xl font-semibold tracking-tight">
-                Uitgelichte artiesten
+                Uitgelichte DJ&apos;s
               </h2>
               <Link
                 href="/discover"
@@ -113,7 +113,7 @@ export default async function Home() {
             <Feature
               step="02"
               title="Boek direct"
-              body="Stuur een aanvraag met datum en locatie. De artiest accepteert, jij betaalt veilig."
+              body="Stuur een aanvraag met datum en locatie. De DJ accepteert, jij betaalt veilig."
             />
             <Feature
               step="03"
@@ -143,7 +143,7 @@ export default async function Home() {
         </section>
 
         <footer className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 text-center text-xs text-muted">
-          MyGigs. Het boekingsplatform voor artiesten en events.
+          MyGigs. Het boekingsplatform voor DJ&apos;s en events.
         </footer>
       </main>
     </>

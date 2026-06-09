@@ -5,7 +5,6 @@ import { BookForm } from "./book-form"
 import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
 import { getProfile } from "@/lib/auth"
 import { formatFollowers } from "@/lib/utils/format"
-import { ACT_LABEL } from "@/lib/utils/acts"
 
 const MONTHS = [
   "jan", "feb", "mrt", "apr", "mei", "jun",
@@ -95,9 +94,6 @@ export default async function ArtistPage({
                       Geverifieerd
                     </span>
                   )}
-                  <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
-                    {ACT_LABEL[artist.act_type]}
-                  </span>
                   {artist.genres && (
                     <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-muted">
                       {artist.genres.name}
