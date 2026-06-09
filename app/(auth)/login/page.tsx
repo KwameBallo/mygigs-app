@@ -27,7 +27,7 @@ export default async function LoginPage({
           </h1>
           <p className="mt-2 text-sm text-muted">
             {isSignup
-              ? "Boek artiesten of word zelf geboekt."
+              ? "Kies hoe je MyGigs gebruikt: als consument of als DJ."
               : "Log in om verder te gaan."}
           </p>
         </div>
@@ -59,20 +59,25 @@ export default async function LoginPage({
                 />
               </Field>
               <fieldset className="flex flex-col gap-2">
-                <legend className="mb-1 text-sm font-medium">Ik wil...</legend>
-                <div className="grid grid-cols-2 gap-2">
+                <legend className="mb-1 text-sm font-medium">
+                  Wat ben jij?
+                </legend>
+                <div className="grid grid-cols-1 gap-2">
                   <RoleOption
                     value="booker"
-                    title="Boeken"
-                    desc="Artiesten vinden"
+                    title="Consument"
+                    desc="Ontdek feesten en boek DJ's voor je eigen event"
                     defaultChecked
                   />
                   <RoleOption
                     value="artist"
-                    title="Optreden"
-                    desc="Geboekt worden"
+                    title="DJ / Artiest"
+                    desc="Maak een profiel aan en word geboekt"
                   />
                 </div>
+                <p className="mt-1 text-xs text-muted">
+                  Je kunt later altijd ook DJ worden vanuit je account.
+                </p>
               </fieldset>
             </>
           )}
@@ -154,16 +159,19 @@ function RoleOption({
   defaultChecked?: boolean
 }) {
   return (
-    <label className="cursor-pointer rounded-xl border border-border bg-surface-2 p-3 transition has-[:checked]:border-brand has-[:checked]:bg-brand/10">
+    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-surface-2 p-3.5 transition has-[:checked]:border-brand has-[:checked]:bg-brand/10">
       <input
         type="radio"
         name="role"
         value={value}
         defaultChecked={defaultChecked}
-        className="sr-only"
+        className="peer sr-only"
       />
-      <span className="block text-sm font-medium">{title}</span>
-      <span className="block text-xs text-muted">{desc}</span>
+      <span className="mt-0.5 h-4 w-4 flex-none rounded-full border border-border peer-checked:border-[6px] peer-checked:border-brand" />
+      <span className="min-w-0">
+        <span className="block text-sm font-medium">{title}</span>
+        <span className="block text-xs text-muted">{desc}</span>
+      </span>
     </label>
   )
 }

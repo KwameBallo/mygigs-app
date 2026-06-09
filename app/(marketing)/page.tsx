@@ -30,13 +30,13 @@ export default async function Home() {
               href="/discover"
               className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
             >
-              Ontdek artiesten
+              Ik ga uit &amp; boek
             </Link>
             <Link
               href="/login?mode=signup"
               className="rounded-full border border-border bg-surface px-7 py-3.5 font-medium transition hover:border-brand/50"
             >
-              Word artiest
+              Ik ben DJ
             </Link>
           </div>
 
@@ -53,6 +53,26 @@ export default async function Home() {
               ))}
             </div>
           )}
+        </section>
+
+        <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-12">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <SideCard
+              tag="Voor consumenten"
+              title="Ontdek & boek"
+              body="Blader door de agenda met feesten en DJ's bij jou in de buurt. Boek een DJ voor je eigen event. Filter op genre, stad, datum en budget."
+              cta="Ontdek feesten"
+              href="/discover"
+              primary
+            />
+            <SideCard
+              tag="Voor DJ's & artiesten"
+              title="Word geboekt"
+              body="Maak een artiestprofiel aan, toon je demo's en volgers, en ontvang boekingsaanvragen. Aanmelden is gratis: MyGigs verdient 7% per boeking."
+              cta="Word DJ"
+              href="/login?mode=signup"
+            />
+          </div>
         </section>
 
         {featured.length > 0 && (
@@ -120,6 +140,42 @@ export default async function Home() {
         </footer>
       </main>
     </>
+  )
+}
+
+function SideCard({
+  tag,
+  title,
+  body,
+  cta,
+  href,
+  primary,
+}: {
+  tag: string
+  title: string
+  body: string
+  cta: string
+  href: string
+  primary?: boolean
+}) {
+  return (
+    <div className="flex flex-col rounded-3xl border border-border bg-surface p-7">
+      <span className="text-xs font-semibold uppercase tracking-wider text-brand">
+        {tag}
+      </span>
+      <h3 className="mt-3 text-2xl font-semibold tracking-tight">{title}</h3>
+      <p className="mt-2 flex-1 text-sm text-muted">{body}</p>
+      <Link
+        href={href}
+        className={`mt-6 inline-block self-start rounded-full px-6 py-3 text-sm font-medium transition ${
+          primary
+            ? "bg-brand text-black hover:bg-brand-strong"
+            : "border border-border hover:border-brand/50"
+        }`}
+      >
+        {cta}
+      </Link>
+    </div>
   )
 }
 

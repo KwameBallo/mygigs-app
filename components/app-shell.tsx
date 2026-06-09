@@ -6,9 +6,10 @@ import {
   type NavItem,
   type NavSection,
 } from "@/components/sidebar-nav"
-import { LogoutIcon } from "@/components/icons"
+import { LogoutIcon, Icon } from "@/components/icons"
 import { getProfile } from "@/lib/auth"
 import { getUnreadCount } from "@/lib/data/messages"
+import { roleLabel, roleIcon } from "@/lib/roles"
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const profile = await getProfile()
@@ -124,9 +125,24 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden w-64 flex-none flex-col border-r border-border bg-surface px-3 py-5 lg:flex">
         <div className="px-2">
           <Logo />
+          {profile && (
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-medium text-muted">
+              <Icon name={roleIcon(profile.role)} className="h-3.5 w-3.5" />
+              {roleLabel(profile.role)}
+            </span>
+          )}
         </div>
         <div className="mt-8 flex-1 overflow-y-auto">
           <SidebarNav sections={sections} />
+          {profile && !isArtist && (
+            <Link
+              href="/profile"
+              className="mt-6 flex items-center gap-3 rounded-xl border border-dashed border-border px-3 py-2.5 text-sm font-medium text-muted transition hover:border-brand/50 hover:text-foreground"
+            >
+              <Icon name="user" className="h-5 w-5 flex-none" />
+              <span className="flex-1">Word ook DJ</span>
+            </Link>
+          )}
         </div>
         <div className="border-t border-border pt-4">
           {profile ? (
@@ -165,7 +181,15 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile top bar */}
         <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
-          <Logo />
+          <div className="flex items-center gap-2">
+            <Logo />
+            {profile && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
+                <Icon name={roleIcon(profile.role)} className="h-3 w-3" />
+                {roleLabel(profile.role)}
+              </span>
+            )}
+          </div>
           {profile ? (
             <form action="/auth/signout" method="post">
               <button

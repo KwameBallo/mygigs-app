@@ -7,14 +7,8 @@ import {
   SUPPLIER_COMMISSION_RATE,
   formatPercent,
 } from "@/lib/utils/pricing"
+import { roleLabel } from "@/lib/roles"
 import { updateAccount } from "./actions"
-
-const ROLE_LABEL: Record<string, string> = {
-  booker: "Boeker",
-  artist: "Artiest",
-  both: "Boeker & artiest",
-  admin: "Beheerder",
-}
 
 const SUB_STATUS_LABEL: Record<string, string> = {
   inactive: "Geen abonnement",
@@ -73,7 +67,7 @@ export default async function SettingsPage() {
           <div className="flex items-center gap-2 text-sm text-muted">
             <span>Rol:</span>
             <span className="rounded-full bg-surface-2 px-3 py-1 text-xs">
-              {ROLE_LABEL[profile.role] ?? profile.role}
+              {roleLabel(profile.role)}
             </span>
           </div>
           <button
