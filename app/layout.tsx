@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MyGigs — Boek artiesten rechtstreeks",
+  title: "MyGigs — Boek DJ's rechtstreeks",
   description:
-    "Het boekingsplatform voor artiesten en events. Boek rechtstreeks, met transparante tarieven en veilige betaling via escrow.",
+    "Het boekingsplatform voor DJ's en events. Boek rechtstreeks, met transparante tarieven en veilige betaling via escrow.",
 };
 
 export default function RootLayout({
