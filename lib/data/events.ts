@@ -62,6 +62,22 @@ export async function getEvent(id: string): Promise<EventListItem | null> {
   return (data as EventListItem | null) ?? null
 }
 
+export type ClubFilters = { q?: string; city?: string }
+
+export async function getClubs(filters: ClubFilters = {}): Promise<Club[]> {
+  const supabase = await createClient()
+  let query = supabase
+    .from("clubs")
+    .select("*")
+    .order("name", { ascending: true })
+
+  if (filters.q) query = query.ilike("name", `%${filters.q}%`)
+  if (filters.city) query = query.ilike("city", `%${filters.city}%`)
+
+  const { data } = await query
+  return data ?? []
+}
+
 export async function getClub(id: string): Promise<Club | null> {
   const supabase = await createClient()
   const { data } = await supabase

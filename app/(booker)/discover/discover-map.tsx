@@ -5,58 +5,64 @@ import Link from "next/link"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import { formatEuro } from "@/lib/utils/pricing"
-import type { Artist } from "@/lib/data/artists"
 
-type Located = Artist & { lat: number; lng: number }
+export type MapPoint = {
+  id: string
+  lat: number
+  lng: number
+  pin: string
+  title: string
+  genre?: string
+  meta?: string
+  href: string
+  linkLabel: string
+}
 
-function priceIcon(gage: number, active: boolean) {
+function pinIcon(label: string, active: boolean) {
   return L.divIcon({
     className: "mg-pin-wrap",
-    html: `<div class="mg-pin${active ? " mg-pin--active" : ""}">€${Math.round(gage)}</div>`,
+    html: `<div class="mg-pin${active ? " mg-pin--active" : ""}">${label}</div>`,
     iconSize: [0, 0],
     iconAnchor: [0, 0],
   })
 }
 
-function FitBounds({ artists }: { artists: Located[] }) {
+function FitBounds({ points }: { points: MapPoint[] }) {
   const map = useMap()
   useEffect(() => {
-    if (artists.length === 0) return
-    const bounds = L.latLngBounds(artists.map((a) => [a.lat, a.lng]))
+    if (points.length === 0) return
+    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]))
     map.fitBounds(bounds, { padding: [60, 60], maxZoom: 12 })
-  }, [artists, map])
+  }, [points, map])
   return null
 }
 
 function Highlight({
-  artists,
+  points,
   activeId,
 }: {
-  artists: Located[]
+  points: MapPoint[]
   activeId: string | null
 }) {
   const map = useMap()
   useEffect(() => {
     if (!activeId) return
-    const a = artists.find((x) => x.id === activeId)
-    if (a) map.panTo([a.lat, a.lng], { animate: true, duration: 0.5 })
-  }, [activeId, artists, map])
+    const p = points.find((x) => x.id === activeId)
+    if (p) map.panTo([p.lat, p.lng], { animate: true, duration: 0.5 })
+  }, [activeId, points, map])
   return null
 }
 
 export function DiscoverMap({
-  artists,
+  points,
   activeId,
   onActivate,
 }: {
-  artists: Artist[]
+  points: MapPoint[]
   activeId: string | null
   onActivate: (id: string | null) => void
 }) {
-  const located = artists.filter(
-    (a): a is Located => a.lat != null && a.lng != null,
-  )
+  const located = points.filter((p) => p.lat != null && p.lng != null)
 
   return (
     <MapContainer
@@ -71,26 +77,22 @@ export function DiscoverMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
         subdomains="abcd"
       />
-      <FitBounds artists={located} />
-      <Highlight artists={located} activeId={activeId} />
-      {located.map((a) => (
+      <FitBounds points={located} />
+      <Highlight points={located} activeId={activeId} />
+      {located.map((p) => (
         <Marker
-          key={a.id}
-          position={[a.lat, a.lng]}
-          icon={priceIcon(a.base_gage, a.id === activeId)}
-          eventHandlers={{
-            click: () => onActivate(a.id),
-          }}
+          key={p.id}
+          position={[p.lat, p.lng]}
+          icon={pinIcon(p.pin, p.id === activeId)}
+          eventHandlers={{ click: () => onActivate(p.id) }}
         >
           <Popup>
             <div className="mg-popup">
-              <strong>{a.stage_name}</strong>
-              {a.genres && <span className="mg-popup__genre">{a.genres.name}</span>}
-              <span className="mg-popup__meta">
-                {a.home_city ?? "Onbekend"} · {formatEuro(a.base_gage)}
-              </span>
-              <Link href={`/artists/${a.id}`} className="mg-popup__link">
-                Bekijk profiel →
+              <strong>{p.title}</strong>
+              {p.genre && <span className="mg-popup__genre">{p.genre}</span>}
+              {p.meta && <span className="mg-popup__meta">{p.meta}</span>}
+              <Link href={p.href} className="mg-popup__link">
+                {p.linkLabel} →
               </Link>
             </div>
           </Popup>
