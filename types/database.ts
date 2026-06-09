@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      ads: {
+        Row: {
+          active: boolean
+          brand_name: string
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          placement: Database["public"]["Enums"]["ad_placement"]
+          starts_at: string | null
+          target_url: string | null
+          title: string | null
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          active?: boolean
+          brand_name: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          placement?: Database["public"]["Enums"]["ad_placement"]
+          starts_at?: string | null
+          target_url?: string | null
+          title?: string | null
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          active?: boolean
+          brand_name?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          placement?: Database["public"]["Enums"]["ad_placement"]
+          starts_at?: string | null
+          target_url?: string | null
+          title?: string | null
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       artist_availability: {
         Row: {
           artist_id: string
@@ -816,6 +872,7 @@ export type Database = {
       is_artist_owner: { Args: { a_id: string }; Returns: boolean }
     }
     Enums: {
+      ad_placement: "events_top" | "event_detail" | "discover" | "sidebar"
       availability_status: "available" | "booked"
       booking_status:
         | "pending"
@@ -967,6 +1024,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ad_placement: ["events_top", "event_detail", "discover", "sidebar"],
       availability_status: ["available", "booked"],
       booking_status: [
         "pending",

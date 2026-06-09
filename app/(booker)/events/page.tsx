@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { getEvents } from "@/lib/data/events"
 import { getGenres } from "@/lib/data/artists"
+import { AdSlot } from "@/components/ad-slot"
 import { EventCard } from "./event-card"
 
 type SearchParams = Promise<{
@@ -78,6 +79,8 @@ export default async function EventsPage({
           Zoek
         </button>
       </form>
+
+      <AdSlot placement="events_top" className="mt-4" />
 
       <div className="mt-4 text-sm text-muted">
         {events.length} {events.length === 1 ? "event" : "events"}

@@ -15,7 +15,7 @@ begin;
 
 truncate table messages, conversations, payments, payouts,
   reviews, favorites, artist_availability, bookings, suppliers,
-  event_artists, events, clubs
+  event_artists, events, clubs, ads
   restart identity cascade;
 
 -- ---------- Reviews + agenda voor ALLE artiesten ----------
@@ -403,6 +403,33 @@ begin
       n := n + 1;
     end loop;
   end loop;
+end $$;
+
+-- ---------- Advertenties (drankmerken, sponsored banners) ----------
+do $$
+declare
+  advertiser uuid;
+begin
+  select id into advertiser from auth.users where lower(email) = 'ballokwame@gmail.com';
+  if advertiser is null then
+    select id into advertiser from profiles order by created_at limit 1;
+  end if;
+  if advertiser is null then return; end if;
+
+  insert into ads(created_by, brand_name, title, image_url, target_url, placement, active, weight)
+  values
+    (advertiser, 'Heineken', 'Proost op het beste feest van je week',
+     'https://images.unsplash.com/photo-1618183479302-1e0aa382c36b?w=400',
+     'https://heineken.com', 'events_top', true, 3),
+    (advertiser, 'Red Bull', 'Red Bull geeft je vleugels op de dansvloer',
+     'https://images.unsplash.com/photo-1622543925917-763c34d1a86e?w=400',
+     'https://redbull.com', 'events_top', true, 2),
+    (advertiser, 'Bacardi', 'Do What Moves You',
+     'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400',
+     'https://bacardi.com', 'event_detail', true, 1),
+    (advertiser, 'Jägermeister', 'Best Nights are Jäger Nights',
+     'https://images.unsplash.com/photo-1551751299-1b51cab2694c?w=400',
+     'https://jagermeister.com', 'event_detail', true, 1);
 end $$;
 
 commit;

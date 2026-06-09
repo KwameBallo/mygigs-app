@@ -50,6 +50,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       label: "Mijn events",
       icon: "calendar",
     } as NavItem,
+    advertise: {
+      href: "/advertise",
+      label: "Adverteren",
+      icon: "megaphone",
+    } as NavItem,
     dashboard: {
       href: "/dashboard",
       label: "Dashboard",
@@ -95,7 +100,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   })
   sections.push({
     title: "Organiseren",
-    items: [items.manageEvents],
+    items: [items.manageEvents, items.advertise],
   })
   sections.push({ title: "Account", items: [items.settings] })
 

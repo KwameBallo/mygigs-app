@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getEvent } from "@/lib/data/events"
+import { AdSlot } from "@/components/ad-slot"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatEventDate, formatTime } from "@/lib/utils/format"
 
@@ -149,6 +150,8 @@ export default async function EventDetailPage({
           </aside>
         </div>
       </div>
+
+      <AdSlot placement="event_detail" className="mt-6" />
     </div>
   )
 }

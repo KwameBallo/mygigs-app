@@ -119,6 +119,16 @@ export function TicketIcon({ className }: IconProps) {
   )
 }
 
+export function MegaphoneIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3 11v2a1 1 0 0 0 1 1h2l9 4V6L6 10H4a1 1 0 0 0-1 1Z" />
+      <path d="M18 8a4 4 0 0 1 0 8" />
+      <path d="M7 14v4a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-2.5" />
+    </svg>
+  )
+}
+
 export type IconName =
   | "map"
   | "calendar"
@@ -131,6 +141,7 @@ export type IconName =
   | "clock"
   | "speaker"
   | "ticket"
+  | "megaphone"
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
   switch (name) {
@@ -156,5 +167,7 @@ export function Icon({ name, className }: { name: IconName; className?: string }
       return <SpeakerIcon className={className} />
     case "ticket":
       return <TicketIcon className={className} />
+    case "megaphone":
+      return <MegaphoneIcon className={className} />
   }
 }
