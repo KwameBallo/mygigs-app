@@ -31,3 +31,18 @@ export function formatEuro(amount: number): string {
 export function formatPercent(rate: number): string {
   return `${Math.round(rate * 100)}%`
 }
+
+// BTW-tarief in Nederland voor optredens/entertainment (21%).
+export const VAT_RATE = 0.21
+
+export type VatBreakdown = {
+  net: number // bedrag exclusief BTW
+  vat: number // BTW-bedrag
+  gross: number // bedrag inclusief BTW (= wat de boeker betaalt)
+}
+
+// We behandelen het totaalbedrag als inclusief BTW en rekenen terug.
+export function vatBreakdown(grossInclVat: number): VatBreakdown {
+  const net = Math.round(grossInclVat / (1 + VAT_RATE))
+  return { net, vat: grossInclVat - net, gross: grossInclVat }
+}

@@ -70,9 +70,19 @@ export default async function BookingsPage() {
                       {b.venue_name ? ` · ${b.venue_name}` : ""}
                     </p>
                   </div>
-                  <span className="text-lg font-semibold text-brand">
-                    {formatEuro(b.total)}
-                  </span>
+                  <div className="flex flex-col items-end gap-1.5">
+                    <span className="text-lg font-semibold text-brand">
+                      {formatEuro(b.total)}
+                    </span>
+                    {b.booking_type === "zakelijk" && (
+                      <Link
+                        href={`/bookings/${b.id}/invoice`}
+                        className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted transition hover:border-brand/50 hover:text-foreground"
+                      >
+                        Factuur
+                      </Link>
+                    )}
+                  </div>
                 </div>
               )
             })}
