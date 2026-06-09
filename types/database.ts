@@ -272,6 +272,44 @@ export type Database = {
           },
         ]
       }
+      chat_flags: {
+        Row: {
+          conversation_id: string | null
+          counterparty_id: string | null
+          created_at: string
+          id: string
+          reason: string
+          sender_id: string | null
+          snippet: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          counterparty_id?: string | null
+          created_at?: string
+          id?: string
+          reason: string
+          sender_id?: string | null
+          snippet?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          counterparty_id?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          sender_id?: string | null
+          snippet?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_flags_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clubs: {
         Row: {
           address: string | null
@@ -533,6 +571,9 @@ export type Database = {
           booker_id: string
           booking_id: string | null
           created_at: string
+          flag_reason: string | null
+          flagged: boolean
+          flagged_at: string | null
           id: string
         }
         Insert: {
@@ -540,6 +581,9 @@ export type Database = {
           booker_id: string
           booking_id?: string | null
           created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean
+          flagged_at?: string | null
           id?: string
         }
         Update: {
@@ -547,6 +591,9 @@ export type Database = {
           booker_id?: string
           booking_id?: string | null
           created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean
+          flagged_at?: string | null
           id?: string
         }
         Relationships: [
@@ -759,6 +806,8 @@ export type Database = {
           company: string | null
           created_at: string
           email: string | null
+          flag_count: number
+          flagged: boolean
           full_name: string | null
           id: string
           phone: string | null
@@ -777,6 +826,8 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          flag_count?: number
+          flagged?: boolean
           full_name?: string | null
           id: string
           phone?: string | null
@@ -795,6 +846,8 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          flag_count?: number
+          flagged?: boolean
           full_name?: string | null
           id?: string
           phone?: string | null

@@ -5,10 +5,13 @@ import { sendMessage } from "./actions"
 
 export default async function ThreadPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ warn?: string }>
 }) {
   const { id } = await params
+  const { warn } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -19,7 +22,7 @@ export default async function ThreadPage({
   const { data: conv } = await supabase
     .from("conversations")
     .select(
-      "id, artist_id, booker_id, artists(stage_name, avatar_url, user_id), profiles!conversations_booker_id_fkey(full_name)",
+      "id, artist_id, booker_id, flagged, artists(stage_name, avatar_url, user_id), profiles!conversations_booker_id_fkey(full_name)",
     )
     .eq("id", id)
     .maybeSingle()
@@ -69,6 +72,20 @@ export default async function ThreadPage({
         <h1 className="text-lg font-semibold">{otherName}</h1>
       </div>
 
+      {warn === "contact" && (
+        <div className="mt-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          Je bericht is niet verstuurd. Het delen van telefoonnummers, e-mail of
+          andere contactgegevens is niet toegestaan. Boekingen en betalingen
+          verlopen via MyGigs. Dit gesprek is gemarkeerd voor controle.
+        </div>
+      )}
+      {conv.flagged && warn !== "contact" && (
+        <div className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          Dit gesprek is gemarkeerd: er is geprobeerd contactgegevens te delen.
+          Houd communicatie en betaling binnen MyGigs.
+        </div>
+      )}
+
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto py-5">
         {list.length === 0 ? (
           <p className="m-auto text-sm text-muted">
@@ -112,6 +129,10 @@ export default async function ThreadPage({
           Stuur
         </button>
       </form>
+      <p className="pb-3 text-center text-[11px] text-muted">
+        Houd het netjes en binnen MyGigs. Telefoonnummers, e-mail of andere
+        contactgegevens delen is niet toegestaan.
+      </p>
     </div>
   )
 }

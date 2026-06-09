@@ -1,7 +1,68 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { scanForContactInfo } from "@/lib/utils/contact-guard"
+
+// Flag het gesprek én beide partijen wanneer iemand contactgegevens deelt.
+// Gebruikt de service-role omdat we ook het profiel van de tegenpartij bijwerken.
+async function flagConversation(
+  conversationId: string,
+  senderId: string,
+  body: string,
+  reasons: string[],
+) {
+  const admin = createAdminClient()
+
+  const { data: conv } = await admin
+    .from("conversations")
+    .select("id, booker_id, artists(user_id)")
+    .eq("id", conversationId)
+    .maybeSingle()
+  if (!conv) return
+
+  const artistUserId =
+    (conv.artists as { user_id: string | null } | null)?.user_id ?? null
+  const counterpartyId =
+    senderId === conv.booker_id ? artistUserId : conv.booker_id
+
+  const reason = reasons.join(", ")
+
+  await admin
+    .from("conversations")
+    .update({
+      flagged: true,
+      flag_reason: reason,
+      flagged_at: new Date().toISOString(),
+    })
+    .eq("id", conversationId)
+
+  await admin.from("chat_flags").insert({
+    conversation_id: conversationId,
+    sender_id: senderId,
+    counterparty_id: counterpartyId,
+    reason,
+    snippet: body.slice(0, 300),
+  })
+
+  // Verhoog flag_count en markeer beide profielen als geflagd.
+  const ids = [senderId, counterpartyId].filter(Boolean) as string[]
+  const { data: profs } = await admin
+    .from("profiles")
+    .select("id, flag_count")
+    .in("id", ids)
+
+  await Promise.all(
+    (profs ?? []).map((p) =>
+      admin
+        .from("profiles")
+        .update({ flagged: true, flag_count: (p.flag_count ?? 0) + 1 })
+        .eq("id", p.id),
+    ),
+  )
+}
 
 export async function sendMessage(formData: FormData) {
   const conversationId = String(formData.get("conversation_id") ?? "")
@@ -13,6 +74,13 @@ export async function sendMessage(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return
+
+  // MyGigs blijft exclusief: contactgegevens delen wordt geblokkeerd én geflagd.
+  const scan = scanForContactInfo(body)
+  if (scan.flagged) {
+    await flagConversation(conversationId, user.id, body, scan.reasons)
+    redirect(`/messages/${conversationId}?warn=contact`)
+  }
 
   await supabase.from("messages").insert({
     conversation_id: conversationId,
