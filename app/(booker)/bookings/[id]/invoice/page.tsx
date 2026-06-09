@@ -72,7 +72,9 @@ export default async function InvoicePage({
             <p className="text-2xl font-semibold tracking-tight text-brand print:text-black">
               MyGigs
             </p>
-            <p className="mt-1 text-muted">Be the star you want to be.</p>
+            <p className="mt-1 text-muted">
+              Het boekingsplatform voor artiesten en events.
+            </p>
           </div>
           <div className="text-right">
             <h1 className="text-xl font-semibold tracking-tight">Factuur</h1>

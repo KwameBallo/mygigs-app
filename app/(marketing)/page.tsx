@@ -18,25 +18,25 @@ export default async function Home() {
             Artiesten en DJ&apos;s rechtstreeks boeken
           </span>
           <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
-            Be the star you <span className="text-brand">want to be.</span>
+            Boek artiesten <span className="text-brand">rechtstreeks.</span>
           </h1>
           <p className="mt-6 max-w-xl text-balance text-lg text-muted">
             MyGigs koppelt boekers rechtstreeks aan artiesten. Filter op locatie,
-            genre, budget en datum. Boek in een paar tikken. Geen tussenkomst van
-            boekingskantoren.
+            genre, budget en datum. Transparante tarieven, veilige betaling via
+            escrow. Geen tussenkomst van boekingskantoren.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/discover"
               className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
             >
-              Ik ga uit &amp; boek
+              Boek een artiest
             </Link>
             <Link
               href="/login?mode=signup"
               className="rounded-full border border-border bg-surface px-7 py-3.5 font-medium transition hover:border-brand/50"
             >
-              Ik ben DJ
+              Word artiest
             </Link>
           </div>
 
@@ -127,7 +127,7 @@ export default async function Home() {
           <div className="overflow-hidden rounded-3xl border border-border bg-surface p-10 text-center">
             <div className="brand-glow pointer-events-none absolute" />
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Klaar om te shinen?
+              Klaar om te beginnen?
             </h2>
             <p className="mx-auto mt-3 max-w-md text-muted">
               Maak een profiel aan en ontvang je eerste boekingsaanvraag. Aanmelden
@@ -137,13 +137,13 @@ export default async function Home() {
               href="/login?mode=signup"
               className="mt-8 inline-block rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
             >
-              Begin nu
+              Aan de slag
             </Link>
           </div>
         </section>
 
         <footer className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 text-center text-xs text-muted">
-          MyGigs. Be the star you want to be.
+          MyGigs. Het boekingsplatform voor artiesten en events.
         </footer>
       </main>
     </>

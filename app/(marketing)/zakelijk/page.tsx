@@ -137,7 +137,7 @@ export default function ZakelijkPage() {
         </section>
 
         <footer className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 text-center text-xs text-muted">
-          MyGigs. Be the star you want to be.
+          MyGigs. Het boekingsplatform voor artiesten en events.
         </footer>
       </main>
     </>
