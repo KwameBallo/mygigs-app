@@ -7,6 +7,7 @@ import {
   type NavSection,
 } from "@/components/sidebar-nav"
 import { LogoutIcon, Icon } from "@/components/icons"
+import { AiAssistant } from "@/components/ai-assistant"
 import { getProfile } from "@/lib/auth"
 import { getUnreadCount } from "@/lib/data/messages"
 import { roleLabel, roleIcon } from "@/lib/roles"
@@ -216,6 +217,8 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <BottomNav items={bottomItems} />
         </div>
       </div>
+
+      <AiAssistant defaultMode={isArtist ? "dj" : "consument"} />
     </div>
   )
 }
