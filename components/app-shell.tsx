@@ -42,7 +42,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     } as NavItem,
     events: {
       href: "/events",
-      label: "Agenda",
+      label: "Events",
       icon: "ticket",
     } as NavItem,
     manageEvents: {
@@ -107,12 +107,12 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const bottomItems: NavItem[] = isArtist
     ? [
         items.dashboard,
-        items.availability,
+        items.events,
         items.messages,
         items.earnings,
         items.profile,
       ]
-    : [items.discover, items.bookings, items.messages, items.favorites]
+    : [items.discover, items.events, items.bookings, items.messages, items.favorites]
 
   const initials = (profile?.full_name ?? profile?.email ?? "?")
     .slice(0, 1)
