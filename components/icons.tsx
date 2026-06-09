@@ -110,6 +110,15 @@ export function SpeakerIcon({ className }: IconProps) {
   )
 }
 
+export function TicketIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3 8.5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4Z" />
+      <path d="M14 6.5v11" strokeDasharray="2 2" />
+    </svg>
+  )
+}
+
 export type IconName =
   | "map"
   | "calendar"
@@ -121,6 +130,7 @@ export type IconName =
   | "settings"
   | "clock"
   | "speaker"
+  | "ticket"
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
   switch (name) {
@@ -144,5 +154,7 @@ export function Icon({ name, className }: { name: IconName; className?: string }
       return <ClockIcon className={className} />
     case "speaker":
       return <SpeakerIcon className={className} />
+    case "ticket":
+      return <TicketIcon className={className} />
   }
 }

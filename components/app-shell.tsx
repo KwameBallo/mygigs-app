@@ -40,6 +40,16 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       label: "Apparatuur",
       icon: "speaker",
     } as NavItem,
+    events: {
+      href: "/events",
+      label: "Agenda",
+      icon: "ticket",
+    } as NavItem,
+    manageEvents: {
+      href: "/events/manage",
+      label: "Mijn events",
+      icon: "calendar",
+    } as NavItem,
     dashboard: {
       href: "/dashboard",
       label: "Dashboard",
@@ -75,12 +85,17 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     items: isBooker
       ? [
           items.discover,
+          items.events,
           items.bookings,
           items.messages,
           items.favorites,
           items.suppliers,
         ]
-      : [items.discover, items.messages, items.suppliers],
+      : [items.discover, items.events, items.messages, items.suppliers],
+  })
+  sections.push({
+    title: "Organiseren",
+    items: [items.manageEvents],
   })
   sections.push({ title: "Account", items: [items.settings] })
 

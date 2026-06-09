@@ -14,7 +14,8 @@
 begin;
 
 truncate table messages, conversations, payments, payouts,
-  reviews, favorites, artist_availability, bookings, suppliers
+  reviews, favorites, artist_availability, bookings, suppliers,
+  event_artists, events, clubs
   restart identity cascade;
 
 -- ---------- Reviews + agenda voor ALLE artiesten ----------
@@ -304,5 +305,104 @@ values
   ('Mobiele DJ-booth Verhuur', 'dj_gear', 'Rotterdam', 51.9100, 4.4900,
    'Kant-en-klare DJ-booths inclusief geluid voor bruiloften en privéfeesten.',
    250, 'verhuur@djbooth.nl', '+31 6 1234 5678', null, 4.7, 21);
+
+-- ---------- Clubs + evenementen (party-agenda, à la DJ Guide) ----------
+do $$
+declare
+  owner uuid;
+  club_paradiso uuid;
+  club_now uuid;
+  club_thuishaven uuid;
+  g_house int;
+  g_techno int;
+  g_any int;
+  ev uuid;
+  art record;
+  n int;
+begin
+  -- Kwame als eigenaar van de clubs (anders de eerste profiel-rij).
+  select id into owner from auth.users where lower(email) = 'ballokwame@gmail.com';
+  if owner is null then
+    select id into owner from profiles order by created_at limit 1;
+  end if;
+  if owner is null then return; end if;
+
+  -- Genres voor de events (val terug op een willekeurig genre).
+  select id into g_house from genres where slug ilike '%house%' limit 1;
+  select id into g_techno from genres where slug ilike '%techno%' limit 1;
+  select id into g_any from genres order by id limit 1;
+  g_house := coalesce(g_house, g_any);
+  g_techno := coalesce(g_techno, g_any);
+
+  insert into clubs(user_id, name, city, address, lat, lng, description, image_url, capacity, website_url, contact_email)
+  values
+    (owner, 'Paradiso', 'Amsterdam', 'Weteringschans 6-8', 52.3622, 4.8836,
+     'Iconische poptempel in een voormalige kerk. House, techno en live.',
+     'https://images.unsplash.com/photo-1571266028243-e4733b0f0bb0?w=1200', 1500,
+     'https://paradiso.nl', 'info@paradiso.nl')
+  returning id into club_paradiso;
+
+  insert into clubs(user_id, name, city, address, lat, lng, description, image_url, capacity, website_url, contact_email)
+  values
+    (owner, 'NOW&WOW', 'Rotterdam', 'Maashaven Zuidzijde 1-2', 51.8978, 4.4900,
+     'Rauwe clubnachten in een oude loods aan de Maas.',
+     'https://images.unsplash.com/photo-1545128485-c400e7702796?w=1200', 2000,
+     'https://nowwow.nl', 'booking@nowwow.nl')
+  returning id into club_now;
+
+  insert into clubs(user_id, name, city, address, lat, lng, description, image_url, capacity)
+  values
+    (owner, 'Thuishaven', 'Amsterdam', 'Contactweg 68', 52.4012, 4.8190,
+     'Openlucht- en indoorclub met houten decor en lange techno-nachten.',
+     'https://images.unsplash.com/photo-1574391884720-bbc049ec09ad?w=1200', 3000)
+  returning id into club_thuishaven;
+
+  -- Events: 6 stuks verdeeld over de clubs, in de komende weken.
+  insert into events(club_id, organizer_id, title, description, event_date, start_time, end_time, genre_id, city, flyer_url, ticket_url, ticket_price, min_age)
+  values
+    (club_paradiso, owner, 'Paradiso Pres: House All Night',
+     'Een nacht vol deep en melodic house met een internationale headliner.',
+     current_date + 7, '23:00', '05:00', g_house, 'Amsterdam',
+     'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1200',
+     'https://paradiso.nl/tickets', 22, 18),
+    (club_now, owner, 'NOW&WOW: Industrial Techno',
+     'Harde kelder, strakke kicks en visuals tot zonsopgang.',
+     current_date + 10, '23:00', '07:00', g_techno, 'Rotterdam',
+     'https://images.unsplash.com/photo-1493676304819-0d7a8d026dcf?w=1200',
+     'https://nowwow.nl/tickets', 25, 21),
+    (club_thuishaven, owner, 'Thuishaven Outdoor Opening',
+     'Seizoensopening op het buitenterrein met meerdere area''s.',
+     current_date + 14, '14:00', '02:00', g_techno, 'Amsterdam',
+     'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200',
+     'https://thuishaven.nl/tickets', 30, 18),
+    (club_paradiso, owner, 'Sunday Sessions',
+     'Vroege deep house-middag voor de liefhebber.',
+     current_date + 18, '15:00', '23:00', g_house, 'Amsterdam',
+     'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200',
+     'https://paradiso.nl/tickets', 15, 18),
+    (club_now, owner, 'Caribbean & Afro Night',
+     'Afrohouse, amapiano en dancehall met live percussie.',
+     current_date + 21, '22:00', '04:00', g_house, 'Rotterdam',
+     'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200',
+     'https://nowwow.nl/tickets', 20, 18),
+    (club_thuishaven, owner, 'Late Night Techno Marathon',
+     'Twaalf uur techno non-stop met een diepe line-up.',
+     current_date + 28, '22:00', '10:00', g_techno, 'Amsterdam',
+     'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=1200',
+     'https://thuishaven.nl/tickets', 35, 21);
+
+  -- Line-up: koppel per event 1-3 willekeurige artiesten.
+  for ev in select id from events where organizer_id = owner loop
+    n := 0;
+    for art in
+      select id from artists order by random() limit 3
+    loop
+      insert into event_artists(event_id, artist_id, sort_order)
+      values (ev, art.id, n)
+      on conflict do nothing;
+      n := n + 1;
+    end loop;
+  end loop;
+end $$;
 
 commit;

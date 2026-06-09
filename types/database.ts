@@ -216,6 +216,186 @@ export type Database = {
           },
         ]
       }
+      clubs: {
+        Row: {
+          address: string | null
+          capacity: number | null
+          city: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          name: string
+          updated_at: string
+          user_id: string | null
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          capacity?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name: string
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          capacity?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clubs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          city: string | null
+          club_id: string | null
+          created_at: string
+          description: string | null
+          end_time: string | null
+          event_date: string
+          flyer_url: string | null
+          genre_id: number | null
+          id: string
+          min_age: number | null
+          organizer_id: string | null
+          published: boolean
+          start_time: string | null
+          ticket_price: number | null
+          ticket_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          club_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date: string
+          flyer_url?: string | null
+          genre_id?: number | null
+          id?: string
+          min_age?: number | null
+          organizer_id?: string | null
+          published?: boolean
+          start_time?: string | null
+          ticket_price?: number | null
+          ticket_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          club_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date?: string
+          flyer_url?: string | null
+          genre_id?: number | null
+          id?: string
+          min_age?: number | null
+          organizer_id?: string | null
+          published?: boolean
+          start_time?: string | null
+          ticket_price?: number | null
+          ticket_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "genres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_artists: {
+        Row: {
+          artist_id: string
+          created_at: string
+          event_id: string
+          sort_order: number
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          event_id: string
+          sort_order?: number
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          event_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_artists_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_artists_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           address: string | null
