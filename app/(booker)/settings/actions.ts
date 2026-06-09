@@ -18,3 +18,29 @@ export async function updateAccount(formData: FormData) {
 
   revalidatePath("/settings")
 }
+
+// Bedrijfs-/factuurgegevens die bij elke zakelijke boeking hergebruikt worden.
+export async function updateCompanyDetails(formData: FormData) {
+  const str = (k: string) => {
+    const v = String(formData.get(k) ?? "").trim()
+    return v === "" ? null : v
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  await supabase
+    .from("profiles")
+    .update({
+      company_name: str("company_name"),
+      vat_number: str("vat_number"),
+      invoice_email: str("invoice_email"),
+      invoice_address: str("invoice_address"),
+    })
+    .eq("id", user.id)
+
+  revalidatePath("/settings")
+}

@@ -8,7 +8,7 @@ import {
   formatPercent,
 } from "@/lib/utils/pricing"
 import { roleLabel } from "@/lib/roles"
-import { updateAccount } from "./actions"
+import { updateAccount, updateCompanyDetails } from "./actions"
 
 const SUB_STATUS_LABEL: Record<string, string> = {
   inactive: "Geen abonnement",
@@ -70,6 +70,64 @@ export default async function SettingsPage() {
               {roleLabel(profile.role)}
             </span>
           </div>
+          <button
+            type="submit"
+            className="mt-1 h-11 self-start rounded-full bg-brand px-6 font-medium text-black transition hover:bg-brand-strong"
+          >
+            Opslaan
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <h2 className="text-lg font-semibold">Bedrijfsgegevens</h2>
+        <p className="mt-1 text-sm text-muted">
+          Sla je factuurgegevens eenmalig op. Bij een zakelijke boeking vullen we
+          ze automatisch voor je in.
+        </p>
+        <form
+          action={updateCompanyDetails}
+          className="mt-4 flex flex-col gap-4"
+        >
+          <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium">Bedrijfsnaam</span>
+            <input
+              name="company_name"
+              defaultValue={profile.company_name ?? ""}
+              placeholder="Bedrijf B.V."
+              className="input h-11"
+            />
+          </label>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">BTW-nummer</span>
+              <input
+                name="vat_number"
+                defaultValue={profile.vat_number ?? ""}
+                placeholder="NL000000000B00"
+                className="input h-11"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">Factuur-e-mail</span>
+              <input
+                name="invoice_email"
+                type="email"
+                defaultValue={profile.invoice_email ?? ""}
+                placeholder="factuur@bedrijf.nl"
+                className="input h-11"
+              />
+            </label>
+          </div>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium">Factuuradres</span>
+            <input
+              name="invoice_address"
+              defaultValue={profile.invoice_address ?? ""}
+              placeholder="Straat 1, 1234 AB Amsterdam"
+              className="input h-11"
+            />
+          </label>
           <button
             type="submit"
             className="mt-1 h-11 self-start rounded-full bg-brand px-6 font-medium text-black transition hover:bg-brand-strong"

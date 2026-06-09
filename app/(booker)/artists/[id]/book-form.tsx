@@ -16,10 +16,16 @@ export function BookForm({
   artistId,
   baseGage,
   isLoggedIn,
+  company,
 }: {
   artistId: string
   baseGage: number
   isLoggedIn: boolean
+  company?: {
+    name: string | null
+    vat: string | null
+    email: string | null
+  }
 }) {
   const [type, setType] = useState<BookingType>("prive")
   const { gage, total } = priceBreakdown(baseGage)
@@ -112,6 +118,7 @@ export function BookForm({
             <input
               name="company_name"
               type="text"
+              defaultValue={company?.name ?? ""}
               placeholder="Bedrijf B.V."
               className="input h-10"
             />
@@ -122,6 +129,7 @@ export function BookForm({
               <input
                 name="vat_number"
                 type="text"
+                defaultValue={company?.vat ?? ""}
                 placeholder="NL000000000B00"
                 className="input h-10"
               />
@@ -131,11 +139,21 @@ export function BookForm({
               <input
                 name="invoice_email"
                 type="email"
+                defaultValue={company?.email ?? ""}
                 placeholder="factuur@bedrijf.nl"
                 className="input h-10"
               />
             </label>
           </div>
+          {(company?.name || company?.vat || company?.email) && (
+            <p className="text-xs text-muted">
+              Vooraf ingevuld vanuit je{" "}
+              <Link href="/settings" className="text-brand hover:underline">
+                bedrijfsgegevens
+              </Link>
+              .
+            </p>
+          )}
         </div>
       )}
 

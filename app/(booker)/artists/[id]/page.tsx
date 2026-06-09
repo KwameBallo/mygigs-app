@@ -191,6 +191,15 @@ export default async function ArtistPage({
               artistId={artist.id}
               baseGage={artist.base_gage}
               isLoggedIn={!!profile}
+              company={
+                profile
+                  ? {
+                      name: profile.company_name,
+                      vat: profile.vat_number,
+                      email: profile.invoice_email,
+                    }
+                  : undefined
+              }
             />
 
             <section className="mt-6 rounded-3xl border border-border bg-surface p-6">
