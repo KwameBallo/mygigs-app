@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getGenres } from "@/lib/data/artists"
+import { ACT_TYPES, ACT_LABEL } from "@/lib/utils/acts"
 import { saveArtistProfile } from "./actions"
 import { SyncSocials } from "./sync-button"
 
@@ -45,6 +46,20 @@ export default async function ProfilePage() {
             placeholder="DJ Voorbeeld"
             className="input h-11"
           />
+        </Field>
+
+        <Field label="Type act">
+          <select
+            name="act_type"
+            defaultValue={artist?.act_type ?? "dj"}
+            className="input h-11"
+          >
+            {ACT_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {ACT_LABEL[t]}
+              </option>
+            ))}
+          </select>
         </Field>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

@@ -6,6 +6,7 @@ type SearchParams = Promise<{
   q?: string
   genre?: string
   city?: string
+  act?: string
   minFollowers?: string
   ai?: string
   type?: string
@@ -16,7 +17,7 @@ export default async function DiscoverPage({
 }: {
   searchParams: SearchParams
 }) {
-  const { q, genre, city, minFollowers, ai, type } = await searchParams
+  const { q, genre, city, act, minFollowers, ai, type } = await searchParams
   const isClubs = type === "clubs"
   const minFollowersNum = minFollowers ? Number(minFollowers) : undefined
 
@@ -27,6 +28,7 @@ export default async function DiscoverPage({
           q,
           genre,
           city,
+          act,
           minFollowers: Number.isNaN(minFollowersNum)
             ? undefined
             : minFollowersNum,
@@ -40,7 +42,7 @@ export default async function DiscoverPage({
       artists={artists}
       clubs={clubs}
       genres={genres}
-      filters={{ q, genre, city, minFollowers, ai, type }}
+      filters={{ q, genre, city, act, minFollowers, ai, type }}
     />
   )
 }

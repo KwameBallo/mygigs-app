@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { ACT_TYPES } from "@/lib/utils/acts"
 
 export async function saveArtistProfile(formData: FormData) {
   const supabase = await createClient()
@@ -22,10 +23,16 @@ export async function saveArtistProfile(formData: FormData) {
   const genreRaw = str("genre_id")
   const genre_id = genreRaw ? Number(genreRaw) : null
 
+  const actRaw = String(formData.get("act_type") ?? "dj")
+  const act_type = (ACT_TYPES as string[]).includes(actRaw)
+    ? (actRaw as (typeof ACT_TYPES)[number])
+    : "dj"
+
   const fields = {
     stage_name,
     base_gage,
     genre_id,
+    act_type,
     home_city: str("home_city"),
     bio: str("bio"),
     equipment: str("equipment"),

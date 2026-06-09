@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import type { Tables } from "@/types/database"
+import type { Tables, Enums } from "@/types/database"
 
 export type Genre = Tables<"genres">
 export type Artist = Tables<"artists"> & { genres: Genre | null }
@@ -8,6 +8,7 @@ export type ArtistFilters = {
   q?: string
   genre?: string
   city?: string
+  act?: string
   minFollowers?: number
 }
 
@@ -34,6 +35,9 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
   if (filters.genre) {
     const genreId = Number(filters.genre)
     if (!Number.isNaN(genreId)) query = query.eq("genre_id", genreId)
+  }
+  if (filters.act) {
+    query = query.eq("act_type", filters.act as Enums<"act_type">)
   }
   if (filters.minFollowers && filters.minFollowers > 0) {
     query = query

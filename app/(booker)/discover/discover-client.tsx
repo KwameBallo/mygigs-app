@@ -6,6 +6,7 @@ import dynamic from "next/dynamic"
 import { Stars } from "@/components/stars"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatFollowers } from "@/lib/utils/format"
+import { ACT_TYPES, ACT_LABEL } from "@/lib/utils/acts"
 import { aiSearch } from "./ai-actions"
 import type { MapPoint } from "./discover-map"
 import type { Artist, Genre } from "@/lib/data/artists"
@@ -42,6 +43,7 @@ export function DiscoverClient({
     q?: string
     genre?: string
     city?: string
+    act?: string
     minFollowers?: string
     ai?: string
     type?: string
@@ -55,11 +57,16 @@ export function DiscoverClient({
   const genreName = filters.genre
     ? genres.find((g) => String(g.id) === filters.genre)?.name
     : undefined
+  const actName =
+    filters.act && filters.act in ACT_LABEL
+      ? ACT_LABEL[filters.act as keyof typeof ACT_LABEL]
+      : undefined
   const chips = [
     filters.minFollowers && Number(filters.minFollowers) > 0
       ? `≥ ${formatFollowers(Number(filters.minFollowers))} volgers`
       : null,
     filters.city ? `📍 ${filters.city}` : null,
+    actName ? `🎤 ${actName}` : null,
     genreName ? `🎵 ${genreName}` : null,
     filters.q ? `"${filters.q}"` : null,
   ].filter(Boolean) as string[]
@@ -188,6 +195,20 @@ export function DiscoverClient({
             placeholder="Stad"
             className="input h-10 sm:max-w-[10rem]"
           />
+          {!isClubs && (
+            <select
+              name="act"
+              defaultValue={filters.act ?? ""}
+              className="input h-10 sm:max-w-[10rem]"
+            >
+              <option value="">Alle acts</option>
+              {ACT_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {ACT_LABEL[t]}
+                </option>
+              ))}
+            </select>
+          )}
           {!isClubs && (
             <select
               name="genre"
@@ -364,7 +385,10 @@ function ListCard({
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="truncate font-semibold">{artist.stage_name}</h3>
+            <h3 className="flex min-w-0 items-center gap-1.5 font-semibold">
+              <span className="truncate">{artist.stage_name}</span>
+              {artist.verified && <VerifiedBadge />}
+            </h3>
             {artist.online && (
               <span className="mt-1 h-2 w-2 flex-none rounded-full bg-green-400" />
             )}
@@ -374,25 +398,57 @@ function ListCard({
           )}
           <div className="mt-1 flex items-center gap-3">
             <Stars rating={artist.rating} count={artist.reviews_count} />
-            {artist.instagram_followers > 0 && (
+            {artist.total_bookings > 0 && (
+              <span className="text-xs text-muted">
+                {artist.total_bookings}× geboekt
+              </span>
+            )}
+            {artist.total_bookings === 0 && artist.instagram_followers > 0 && (
               <span className="text-xs text-muted">
                 {formatFollowers(artist.instagram_followers)} volgers
               </span>
             )}
           </div>
-          <div className="mt-auto flex items-center justify-between pt-1">
-            {artist.genres && (
-              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">
-                {artist.genres.name}
+          <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span className="rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 text-xs text-brand">
+                {ACT_LABEL[artist.act_type]}
               </span>
-            )}
-            <span className="font-semibold text-brand">
+              {artist.genres && (
+                <span className="truncate rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">
+                  {artist.genres.name}
+                </span>
+              )}
+            </div>
+            <span className="flex-none font-semibold text-brand">
               {formatEuro(artist.base_gage)}
             </span>
           </div>
         </div>
       </Link>
     </li>
+  )
+}
+
+function VerifiedBadge() {
+  return (
+    <span
+      title="Geverifieerde artiest"
+      className="inline-flex flex-none items-center text-brand"
+      aria-label="Geverifieerd"
+    >
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+        <path d="m12 1 2.4 1.8 3 .1 1 2.8 2.4 1.7-.8 2.9.8 2.9-2.4 1.7-1 2.8-3 .1L12 23l-2.4-1.8-3-.1-1-2.8L3.2 16l.8-2.9-.8-2.9 2.4-1.7 1-2.8 3-.1L12 1Z" />
+        <path
+          d="m8.5 12 2.3 2.3 4.7-4.7"
+          fill="none"
+          stroke="#000"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
   )
 }
 

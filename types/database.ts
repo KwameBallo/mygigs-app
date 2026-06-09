@@ -101,6 +101,7 @@ export type Database = {
       }
       artists: {
         Row: {
+          act_type: Database["public"]["Enums"]["act_type"]
           avatar_url: string | null
           base_gage: number
           bio: string | null
@@ -118,6 +119,7 @@ export type Database = {
           mixcloud_url: string | null
           online: boolean
           rating: number
+          response_minutes: number | null
           reviews_count: number
           soundcloud_url: string | null
           spotify_followers: number
@@ -126,10 +128,13 @@ export type Database = {
           tiktok_followers: number
           tiktok_handle: string | null
           tiktok_url: string | null
+          total_bookings: number
           updated_at: string
           user_id: string | null
+          verified: boolean
         }
         Insert: {
+          act_type?: Database["public"]["Enums"]["act_type"]
           avatar_url?: string | null
           base_gage?: number
           bio?: string | null
@@ -147,6 +152,7 @@ export type Database = {
           mixcloud_url?: string | null
           online?: boolean
           rating?: number
+          response_minutes?: number | null
           reviews_count?: number
           soundcloud_url?: string | null
           spotify_followers?: number
@@ -155,10 +161,13 @@ export type Database = {
           tiktok_followers?: number
           tiktok_handle?: string | null
           tiktok_url?: string | null
+          total_bookings?: number
           updated_at?: string
           user_id?: string | null
+          verified?: boolean
         }
         Update: {
+          act_type?: Database["public"]["Enums"]["act_type"]
           avatar_url?: string | null
           base_gage?: number
           bio?: string | null
@@ -176,6 +185,7 @@ export type Database = {
           mixcloud_url?: string | null
           online?: boolean
           rating?: number
+          response_minutes?: number | null
           reviews_count?: number
           soundcloud_url?: string | null
           spotify_followers?: number
@@ -184,8 +194,10 @@ export type Database = {
           tiktok_followers?: number
           tiktok_handle?: string | null
           tiktok_url?: string | null
+          total_bookings?: number
           updated_at?: string
           user_id?: string | null
+          verified?: boolean
         }
         Relationships: [
           {
@@ -819,12 +831,15 @@ export type Database = {
           avatar_url: string | null
           city: string | null
           company: string | null
+          company_name: string | null
           created_at: string
           email: string | null
           flag_count: number
           flagged: boolean
           full_name: string | null
           id: string
+          invoice_address: string | null
+          invoice_email: string | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           stripe_customer_id: string | null
@@ -834,17 +849,21 @@ export type Database = {
           subscription_status: Database["public"]["Enums"]["subscription_status"]
           subscription_trial_end: string | null
           updated_at: string
+          vat_number: string | null
         }
         Insert: {
           avatar_url?: string | null
           city?: string | null
           company?: string | null
+          company_name?: string | null
           created_at?: string
           email?: string | null
           flag_count?: number
           flagged?: boolean
           full_name?: string | null
           id: string
+          invoice_address?: string | null
+          invoice_email?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           stripe_customer_id?: string | null
@@ -854,17 +873,21 @@ export type Database = {
           subscription_status?: Database["public"]["Enums"]["subscription_status"]
           subscription_trial_end?: string | null
           updated_at?: string
+          vat_number?: string | null
         }
         Update: {
           avatar_url?: string | null
           city?: string | null
           company?: string | null
+          company_name?: string | null
           created_at?: string
           email?: string | null
           flag_count?: number
           flagged?: boolean
           full_name?: string | null
           id?: string
+          invoice_address?: string | null
+          invoice_email?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           stripe_customer_id?: string | null
@@ -874,6 +897,7 @@ export type Database = {
           subscription_status?: Database["public"]["Enums"]["subscription_status"]
           subscription_trial_end?: string | null
           updated_at?: string
+          vat_number?: string | null
         }
         Relationships: []
       }
@@ -940,6 +964,14 @@ export type Database = {
       is_artist_owner: { Args: { a_id: string }; Returns: boolean }
     }
     Enums: {
+      act_type:
+        | "dj"
+        | "band"
+        | "singer"
+        | "mc"
+        | "musician"
+        | "duo"
+        | "other"
       ad_placement: "events_top" | "event_detail" | "discover" | "sidebar"
       availability_status: "available" | "booked"
       booking_status:
@@ -1093,6 +1125,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      act_type: ["dj", "band", "singer", "mc", "musician", "duo", "other"],
       ad_placement: ["events_top", "event_detail", "discover", "sidebar"],
       availability_status: ["available", "booked"],
       booking_status: [

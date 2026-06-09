@@ -5,6 +5,7 @@ import { BookForm } from "./book-form"
 import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
 import { getProfile } from "@/lib/auth"
 import { formatFollowers } from "@/lib/utils/format"
+import { ACT_LABEL } from "@/lib/utils/acts"
 
 const MONTHS = [
   "jan", "feb", "mrt", "apr", "mei", "jun",
@@ -14,6 +15,17 @@ const MONTHS = [
 function formatShowDate(date: string) {
   const d = new Date(date)
   return { day: d.getDate(), month: MONTHS[d.getMonth()] }
+}
+
+// Responstijd menselijk leesbaar: "binnen 30 min", "binnen 2 uur", "binnen 1 dag".
+function formatResponse(minutes: number) {
+  if (minutes < 60) return `binnen ${minutes} min`
+  if (minutes < 60 * 24) {
+    const h = Math.round(minutes / 60)
+    return `binnen ${h} uur`
+  }
+  const days = Math.round(minutes / (60 * 24))
+  return `binnen ${days} ${days === 1 ? "dag" : "dagen"}`
 }
 
 export default async function ArtistPage({
@@ -74,8 +86,20 @@ export default async function ArtistPage({
                   <h1 className="text-3xl font-semibold tracking-tight">
                     {artist.stage_name}
                   </h1>
+                  {artist.verified && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 text-xs font-medium text-black">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
+                        <path d="m12 1 2.4 1.8 3 .1 1 2.8 2.4 1.7-.8 2.9.8 2.9-2.4 1.7-1 2.8-3 .1L12 23l-2.4-1.8-3-.1-1-2.8L3.2 16l.8-2.9-.8-2.9 2.4-1.7 1-2.8 3-.1L12 1Z" />
+                        <path d="m8.5 12 2.3 2.3 4.7-4.7" fill="none" stroke="#facc15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Geverifieerd
+                    </span>
+                  )}
+                  <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
+                    {ACT_LABEL[artist.act_type]}
+                  </span>
                   {artist.genres && (
-                    <span className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-black">
+                    <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-muted">
                       {artist.genres.name}
                     </span>
                   )}
@@ -89,6 +113,14 @@ export default async function ArtistPage({
                 <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted">
                   <Stars rating={artist.rating} count={artist.reviews_count} />
                   {artist.home_city && <span>{artist.home_city}</span>}
+                  {artist.total_bookings > 0 && (
+                    <span className="font-medium text-foreground">
+                      {artist.total_bookings}× geboekt via MyGigs
+                    </span>
+                  )}
+                  {artist.response_minutes != null && (
+                    <span>Reageert {formatResponse(artist.response_minutes)}</span>
+                  )}
                   {artist.instagram_followers > 0 && (
                     <span>
                       {formatFollowers(artist.instagram_followers)} op Instagram
@@ -99,7 +131,6 @@ export default async function ArtistPage({
                       {formatFollowers(artist.tiktok_followers)} op TikTok
                     </span>
                   )}
-                  <span>{artist.bookings_30d} boekingen (30d)</span>
                 </div>
                 {artist.bio && (
                   <p className="mt-5 whitespace-pre-line leading-relaxed text-muted">
