@@ -37,7 +37,7 @@ export async function syncSocials(
     )
     .eq("user_id", user.id)
     .maybeSingle()
-  if (!artist) return { ok: false, message: "Geen artiestprofiel gevonden." }
+  if (!artist) return { ok: false, message: "Geen DJ-profiel gevonden." }
 
   const update: {
     spotify_followers?: number

@@ -73,7 +73,7 @@ export default async function InvoicePage({
               MyGigs
             </p>
             <p className="mt-1 text-muted">
-              Het boekingsplatform voor artiesten en events.
+              Het boekingsplatform voor DJ's en events.
             </p>
           </div>
           <div className="text-right">
@@ -119,7 +119,7 @@ export default async function InvoicePage({
             <tr className="border-b border-border print:border-black/10">
               <td className="py-3">
                 <p className="font-medium">
-                  Optreden {artist?.stage_name ?? "artiest"}
+                  Optreden {artist?.stage_name ?? "DJ"}
                 </p>
                 <p className="text-muted">
                   {booking.occasion ? `${booking.occasion} · ` : ""}

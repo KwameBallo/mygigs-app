@@ -33,7 +33,7 @@ export default async function SubscribePage() {
       </h1>
       <p className="mt-2 max-w-xl text-muted">
         Clubs en organisatoren plaatsen hun locaties en events met een
-        abonnement. Boek artiesten, vul je line-up en bereik bezoekers. Start met{" "}
+        abonnement. Boek DJ&apos;s, vul je line-up en bereik bezoekers. Start met{" "}
         {TRIAL_DAYS} dagen gratis, daarna kies je maandelijks of jaarlijks.
       </p>
 

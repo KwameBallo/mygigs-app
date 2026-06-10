@@ -54,7 +54,7 @@ export default async function LoginPage({
                   name="full_name"
                   type="text"
                   required
-                  placeholder="Jouw naam of artiestennaam"
+                  placeholder="Jouw naam of DJ-naam"
                   className="input"
                 />
               </Field>
@@ -71,7 +71,7 @@ export default async function LoginPage({
                   />
                   <RoleOption
                     value="artist"
-                    title="DJ / Artiest"
+                    title="DJ"
                     desc="Maak een profiel aan en word geboekt"
                   />
                 </div>

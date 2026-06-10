@@ -183,7 +183,7 @@ export default async function SettingsPage() {
         <ul className="mt-4 flex flex-col gap-2 text-sm">
           <FeeRow label="Clubs & organisatoren" value="Abonnement" />
           <FeeRow
-            label="Artiesten"
+            label="DJ's"
             value={`${formatPercent(ARTIST_COMMISSION_RATE)} commissie per boeking`}
           />
           <FeeRow

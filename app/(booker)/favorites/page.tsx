@@ -19,20 +19,20 @@ export default async function FavoritesPage() {
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Favorieten</h1>
       <p className="mt-2 text-sm text-muted">
-        Artiesten die je hebt opgeslagen.
+        DJ&apos;s die je hebt opgeslagen.
       </p>
 
       {artists.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
           <p className="text-lg font-medium">Nog geen favorieten</p>
           <p className="mt-2 text-sm text-muted">
-            Tik op het hartje bij een artiest om die hier te bewaren.
+            Tik op het hartje bij een DJ om die hier te bewaren.
           </p>
           <Link
             href="/discover"
             className="mt-6 inline-block rounded-full bg-brand px-6 py-2.5 font-medium text-black transition hover:bg-brand-strong"
           >
-            Ontdek artiesten
+            Ontdek DJ&apos;s
           </Link>
         </div>
       ) : (

@@ -12,9 +12,9 @@ import type { Artist, Genre } from "@/lib/data/artists"
 import type { Club } from "@/lib/data/events"
 
 const AI_EXAMPLES = [
-  "Artiest met minimaal 20.000 volgers in omgeving Utrecht",
+  "DJ met minimaal 20.000 volgers in omgeving Utrecht",
   "Techno DJ in Amsterdam met meer dan 1.000 volgers",
-  "Online artiest in Rotterdam",
+  "Online DJ in Rotterdam",
 ]
 
 const DiscoverMap = dynamic(
@@ -117,7 +117,7 @@ export function DiscoverClient({
                 <input
                   name="prompt"
                   defaultValue={filters.ai}
-                  placeholder="Beschrijf wie je zoekt, bv. 'artiest met 20.000 volgers in Utrecht'"
+                  placeholder="Beschrijf wie je zoekt, bv. 'DJ met 20.000 volgers in Utrecht'"
                   className="input h-12 w-full pl-10"
                 />
               </div>
@@ -420,7 +420,7 @@ function ListCard({
 function VerifiedBadge() {
   return (
     <span
-      title="Geverifieerde artiest"
+      title="Geverifieerde DJ"
       className="inline-flex flex-none items-center text-brand"
       aria-label="Geverifieerd"
     >

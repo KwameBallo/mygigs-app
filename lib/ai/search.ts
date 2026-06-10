@@ -98,7 +98,7 @@ export async function parseSearchQuery(
         model: "claude-haiku-4-5-20251001",
         max_tokens: 256,
         system:
-          "Je zet een Nederlandse zoekopdracht naar artiesten om in JSON-filters. " +
+          "Je zet een Nederlandse zoekopdracht naar DJ's om in JSON-filters. " +
           `Beschikbare genres (id=naam): ${genreList}. ` +
           "Geef ALLEEN geldige JSON terug met optionele velden: " +
           "q (string, naam-zoekterm), city (string, stad), genre (string, genre-id), " +

@@ -31,8 +31,8 @@ export default async function BookingsPage({
 
         {shortlist === "1" && (
           <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/10 p-4 text-sm text-brand">
-            Je aanvraag is naar alle geselecteerde acts gestuurd. Je ziet
-            hieronder per artiest de status.
+            Je aanvraag is naar alle geselecteerde DJ&apos;s gestuurd. Je ziet
+            hieronder per DJ de status.
           </div>
         )}
 
@@ -40,13 +40,13 @@ export default async function BookingsPage({
           <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
             <p className="text-lg font-medium">Nog geen boekingen</p>
             <p className="mt-2 text-sm text-muted">
-              Vind een artiest en stuur je eerste aanvraag.
+              Vind een DJ en stuur je eerste aanvraag.
             </p>
             <Link
               href="/discover"
               className="mt-6 inline-block rounded-full bg-brand px-6 py-2.5 font-medium text-black transition hover:bg-brand-strong"
             >
-              Ontdek artiesten
+              Ontdek DJ&apos;s
             </Link>
           </div>
         ) : (
@@ -64,7 +64,7 @@ export default async function BookingsPage({
                   <div>
                     <div className="flex items-center gap-3">
                       <h3 className="font-semibold">
-                        {artist?.stage_name ?? "Artiest"}
+                        {artist?.stage_name ?? "DJ"}
                       </h3>
                       <StatusBadge status={b.status} />
                       <span className="rounded-full border border-border bg-surface-2 px-2.5 py-0.5 text-xs text-muted">

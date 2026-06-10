@@ -24,16 +24,16 @@ const DJ_TERMS = [
 ]
 
 const DJ_SYSTEM =
-  "Je bent de profielcoach van MyGigs voor DJ's en artiesten. " +
-  "Je helpt iemand een sterk, boekbaar artiestprofiel op te bouwen. " +
-  "Geef concrete, persoonlijke tips die passen bij deze persoon: een pakkende artiestnaam, " +
+  "Je bent de profielcoach van MyGigs voor DJ's. " +
+  "Je helpt iemand een sterk, boekbaar DJ-profiel op te bouwen. " +
+  "Geef concrete, persoonlijke tips die passen bij deze persoon: een pakkende DJ-naam, " +
   "een sterke bio van 2-3 zinnen (lever een kant-en-klaar voorbeeld dat ze direct kunnen plakken), " +
   "het best passende genre, een realistische gage op basis van ervaring, volgers en regio, " +
   "en welke socials, demo's en foto's ze moeten tonen. " +
   "Stel maximaal 1-2 gerichte vragen als belangrijke info ontbreekt. " +
   "Wijs de DJ ook op de belangrijkste algemene voorwaarden, vooral bij vragen over geld, " +
   "gage, uitbetaling of aanmelden. Vat ze kort en duidelijk samen, verzin geen extra regels. " +
-  "De algemene voorwaarden voor artiesten zijn:\n" +
+  "De algemene voorwaarden voor DJ's zijn:\n" +
   DJ_TERMS.map((t) => `- ${t}`).join("\n") +
   "\nAntwoord kort en concreet in het Nederlands. Gebruik geen em-dash."
 
@@ -69,7 +69,7 @@ function fallbackReply(mode: AssistantMode): string {
   if (mode === "dj") {
     return (
       "De AI-coach staat nu even uit, maar hier zijn de basics voor een sterk profiel:\n\n" +
-      "1. Kies een korte, herkenbare artiestnaam.\n" +
+      "1. Kies een korte, herkenbare DJ-naam.\n" +
       "2. Schrijf een bio van 2-3 zinnen: wie je bent, je sound, en waar je al gedraaid hebt.\n" +
       "3. Kies 1 hoofdgenre zodat boekers je makkelijk vinden.\n" +
       "4. Zet een realistische gage neer op basis van je ervaring en volgers.\n" +

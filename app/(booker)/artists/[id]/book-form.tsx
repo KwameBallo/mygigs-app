@@ -33,7 +33,7 @@ export function BookForm({
   if (!isLoggedIn) {
     return (
       <div className="rounded-2xl border border-border bg-surface p-6">
-        <p className="text-sm text-muted">Log in om deze artiest te boeken.</p>
+        <p className="text-sm text-muted">Log in om deze DJ te boeken.</p>
         <Link
           href={`/login?next=/artists/${artistId}`}
           className="mt-4 inline-block rounded-full bg-brand px-6 py-2.5 font-medium text-black transition hover:bg-brand-strong"
@@ -50,7 +50,7 @@ export function BookForm({
       className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6"
     >
       <input type="hidden" name="artist_id" value={artistId} />
-      <h2 className="text-lg font-semibold tracking-tight">Boek deze artiest</h2>
+      <h2 className="text-lg font-semibold tracking-tight">Boek deze DJ</h2>
 
       {/* Privé of zakelijk */}
       <div>
@@ -173,7 +173,7 @@ export function BookForm({
         <Row label="Jij betaalt" value={formatEuro(total)} strong />
         <p className="mt-2 text-xs text-muted">
           Je betaalt de gage 1-op-1. MyGigs rekent{" "}
-          {formatPercent(ARTIST_COMMISSION_RATE)} commissie bij de artiest.
+          {formatPercent(ARTIST_COMMISSION_RATE)} commissie bij de DJ.
         </p>
       </div>
 

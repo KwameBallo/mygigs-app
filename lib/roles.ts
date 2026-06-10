@@ -8,7 +8,7 @@ export type UserRole = Database["public"]["Enums"]["user_role"]
 // - DJ / Artiest: maakt een profiel aan en wordt geboekt.
 export const ROLE_LABEL: Record<string, string> = {
   booker: "Consument",
-  artist: "DJ / Artiest",
+  artist: "DJ",
   both: "Consument & DJ",
   admin: "Beheerder",
 }

@@ -83,7 +83,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const sections: NavSection[] = []
   if (isArtist) {
     sections.push({
-      title: "Artiest",
+      title: "DJ",
       items: [items.dashboard, items.availability, items.earnings, items.profile],
     })
   }

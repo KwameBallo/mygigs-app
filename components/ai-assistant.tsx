@@ -8,7 +8,7 @@ type Msg = { role: "user" | "assistant"; content: string }
 const WELCOME: Record<Mode, string> = {
   dj:
     "Hoi! Ik help je een sterk DJ-profiel maken. Vertel me kort: welke muziek draai je, " +
-    "hoeveel ervaring heb je en in welke regio? Dan geef ik je een artiestnaam, bio en een passende gage.",
+    "hoeveel ervaring heb je en in welke regio? Dan geef ik je een DJ-naam, bio en een passende gage.",
   consument:
     "Hoi! Ik help je de juiste DJ vinden. Wat voor gelegenheid is het, in welke stad, welk genre " +
     "en wat is je budget? Dan zoek ik passende DJ's binnen je prijsklasse.",

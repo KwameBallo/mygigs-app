@@ -42,7 +42,7 @@ export default async function ThreadPage({
 
   const otherName = iAmArtist
     ? (booker?.full_name ?? "Boeker")
-    : (artist?.stage_name ?? "Artiest")
+    : (artist?.stage_name ?? "DJ")
 
   // Mark incoming messages as read.
   await supabase

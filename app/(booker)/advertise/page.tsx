@@ -30,14 +30,14 @@ export default async function AdvertisePage() {
       <h1 className="text-xl font-semibold tracking-tight">Adverteren</h1>
       {isArtist ? (
         <p className="mt-1 text-sm text-muted">
-          Promoot jezelf als artiest. Plaats een banner op de ontdek-pagina en
+          Promoot jezelf als DJ. Plaats een banner op de ontdek-pagina en
           de agenda zodat boekers jou als eerste zien. Je betaalt per week, los
           van je boekingen.
         </p>
       ) : (
         <p className="mt-1 text-sm text-muted">
           Plaats als merk een banner op de agenda en eventpagina&apos;s. Bereik
-          bezoekers die op zoek zijn naar feesten en artiesten.
+          bezoekers die op zoek zijn naar feesten en DJ&apos;s.
         </p>
       )}
 

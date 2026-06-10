@@ -32,7 +32,7 @@ export default async function MessagesPage() {
         <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
           <p className="text-lg font-medium">Nog geen gesprekken</p>
           <p className="mt-2 text-sm text-muted">
-            Zodra je een artiest boekt of berichten ontvangt, verschijnen ze
+            Zodra je een DJ boekt of berichten ontvangt, verschijnen ze
             hier.
           </p>
         </div>
@@ -42,7 +42,7 @@ export default async function MessagesPage() {
             const iAmArtist = c.booker_id !== user.id
             const name = iAmArtist
               ? (c.booker?.full_name ?? "Boeker")
-              : (c.artist?.stage_name ?? "Artiest")
+              : (c.artist?.stage_name ?? "DJ")
             const initials = name
               .split(" ")
               .map((w) => w[0])
