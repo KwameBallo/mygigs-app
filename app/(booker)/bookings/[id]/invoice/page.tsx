@@ -73,7 +73,7 @@ export default async function InvoicePage({
               MyGigs
             </p>
             <p className="mt-1 text-muted">
-              Het boekingsplatform voor DJ's en events.
+              Het boekingsplatform voor DJ&apos;s en events.
             </p>
           </div>
           <div className="text-right">

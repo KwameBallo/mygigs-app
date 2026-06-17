@@ -9,6 +9,16 @@ const base = {
   strokeLinejoin: "round" as const,
 }
 
+export function HomeIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3 10.5 12 3l9 7.5" />
+      <path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5" />
+      <path d="M9.5 21v-6h5v6" />
+    </svg>
+  )
+}
+
 export function MapIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -130,6 +140,7 @@ export function MegaphoneIcon({ className }: IconProps) {
 }
 
 export type IconName =
+  | "home"
   | "map"
   | "calendar"
   | "dashboard"
@@ -145,6 +156,8 @@ export type IconName =
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
   switch (name) {
+    case "home":
+      return <HomeIcon className={className} />
     case "map":
       return <MapIcon className={className} />
     case "calendar":

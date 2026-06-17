@@ -15,11 +15,10 @@ import { roleLabel, roleIcon } from "@/lib/roles"
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const profile = await getProfile()
   const isArtist = profile?.role === "artist" || profile?.role === "both"
-  const isBooker =
-    !profile || profile.role === "booker" || profile.role === "both"
   const unread = profile ? await getUnreadCount(profile.id) : 0
 
   const items = {
+    home: { href: "/", label: "Beginscherm", icon: "home" } as NavItem,
     discover: { href: "/discover", label: "Ontdek", icon: "map" } as NavItem,
     bookings: {
       href: "/bookings",
@@ -82,29 +81,26 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   const sections: NavSection[] = []
   if (isArtist) {
+    // DJ-kant: volledige cockpit.
     sections.push({
       title: "DJ",
       items: [items.dashboard, items.availability, items.earnings, items.profile],
     })
+    sections.push({
+      title: "Algemeen",
+      items: [items.discover, items.events, items.messages, items.suppliers],
+    })
+    sections.push({
+      title: "Organiseren",
+      items: [items.manageEvents, items.advertise],
+    })
+    sections.push({ title: "Account", items: [items.settings] })
+  } else {
+    // Consument: bewust simpel — alleen het beginscherm en Ontdek om een DJ
+    // te vinden. De rest blijft bestaan en bereikbaar via directe links / de
+    // boekingsflow, maar staat niet in het menu.
+    sections.push({ items: [items.home, items.discover] })
   }
-  sections.push({
-    title: isArtist ? "Algemeen" : undefined,
-    items: isBooker
-      ? [
-          items.discover,
-          items.events,
-          items.bookings,
-          items.messages,
-          items.favorites,
-          items.suppliers,
-        ]
-      : [items.discover, items.events, items.messages, items.suppliers],
-  })
-  sections.push({
-    title: "Organiseren",
-    items: [items.manageEvents, items.advertise],
-  })
-  sections.push({ title: "Account", items: [items.settings] })
 
   const bottomItems: NavItem[] = isArtist
     ? [
@@ -114,7 +110,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         items.earnings,
         items.profile,
       ]
-    : [items.discover, items.events, items.bookings, items.messages, items.favorites]
+    : [items.home, items.discover]
 
   const initials = (profile?.full_name ?? profile?.email ?? "?")
     .slice(0, 1)

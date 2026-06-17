@@ -223,7 +223,7 @@ export default async function ManageEventsPage() {
             >
               {artists.length === 0 ? (
                 <p className="text-sm text-muted">
-                  Nog geen DJ's beschikbaar.
+                  Nog geen DJ&apos;s beschikbaar.
                 </p>
               ) : (
                 <select

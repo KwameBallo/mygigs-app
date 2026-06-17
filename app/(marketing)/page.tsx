@@ -33,7 +33,7 @@ export default async function Home() {
               Boek een DJ
             </Link>
             <Link
-              href="/login?mode=signup"
+              href="/login?mode=signup&type=dj"
               className="rounded-full border border-border bg-surface px-7 py-3.5 font-medium transition hover:border-brand/50"
             >
               Word DJ
@@ -70,7 +70,7 @@ export default async function Home() {
               title="Word geboekt"
               body="Maak een DJ-profiel aan, toon je demo's en volgers, en ontvang boekingsaanvragen. Aanmelden is gratis: MyGigs verdient 7% per boeking."
               cta="Word DJ"
-              href="/login?mode=signup"
+              href="/login?mode=signup&type=dj"
             />
             <SideCard
               tag="Voor bedrijven"
@@ -134,7 +134,7 @@ export default async function Home() {
               is gratis.
             </p>
             <Link
-              href="/login?mode=signup"
+              href="/login?mode=signup&type=dj"
               className="mt-8 inline-block rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
             >
               Aan de slag

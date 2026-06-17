@@ -26,19 +26,21 @@ export async function SiteHeader() {
           {profile ? (
             <>
               {isArtist && (
-                <Link
-                  href="/dashboard"
-                  className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
-                >
-                  Dashboard
-                </Link>
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/bookings"
+                    className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
+                  >
+                    Boekingen
+                  </Link>
+                </>
               )}
-              <Link
-                href="/bookings"
-                className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
-              >
-                Boekingen
-              </Link>
               <form action="/auth/signout" method="post">
                 <button
                   type="submit"

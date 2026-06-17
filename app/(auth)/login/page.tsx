@@ -4,17 +4,41 @@ import { signIn, signUp } from "./actions"
 
 type SearchParams = Promise<{
   mode?: string
+  type?: string
   error?: string
   message?: string
 }>
+
+function loginHref(signup: boolean, dj: boolean) {
+  const params = new URLSearchParams()
+  if (signup) params.set("mode", "signup")
+  if (dj) params.set("type", "dj")
+  const query = params.toString()
+  return query ? `/login?${query}` : "/login"
+}
 
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: SearchParams
 }) {
-  const { mode, error, message } = await searchParams
+  const { mode, type, error, message } = await searchParams
   const isSignup = mode === "signup"
+  const isDj = type === "dj"
+  const role = isDj ? "artist" : "booker"
+
+  const title = isSignup
+    ? isDj
+      ? "Word DJ op MyGigs"
+      : "Maak je account"
+    : "Welkom terug"
+  const subtitle = isSignup
+    ? isDj
+      ? "Maak een DJ-profiel aan, toon je demo's en word geboekt."
+      : "Ontdek feesten en boek DJ's voor je eigen event."
+    : isDj
+      ? "Log in op je DJ-account."
+      : "Log in om DJ's te ontdekken en te boeken."
 
   return (
     <main className="relative flex flex-1 flex-col">
@@ -23,13 +47,31 @@ export default async function LoginPage({
         <div className="mb-8 text-center">
           <Logo />
           <h1 className="mt-6 text-3xl font-semibold tracking-tight">
-            {isSignup ? "Maak je account" : "Welkom terug"}
+            {title}
           </h1>
-          <p className="mt-2 text-sm text-muted">
-            {isSignup
-              ? "Kies hoe je MyGigs gebruikt: als consument of als DJ."
-              : "Log in om verder te gaan."}
-          </p>
+          <p className="mt-2 text-sm text-muted">{subtitle}</p>
+        </div>
+
+        {/* Tabs: duidelijke scheiding tussen consument en DJ. */}
+        <div className="mb-6 grid grid-cols-2 gap-1 rounded-full border border-border bg-surface p-1 text-sm font-medium">
+          <Link
+            href={loginHref(isSignup, false)}
+            className={`rounded-full px-4 py-2 text-center transition ${
+              !isDj
+                ? "bg-brand text-black"
+                : "text-muted hover:text-foreground"
+            }`}
+          >
+            Consument
+          </Link>
+          <Link
+            href={loginHref(isSignup, true)}
+            className={`rounded-full px-4 py-2 text-center transition ${
+              isDj ? "bg-brand text-black" : "text-muted hover:text-foreground"
+            }`}
+          >
+            DJ
+          </Link>
         </div>
 
         {message === "check-email" && (
@@ -47,6 +89,8 @@ export default async function LoginPage({
           action={isSignup ? signUp : signIn}
           className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6"
         >
+          {/* De gekozen tab bepaalt de rol — geen losse rolkeuze meer. */}
+          <input type="hidden" name="role" value={role} />
           {isSignup && (
             <>
               <Field label="Naam">
@@ -54,31 +98,15 @@ export default async function LoginPage({
                   name="full_name"
                   type="text"
                   required
-                  placeholder="Jouw naam of DJ-naam"
+                  placeholder={isDj ? "Jouw DJ-naam" : "Jouw naam"}
                   className="input"
                 />
               </Field>
-              <fieldset className="flex flex-col gap-2">
-                <legend className="mb-1 text-sm font-medium">
-                  Wat ben jij?
-                </legend>
-                <div className="grid grid-cols-1 gap-2">
-                  <RoleOption
-                    value="booker"
-                    title="Consument"
-                    desc="Ontdek feesten en boek DJ's voor je eigen event"
-                    defaultChecked
-                  />
-                  <RoleOption
-                    value="artist"
-                    title="DJ"
-                    desc="Maak een profiel aan en word geboekt"
-                  />
-                </div>
-                <p className="mt-1 text-xs text-muted">
+              {!isDj && (
+                <p className="-mt-1 text-xs text-muted">
                   Je kunt later altijd ook DJ worden vanuit je account.
                 </p>
-              </fieldset>
+              )}
             </>
           )}
           <Field label="E-mail">
@@ -114,14 +142,20 @@ export default async function LoginPage({
           {isSignup ? (
             <>
               Heb je al een account?{" "}
-              <Link href="/login" className="font-medium text-brand">
+              <Link
+                href={loginHref(false, isDj)}
+                className="font-medium text-brand"
+              >
                 Inloggen
               </Link>
             </>
           ) : (
             <>
               Nog geen account?{" "}
-              <Link href="/login?mode=signup" className="font-medium text-brand">
+              <Link
+                href={loginHref(true, isDj)}
+                className="font-medium text-brand"
+              >
                 Aanmelden
               </Link>
             </>
@@ -143,35 +177,6 @@ function Field({
     <label className="flex flex-col gap-1.5">
       <span className="text-sm font-medium">{label}</span>
       {children}
-    </label>
-  )
-}
-
-function RoleOption({
-  value,
-  title,
-  desc,
-  defaultChecked,
-}: {
-  value: string
-  title: string
-  desc: string
-  defaultChecked?: boolean
-}) {
-  return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-surface-2 p-3.5 transition has-[:checked]:border-brand has-[:checked]:bg-brand/10">
-      <input
-        type="radio"
-        name="role"
-        value={value}
-        defaultChecked={defaultChecked}
-        className="peer sr-only"
-      />
-      <span className="mt-0.5 h-4 w-4 flex-none rounded-full border border-border peer-checked:border-[6px] peer-checked:border-brand" />
-      <span className="min-w-0">
-        <span className="block text-sm font-medium">{title}</span>
-        <span className="block text-xs text-muted">{desc}</span>
-      </span>
     </label>
   )
 }

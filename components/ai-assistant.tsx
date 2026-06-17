@@ -22,15 +22,19 @@ const TABS: { value: Mode; label: string }[] = [
 export function AiAssistant({ defaultMode }: { defaultMode: Mode }) {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<Mode>(defaultMode)
-  const [messages, setMessages] = useState<Msg[]>([])
+  const [messages, setMessages] = useState<Msg[]>(() => [
+    { role: "assistant", content: WELCOME[defaultMode] },
+  ])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Reset het gesprek wanneer je van modus wisselt.
-  useEffect(() => {
-    setMessages([{ role: "assistant", content: WELCOME[mode] }])
-  }, [mode])
+  // Wissel van modus en start het gesprek opnieuw met de juiste begroeting.
+  function selectMode(next: Mode) {
+    if (next === mode) return
+    setMode(next)
+    setMessages([{ role: "assistant", content: WELCOME[next] }])
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight })
@@ -108,7 +112,7 @@ export function AiAssistant({ defaultMode }: { defaultMode: Mode }) {
             {TABS.map((t) => (
               <button
                 key={t.value}
-                onClick={() => setMode(t.value)}
+                onClick={() => selectMode(t.value)}
                 className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   mode === t.value
                     ? "bg-brand text-black"
