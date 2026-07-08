@@ -1,0 +1,26 @@
+# MyGigs — .env.local template
+# Kopieer dit naar een bestand ".env.local" in de projectroot en vul de waarden in.
+# Let op: .env.local staat in .gitignore en wordt NOOIT gecommit. Deel de keys niet publiek.
+
+# --- Supabase (VERPLICHT) ---
+# Uit je eigen Supabase-project: Settings -> API
+NEXT_PUBLIC_SUPABASE_URL=https://<jouw-project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon / publishable key>
+# Server-only, geheim. NOOIT in de client of in git.
+SUPABASE_SERVICE_ROLE_KEY=<service role key>
+
+# --- AI (voor de assistent + slimme zoekbalk) ---
+# Van console.anthropic.com -> API Keys. Zonder deze key werkt de AI niet, de rest wel.
+ANTHROPIC_API_KEY=sk-ant-...
+
+# --- Optioneel: social volgers tonen (leeg laten = functie uit) ---
+SPOTIFY_CLIENT_ID=
+SPOTIFY_CLIENT_SECRET=
+INSTAGRAM_IG_USER_ID=
+INSTAGRAM_GRAPH_TOKEN=
+TIKTOK_ACCESS_TOKEN=
+
+# --- Later: Stripe (echte betalingen/escrow) ---
+# STRIPE_SECRET_KEY=
+# STRIPE_WEBHOOK_SECRET=
+# NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
