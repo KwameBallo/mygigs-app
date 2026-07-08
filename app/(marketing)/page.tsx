@@ -58,7 +58,7 @@ export default async function Home() {
         <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-12">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <SideCard
-              tag="Voor consumenten"
+              tag="Voor organisatoren"
               title="Ontdek & boek"
               body="Blader door de agenda met feesten en DJ's bij jou in de buurt. Boek een DJ voor je eigen event. Filter op genre, stad, datum en budget."
               cta="Ontdek feesten"

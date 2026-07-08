@@ -4,12 +4,12 @@ import type { IconName } from "@/components/icons"
 export type UserRole = Database["public"]["Enums"]["user_role"]
 
 // Twee duidelijke kanten van het platform:
-// - Consument (booker): gaat uit, ontdekt feesten en boekt DJ's.
+// - Organisator (booker): ontdekt feesten en boekt DJ's voor een event.
 // - DJ / Artiest: maakt een profiel aan en wordt geboekt.
 export const ROLE_LABEL: Record<string, string> = {
-  booker: "Consument",
+  booker: "Organisator",
   artist: "DJ",
-  both: "Consument & DJ",
+  both: "Organisator & DJ",
   admin: "Beheerder",
 }
 

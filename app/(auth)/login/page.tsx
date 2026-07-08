@@ -62,7 +62,7 @@ export default async function LoginPage({
                 : "text-muted hover:text-foreground"
             }`}
           >
-            Consument
+            Organisator
           </Link>
           <Link
             href={loginHref(isSignup, true)}
