@@ -177,7 +177,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile top bar */}
-        <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
+        <div className="safe-top flex items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
           <div className="flex items-center gap-2">
             <Logo />
             {profile && (
@@ -209,7 +209,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
 
         {/* Mobile bottom nav */}
-        <div className="border-t border-border bg-surface lg:hidden">
+        <div className="safe-bottom border-t border-border bg-surface lg:hidden">
           <BottomNav items={bottomItems} />
         </div>
       </div>

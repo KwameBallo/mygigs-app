@@ -6,14 +6,15 @@ import dynamic from "next/dynamic"
 import { Stars } from "@/components/stars"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatFollowers } from "@/lib/utils/format"
+import { haversineKm } from "@/lib/utils/geo"
 import { aiSearch } from "./ai-actions"
 import type { MapPoint } from "./discover-map"
 import type { Artist, Genre } from "@/lib/data/artists"
 import type { Club } from "@/lib/data/events"
 
 const AI_EXAMPLES = [
-  "DJ met minimaal 20.000 volgers in omgeving Utrecht",
-  "Techno DJ in Amsterdam met meer dan 1.000 volgers",
+  "DJ met 20.000 volgers in Utrecht",
+  "Techno DJ in Amsterdam",
   "Online DJ in Rotterdam",
 ]
 
@@ -29,6 +30,19 @@ const DiscoverMap = dynamic(
   },
 )
 
+type Filters = {
+  q?: string
+  genre?: string
+  city?: string
+  act?: string
+  minFollowers?: string
+  budget?: string
+  rating?: string
+  date?: string
+  ai?: string
+  type?: string
+}
+
 export function DiscoverClient({
   artists,
   clubs,
@@ -38,18 +52,38 @@ export function DiscoverClient({
   artists: Artist[]
   clubs: Club[]
   genres: Genre[]
-  filters: {
-    q?: string
-    genre?: string
-    city?: string
-    act?: string
-    minFollowers?: string
-    ai?: string
-    type?: string
-  }
+  filters: Filters
 }) {
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [view, setView] = useState<"list" | "map">("list")
+  const [sheetOpen, setSheetOpen] = useState(true)
+  const [panelOpen, setPanelOpen] = useState(true)
+  const [aiOpen, setAiOpen] = useState(Boolean(filters.ai))
+  const [filtersOpen, setFiltersOpen] = useState(
+    Boolean(filters.genre || filters.budget || filters.rating || filters.date),
+  )
+  const [maxKm, setMaxKm] = useState<number | null>(null)
+  const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(
+    null,
+  )
+  const [geoError, setGeoError] = useState<string | null>(null)
+
+  function onDistance(value: string) {
+    const km = value ? Number(value) : null
+    setMaxKm(km)
+    setGeoError(null)
+    if (km != null && !userPos) {
+      if (!navigator.geolocation) {
+        setGeoError("Locatie niet ondersteund")
+        return
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) =>
+          setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => setGeoError("Zet locatie aan om op afstand te filteren"),
+        { enableHighAccuracy: false, timeout: 8000 },
+      )
+    }
+  }
 
   const isClubs = filters.type === "clubs"
 
@@ -62,10 +96,31 @@ export function DiscoverClient({
       : null,
     filters.city ? `📍 ${filters.city}` : null,
     genreName ? `🎵 ${genreName}` : null,
-    filters.q ? `"${filters.q}"` : null,
   ].filter(Boolean) as string[]
 
-  // Kaartpunten: artiesten of clubs.
+  // Afstand-filter (client-side, o.b.v. je locatie).
+  const shownArtists =
+    maxKm != null && userPos
+      ? artists
+          .filter(
+            (a) =>
+              a.lat != null &&
+              a.lng != null &&
+              haversineKm(userPos, { lat: a.lat, lng: a.lng }) <= maxKm,
+          )
+          .sort(
+            (a, b) =>
+              haversineKm(userPos, {
+                lat: a.lat as number,
+                lng: a.lng as number,
+              }) -
+              haversineKm(userPos, {
+                lat: b.lat as number,
+                lng: b.lng as number,
+              }),
+          )
+      : artists
+
   const points: MapPoint[] = isClubs
     ? clubs
         .filter((c) => c.lat != null && c.lng != null)
@@ -79,7 +134,7 @@ export function DiscoverClient({
           href: `/clubs/${c.id}`,
           linkLabel: "Bekijk club",
         }))
-    : artists
+    : shownArtists
         .filter((a) => a.lat != null && a.lng != null)
         .map((a) => ({
           id: a.id,
@@ -93,238 +148,333 @@ export function DiscoverClient({
           linkLabel: "Bekijk profiel",
         }))
 
-  const count = isClubs ? clubs.length : artists.length
+  const count = isClubs ? clubs.length : shownArtists.length
+  const countLabel = `${count} ${
+    isClubs ? (count === 1 ? "club" : "clubs") : count === 1 ? "DJ" : "DJ's"
+  }`
+
+  const results =
+    count === 0 ? (
+      <div className="m-3 rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
+        <p className="font-medium">
+          {isClubs ? "Geen clubs gevonden" : "Geen DJ's gevonden"}
+        </p>
+        <Link
+          href={isClubs ? "/discover?type=clubs" : "/discover"}
+          className="mt-2 inline-block text-sm text-brand"
+        >
+          Wis filters
+        </Link>
+      </div>
+    ) : (
+      <ul className="flex flex-col gap-2 p-3">
+        {isClubs
+          ? clubs.map((c) => (
+              <ClubCard
+                key={c.id}
+                club={c}
+                active={c.id === activeId}
+                onHover={() => setActiveId(c.id)}
+              />
+            ))
+          : shownArtists.map((a) => (
+              <ListCard
+                key={a.id}
+                artist={a}
+                active={a.id === activeId}
+                onHover={() => setActiveId(a.id)}
+              />
+            ))}
+      </ul>
+    )
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Type-toggle: artiesten of clubs */}
-      <div className="border-b border-border bg-surface px-4 pt-4">
-        <div className="mx-auto flex max-w-6xl gap-2">
-          <TypeTab label="DJ's" type="artists" filters={filters} active={!isClubs} />
-          <TypeTab label="Clubs" type="clubs" filters={filters} active={isClubs} />
-        </div>
+    <div className="relative h-full w-full overflow-hidden">
+      {/* Full-bleed kaart als achtergrond */}
+      <div className="absolute inset-0 z-0">
+        <DiscoverMap
+          points={points}
+          activeId={activeId}
+          onActivate={setActiveId}
+        />
       </div>
 
-      {/* AI search bar (alleen voor artiesten) */}
-      {!isClubs && (
-        <div className="border-b border-border bg-surface px-4 py-4">
-          <div className="mx-auto max-w-6xl">
-            <form action={aiSearch} className="flex flex-wrap items-center gap-2">
-              <div className="relative flex-1">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-brand">
-                  ✦
-                </span>
-                <input
-                  name="prompt"
-                  defaultValue={filters.ai}
-                  placeholder="Beschrijf wie je zoekt, bv. 'DJ met 20.000 volgers in Utrecht'"
-                  className="input h-12 w-full pl-10"
-                />
+      {/* Eén zwevende zoekbalk bovenaan */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1200] px-3 pt-3">
+        <div className="pointer-events-auto mx-auto flex max-w-2xl flex-col gap-2">
+          <form method="get" className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 rounded-3xl border border-border bg-surface/95 p-1.5 shadow-xl backdrop-blur">
+              <div className="flex flex-none rounded-full bg-surface-2 p-0.5">
+                <Seg label="DJ's" active={!isClubs} filters={filters} clubs={false} />
+                <Seg label="Clubs" active={isClubs} filters={filters} clubs />
               </div>
+              {isClubs && <input type="hidden" name="type" value="clubs" />}
+              <input
+                name="q"
+                defaultValue={filters.q}
+                placeholder={isClubs ? "Zoek club of stad" : "Zoek DJ of stad"}
+                className="min-w-[7rem] flex-1 bg-transparent px-2 py-1.5 text-base outline-none placeholder:text-muted sm:text-sm"
+              />
+              {!isClubs && (
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen((v) => !v)}
+                  className={`flex-none rounded-full border px-3 py-2 text-sm transition ${
+                    filtersOpen ||
+                    filters.genre ||
+                    filters.budget ||
+                    filters.rating ||
+                    filters.date ||
+                    maxKm != null
+                      ? "border-brand bg-brand/10 text-brand"
+                      : "border-border text-muted hover:border-brand/50 hover:text-brand"
+                  }`}
+                >
+                  Filters
+                </button>
+              )}
               <button
                 type="submit"
-                className="h-12 rounded-full bg-brand px-6 font-medium text-black transition hover:bg-brand-strong"
+                aria-label="Zoeken"
+                className="flex-none rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
               >
-                AI-zoeken
+                Zoek
               </button>
-            </form>
+              {!isClubs && (
+                <button
+                  type="button"
+                  onClick={() => setAiOpen((v) => !v)}
+                  aria-label="Zoek met AI"
+                  title="Zoek met AI"
+                  className={`flex-none rounded-full border px-3 py-2 text-sm transition ${
+                    aiOpen
+                      ? "border-brand bg-brand/10 text-brand"
+                      : "border-border text-muted hover:border-brand/50 hover:text-brand"
+                  }`}
+                >
+                  ✦
+                </button>
+              )}
+            </div>
 
-            {filters.ai && chips.length > 0 ? (
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="text-muted">Begrepen als:</span>
-                {chips.map((c) => (
-                  <span
-                    key={c}
-                    className="rounded-full border border-brand/40 bg-brand/10 px-3 py-1 text-brand"
-                  >
-                    {c}
+            {/* Filters: genre + budget (server) + afstand (client, via je locatie) */}
+            {!isClubs && filtersOpen && (
+              <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-surface/95 p-2 shadow-xl backdrop-blur sm:flex sm:flex-wrap sm:items-center">
+                <select
+                  name="genre"
+                  defaultValue={filters.genre ?? ""}
+                  className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
+                >
+                  <option value="">Alle genres</option>
+                  {genres.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  name="budget"
+                  defaultValue={filters.budget ?? ""}
+                  className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
+                >
+                  <option value="">Elk budget</option>
+                  <option value="250">tot €250</option>
+                  <option value="500">tot €500</option>
+                  <option value="750">tot €750</option>
+                  <option value="1000">tot €1.000</option>
+                  <option value="1500">tot €1.500</option>
+                  <option value="2500">tot €2.500</option>
+                </select>
+                <select
+                  value={maxKm ?? ""}
+                  onChange={(e) => onDistance(e.target.value)}
+                  className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
+                >
+                  <option value="">Afstand: overal</option>
+                  <option value="10">≤ 10 km</option>
+                  <option value="25">≤ 25 km</option>
+                  <option value="50">≤ 50 km</option>
+                  <option value="100">≤ 100 km</option>
+                </select>
+                <select
+                  name="rating"
+                  defaultValue={filters.rating ?? ""}
+                  className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
+                >
+                  <option value="">Alle reviews</option>
+                  <option value="4">★ 4,0+</option>
+                  <option value="4.5">★ 4,5+</option>
+                  <option value="4.8">★ 4,8+</option>
+                </select>
+                <input
+                  type="date"
+                  name="date"
+                  defaultValue={filters.date ?? ""}
+                  aria-label="Beschikbaar op datum"
+                  className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
+                />
+                <button
+                  type="submit"
+                  className="col-span-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong sm:col-span-1 sm:w-auto"
+                >
+                  Toepassen
+                </button>
+                {geoError && (
+                  <span className="col-span-2 text-xs text-red-400">
+                    {geoError}
                   </span>
-                ))}
-                <Link href="/discover" className="text-muted hover:text-foreground">
-                  wissen
-                </Link>
-              </div>
-            ) : (
-              <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                {AI_EXAMPLES.map((ex) => (
-                  <form key={ex} action={aiSearch}>
-                    <input type="hidden" name="prompt" value={ex} />
-                    <button
-                      type="submit"
-                      className="rounded-full border border-border bg-surface-2 px-3 py-1 text-muted transition hover:border-brand/50 hover:text-foreground"
-                    >
-                      {ex}
-                    </button>
-                  </form>
-                ))}
+                )}
               </div>
             )}
-          </div>
-        </div>
-      )}
+          </form>
 
-      {/* Filter bar */}
-      <div className="border-b border-border bg-background px-4 py-3">
-        <form
-          method="get"
-          className="mx-auto flex max-w-6xl flex-wrap items-center gap-2"
-        >
-          {isClubs && <input type="hidden" name="type" value="clubs" />}
-          {!isClubs && filters.minFollowers && (
-            <input
-              type="hidden"
-              name="minFollowers"
-              value={filters.minFollowers}
-            />
+          {/* AI-zoeken: subtiel, inklapbaar */}
+          {!isClubs && aiOpen && (
+            <div className="flex flex-col items-center gap-2">
+              {aiOpen && (
+                <form
+                  action={aiSearch}
+                  className="flex w-full items-center gap-1.5 rounded-full border border-border bg-surface/95 p-1.5 shadow-xl backdrop-blur"
+                >
+                  <span className="pl-2 text-brand">✦</span>
+                  <input
+                    name="prompt"
+                    defaultValue={filters.ai}
+                    placeholder="Beschrijf wie je zoekt…"
+                    className="min-w-0 flex-1 bg-transparent px-1 text-base outline-none placeholder:text-muted sm:text-sm"
+                  />
+                  <button
+                    type="submit"
+                    className="flex-none rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
+                  >
+                    AI-zoeken
+                  </button>
+                </form>
+              )}
+              {aiOpen && filters.ai && chips.length > 0 && (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">
+                  {chips.map((c) => (
+                    <span
+                      key={c}
+                      className="rounded-full border border-brand/40 bg-brand/10 px-2.5 py-0.5 text-brand"
+                    >
+                      {c}
+                    </span>
+                  ))}
+                  <Link href="/discover" className="text-muted hover:text-foreground">
+                    wissen
+                  </Link>
+                </div>
+              )}
+              {aiOpen && !filters.ai && (
+                <div className="flex flex-wrap justify-center gap-1.5 text-xs">
+                  {AI_EXAMPLES.map((ex) => (
+                    <form key={ex} action={aiSearch}>
+                      <input type="hidden" name="prompt" value={ex} />
+                      <button
+                        type="submit"
+                        className="rounded-full border border-border bg-surface/90 px-2.5 py-0.5 text-muted shadow-sm backdrop-blur transition hover:border-brand/50 hover:text-foreground"
+                      >
+                        {ex}
+                      </button>
+                    </form>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
-          <input
-            name="q"
-            defaultValue={filters.q}
-            placeholder="Zoek op naam..."
-            className="input h-10 flex-1 sm:max-w-xs"
-          />
-          <input
-            name="city"
-            defaultValue={filters.city}
-            placeholder="Stad"
-            className="input h-10 sm:max-w-[10rem]"
-          />
-          {!isClubs && (
-            <select
-              name="genre"
-              defaultValue={filters.genre ?? ""}
-              className="input h-10 sm:max-w-[10rem]"
-            >
-              <option value="">Alle genres</option>
-              {genres.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <button
-            type="submit"
-            className="h-10 rounded-full bg-brand px-5 font-medium text-black transition hover:bg-brand-strong"
-          >
-            Zoek
-          </button>
-        </form>
+        </div>
       </div>
 
-      {/* Split view */}
-      <div className="relative flex flex-1 overflow-hidden">
-        {/* List */}
+      {/* Desktop: zwevend, inklapbaar resultatenpaneel links */}
+      <div
+        className={`pointer-events-none absolute inset-y-0 left-0 z-[1100] hidden w-[340px] p-3 lg:block ${
+          filtersOpen ? "pt-40" : "pt-24"
+        }`}
+      >
         <div
-          className={`${
-            view === "map" ? "hidden" : "flex"
-          } w-full flex-col overflow-y-auto lg:flex lg:w-[440px] lg:flex-none lg:border-r lg:border-border`}
+          className={`pointer-events-auto flex flex-col overflow-hidden rounded-2xl border border-border bg-surface/95 shadow-2xl backdrop-blur ${
+            panelOpen ? "h-full" : ""
+          }`}
         >
-          <div className="flex items-center justify-between gap-2 px-4 py-3 text-sm text-muted">
-            <span>
-              {count}{" "}
-              {isClubs
-                ? count === 1
-                  ? "club"
-                  : "clubs"
-                : count === 1
-                  ? "DJ"
-                  : "DJ's"}
-            </span>
-            {!isClubs && (
-              <Link
-                href="/shortlist"
-                className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-medium text-foreground transition hover:border-brand/50 hover:text-brand"
+          <div className="flex items-center justify-between gap-2 px-4 py-3 text-sm">
+            <span className="font-medium">{countLabel}</span>
+            <div className="flex items-center gap-2">
+              {!isClubs && panelOpen && (
+                <Link
+                  href="/shortlist"
+                  className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-medium transition hover:border-brand/50 hover:text-brand"
+                >
+                  Meerdere
+                </Link>
+              )}
+              <button
+                onClick={() => setPanelOpen((v) => !v)}
+                aria-label="Lijst in- of uitklappen"
+                className="rounded-full px-2 text-muted transition hover:text-foreground"
               >
-                Meerdere tegelijk aanvragen
-              </Link>
-            )}
-          </div>
-          {count === 0 ? (
-            <div className="m-4 rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
-              <p className="font-medium">
-                {isClubs ? "Geen clubs gevonden" : "Geen DJ's gevonden"}
-              </p>
-              <Link
-                href={isClubs ? "/discover?type=clubs" : "/discover"}
-                className="mt-2 inline-block text-sm text-brand"
-              >
-                Wis filters
-              </Link>
+                {panelOpen ? "▾" : "▸"}
+              </button>
             </div>
-          ) : isClubs ? (
-            <ul className="flex flex-col gap-2 px-3 pb-6">
-              {clubs.map((c) => (
-                <ClubCard
-                  key={c.id}
-                  club={c}
-                  active={c.id === activeId}
-                  onHover={() => setActiveId(c.id)}
-                />
-              ))}
-            </ul>
-          ) : (
-            <ul className="flex flex-col gap-2 px-3 pb-6">
-              {artists.map((a) => (
-                <ListCard
-                  key={a.id}
-                  artist={a}
-                  active={a.id === activeId}
-                  onHover={() => setActiveId(a.id)}
-                />
-              ))}
-            </ul>
+          </div>
+          {panelOpen && (
+            <div className="flex-1 overflow-y-auto border-t border-border">
+              {results}
+            </div>
           )}
         </div>
+      </div>
 
-        {/* Map */}
-        <div
-          className={`${
-            view === "list" ? "hidden" : "block"
-          } flex-1 lg:block`}
-        >
-          <DiscoverMap
-            points={points}
-            activeId={activeId}
-            onActivate={setActiveId}
-          />
+      {/* Mobiel: onderrand-sheet met resultaten */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1100] lg:hidden">
+        <div className="pointer-events-auto mx-2 mb-2 overflow-hidden rounded-3xl border border-border bg-surface/95 shadow-2xl backdrop-blur">
+          <button
+            onClick={() => setSheetOpen((v) => !v)}
+            className="flex w-full flex-col items-center gap-1.5 px-4 pb-2 pt-2.5"
+          >
+            <span
+              className="h-1 w-10 rounded-full bg-border"
+              aria-hidden="true"
+            />
+            <span className="flex w-full items-center justify-between text-sm">
+              <span className="font-medium">{countLabel}</span>
+              <span className="text-xs text-muted">
+                {sheetOpen ? "verberg ▾" : "toon ▴"}
+              </span>
+            </span>
+          </button>
+          {sheetOpen && (
+            <div className="max-h-[45vh] overflow-y-auto border-t border-border">
+              {results}
+            </div>
+          )}
         </div>
-
-        {/* Mobile toggle */}
-        <button
-          onClick={() => setView(view === "list" ? "map" : "list")}
-          className="absolute bottom-5 left-1/2 z-[1000] -translate-x-1/2 rounded-full bg-brand px-6 py-3 font-medium text-black shadow-lg transition hover:bg-brand-strong lg:hidden"
-        >
-          {view === "list" ? "Kaart" : "Lijst"}
-        </button>
       </div>
     </div>
   )
 }
 
-function TypeTab({
+function Seg({
   label,
-  type,
-  filters,
   active,
+  filters,
+  clubs,
 }: {
   label: string
-  type: "artists" | "clubs"
-  filters: { q?: string; city?: string }
   active: boolean
+  filters: Filters
+  clubs: boolean
 }) {
   const params = new URLSearchParams()
-  if (type === "clubs") params.set("type", "clubs")
+  if (clubs) params.set("type", "clubs")
   if (filters.q) params.set("q", filters.q)
   if (filters.city) params.set("city", filters.city)
   const href = params.toString() ? `/discover?${params.toString()}` : "/discover"
   return (
     <Link
       href={href}
-      className={`rounded-t-lg border-b-2 px-4 py-2 text-sm font-medium transition ${
-        active
-          ? "border-brand text-foreground"
-          : "border-transparent text-muted hover:text-foreground"
+      className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+        active ? "bg-brand text-black" : "text-muted hover:text-foreground"
       }`}
     >
       {label}
@@ -495,9 +645,7 @@ function ClubCard({
               Club
             </span>
             {club.capacity != null && (
-              <span className="text-xs text-muted">
-                cap. {club.capacity}
-              </span>
+              <span className="text-xs text-muted">cap. {club.capacity}</span>
             )}
           </div>
         </div>

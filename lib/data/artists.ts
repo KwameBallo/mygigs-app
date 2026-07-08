@@ -10,6 +10,9 @@ export type ArtistFilters = {
   city?: string
   act?: string
   minFollowers?: number
+  budget?: number
+  minRating?: number
+  date?: string
 }
 
 export async function getGenres(): Promise<Genre[]> {
@@ -20,14 +23,35 @@ export async function getGenres(): Promise<Genre[]> {
 
 export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]> {
   const supabase = await createClient()
+
+  // Datum-filter: sluit DJ's uit die op die dag al geboekt zijn.
+  let bookedIds: string[] = []
+  if (filters.date) {
+    const { data: booked } = await supabase
+      .from("artist_availability")
+      .select("artist_id")
+      .eq("date", filters.date)
+      .eq("status", "booked")
+    bookedIds = (booked ?? []).map((r) => r.artist_id)
+  }
+
+  // Beste reviews bovenaan (dan online, dan meeste boekingen).
   let query = supabase
     .from("artists")
     .select("*, genres(*)")
-    .order("online", { ascending: false })
     .order("rating", { ascending: false })
+    .order("online", { ascending: false })
+    .order("total_bookings", { ascending: false })
 
+  if (bookedIds.length > 0) {
+    query = query.not("id", "in", `(${bookedIds.join(",")})`)
+  }
+  if (filters.minRating && filters.minRating > 0) {
+    query = query.gte("rating", filters.minRating)
+  }
   if (filters.q) {
-    query = query.ilike("stage_name", `%${filters.q}%`)
+    const term = filters.q.replace(/[%,()]/g, "")
+    query = query.or(`stage_name.ilike.%${term}%,home_city.ilike.%${term}%`)
   }
   if (filters.city) {
     query = query.ilike("home_city", `%${filters.city}%`)
@@ -43,6 +67,9 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
     query = query
       .gte("instagram_followers", filters.minFollowers)
       .order("instagram_followers", { ascending: false })
+  }
+  if (filters.budget && filters.budget > 0) {
+    query = query.lte("base_gage", filters.budget)
   }
 
   const { data } = await query

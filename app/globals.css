@@ -24,10 +24,25 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overscroll-behavior: none;
+}
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+/* Veilige marges rond notch / home-indicator (iOS + Android). */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Subtle brand glow used on hero/feature surfaces. */
@@ -42,7 +57,7 @@ body {
 
 /* Leaflet map: dark theme + MyGigs price pins. */
 .leaflet-container {
-  background: var(--surface-2);
+  background: #e6e6e6;
   font-family: inherit;
 }
 .mg-pin {
@@ -104,11 +119,11 @@ body {
   color: var(--brand);
 }
 .leaflet-control-attribution {
-  background: rgba(7, 7, 8, 0.7) !important;
-  color: var(--muted) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #555 !important;
 }
 .leaflet-control-attribution a {
-  color: var(--muted) !important;
+  color: #555 !important;
 }
 .leaflet-bar a {
   background: var(--surface) !important;

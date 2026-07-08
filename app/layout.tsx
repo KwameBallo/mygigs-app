@@ -1,6 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,6 +23,12 @@ export const metadata: Metadata = {
   title: "MyGigs — Boek DJ's rechtstreeks",
   description:
     "Het boekingsplatform voor DJ's en events. Boek rechtstreeks, met transparante tarieven en veilige betaling via escrow.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "MyGigs",
+  },
 };
 
 export default function RootLayout({
