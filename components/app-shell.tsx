@@ -20,6 +20,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const items = {
     home: { href: "/", label: "Beginscherm", icon: "home" } as NavItem,
     discover: { href: "/discover", label: "Ontdek", icon: "map" } as NavItem,
+    admin: { href: "/admin", label: "Beheer", icon: "settings" } as NavItem,
     bookings: {
       href: "/bookings",
       label: "Boekingen",
@@ -102,6 +103,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     sections.push({ items: [items.home, items.discover] })
   }
 
+  if (profile?.role === "admin") {
+    sections.push({ title: "Beheer", items: [items.admin] })
+  }
+
   const bottomItems: NavItem[] = isArtist
     ? [
         items.dashboard,
@@ -110,7 +115,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         items.earnings,
         items.profile,
       ]
-    : [items.home, items.discover]
+    : profile?.role === "admin"
+      ? [items.home, items.discover, items.admin]
+      : [items.home, items.discover]
 
   const initials = (profile?.full_name ?? profile?.email ?? "?")
     .slice(0, 1)
