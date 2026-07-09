@@ -6,6 +6,7 @@ import { saveArtistProfile } from "./actions"
 import { SyncSocials } from "./sync-button"
 import { GenrePicker } from "./genre-picker"
 import { MediaManager } from "./media-manager"
+import { SmartPriceFill } from "./smart-price-fill"
 
 const EQUIPMENT = ["Microfoon", "Draaitafel", "Speakers", "Verlichting", "Bass"]
 
@@ -173,6 +174,9 @@ export default async function ProfilePage() {
             Vink de provincies aan waar je optreedt en zet je totaalbedrag
             (incl. reiskosten). Niet aangevinkt = daar niet boekbaar.
           </span>
+          <div className="mt-1">
+            <SmartPriceFill />
+          </div>
           <div className="mt-1 flex flex-col gap-2">
             {PROVINCES.map((p) => {
               const active = p.name in rates

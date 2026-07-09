@@ -7,6 +7,7 @@ import { Stars } from "@/components/stars"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatFollowers } from "@/lib/utils/format"
 import { haversineKm } from "@/lib/utils/geo"
+import { PROVINCES } from "@/lib/utils/provinces"
 import { aiSearch } from "./ai-actions"
 import type { MapPoint } from "./discover-map"
 import type { Artist, Genre } from "@/lib/data/artists"
@@ -34,6 +35,8 @@ type Filters = {
   q?: string
   genre?: string
   city?: string
+  province?: string
+  equipment?: string
   act?: string
   minFollowers?: string
   budget?: string
@@ -41,6 +44,16 @@ type Filters = {
   date?: string
   ai?: string
   type?: string
+}
+
+const EQUIPMENT_LABELS: Record<string, string> = {
+  sound: "🔊 Brengt geluid mee",
+  light: "💡 Brengt licht mee",
+}
+
+// Prijs die de boeker betaalt: provinciebedrag indien gefilterd, anders basis.
+function priceFor(a: Artist): number {
+  return a.province_gage ?? a.base_gage
 }
 
 export function DiscoverClient({
@@ -59,7 +72,14 @@ export function DiscoverClient({
   const [panelOpen, setPanelOpen] = useState(true)
   const [aiOpen, setAiOpen] = useState(Boolean(filters.ai))
   const [filtersOpen, setFiltersOpen] = useState(
-    Boolean(filters.genre || filters.budget || filters.rating || filters.date),
+    Boolean(
+      filters.genre ||
+        filters.budget ||
+        filters.rating ||
+        filters.date ||
+        filters.province ||
+        filters.equipment,
+    ),
   )
   const [maxKm, setMaxKm] = useState<number | null>(null)
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(
@@ -95,7 +115,9 @@ export function DiscoverClient({
       ? `≥ ${formatFollowers(Number(filters.minFollowers))} volgers`
       : null,
     filters.city ? `📍 ${filters.city}` : null,
+    filters.province ? `🗺️ ${filters.province}` : null,
     genreName ? `🎵 ${genreName}` : null,
+    filters.equipment ? EQUIPMENT_LABELS[filters.equipment] : null,
   ].filter(Boolean) as string[]
 
   // Afstand-filter (client-side, o.b.v. je locatie).
@@ -140,10 +162,10 @@ export function DiscoverClient({
           id: a.id,
           lat: a.lat as number,
           lng: a.lng as number,
-          pin: `€${Math.round(a.base_gage)}`,
+          pin: `€${Math.round(priceFor(a))}`,
           title: a.stage_name,
           genre: a.genres?.name,
-          meta: `${a.home_city ?? "Onbekend"} · ${formatEuro(a.base_gage)}`,
+          meta: `${a.home_city ?? "Onbekend"} · ${formatEuro(priceFor(a))}`,
           href: `/artists/${a.id}`,
           linkLabel: "Bekijk profiel",
         }))
@@ -225,6 +247,8 @@ export function DiscoverClient({
                     filters.budget ||
                     filters.rating ||
                     filters.date ||
+                    filters.province ||
+                    filters.equipment ||
                     maxKm != null
                       ? "border-brand bg-brand/10 text-brand"
                       : "border-border text-muted hover:border-brand/50 hover:text-brand"
@@ -271,6 +295,27 @@ export function DiscoverClient({
                       {g.name}
                     </option>
                   ))}
+                </select>
+                <select
+                  name="province"
+                  defaultValue={filters.province ?? ""}
+                  className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
+                >
+                  <option value="">Elke provincie</option>
+                  {PROVINCES.map((p) => (
+                    <option key={p.name} value={p.name}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  name="equipment"
+                  defaultValue={filters.equipment ?? ""}
+                  className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
+                >
+                  <option value="">Apparatuur: maakt niet uit</option>
+                  <option value="sound">Brengt geluid mee</option>
+                  <option value="light">Brengt licht mee</option>
                 </select>
                 <select
                   name="budget"
@@ -557,8 +602,15 @@ function ListCard({
                 </span>
               )}
             </div>
-            <span className="flex-none font-semibold text-brand">
-              {formatEuro(artist.base_gage)}
+            <span
+              className="flex-none font-semibold text-brand"
+              title={
+                artist.province_gage != null
+                  ? "Totaalbedrag voor deze provincie, incl. reiskosten"
+                  : undefined
+              }
+            >
+              {formatEuro(priceFor(artist))}
             </span>
           </div>
         </div>

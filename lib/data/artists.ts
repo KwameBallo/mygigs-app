@@ -2,12 +2,19 @@ import { createClient } from "@/lib/supabase/server"
 import type { Tables, Enums } from "@/types/database"
 
 export type Genre = Tables<"genres">
-export type Artist = Tables<"artists"> & { genres: Genre | null }
+export type Artist = Tables<"artists"> & {
+  genres: Genre | null
+  // Prijs in de gekozen provincie (incl. reiskosten); alleen gevuld als er
+  // op provincie gefilterd wordt.
+  province_gage?: number | null
+}
 
 export type ArtistFilters = {
   q?: string
   genre?: string
   city?: string
+  province?: string
+  equipment?: string // "sound" | "light"
   act?: string
   minFollowers?: number
   budget?: number
@@ -35,6 +42,31 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
     bookedIds = (booked ?? []).map((r) => r.artist_id)
   }
 
+  // Genre-filter: match op álle stijlen van een DJ (artist_genres), niet
+  // alleen de primaire genre_id.
+  const genreId = filters.genre ? Number(filters.genre) : NaN
+  let genreArtistIds: string[] = []
+  if (!Number.isNaN(genreId)) {
+    const { data: ag } = await supabase
+      .from("artist_genres")
+      .select("artist_id")
+      .eq("genre_id", genreId)
+    genreArtistIds = (ag ?? []).map((r) => r.artist_id)
+  }
+
+  // Provincie-filter: alleen DJ's die daar boekbaar zijn (rate ingesteld),
+  // met hun totaalbedrag (incl. reiskosten) voor die provincie.
+  let provinceRates: Map<string, number> | null = null
+  if (filters.province) {
+    const { data: pr } = await supabase
+      .from("artist_province_rates")
+      .select("artist_id, gage")
+      .eq("province", filters.province)
+    provinceRates = new Map((pr ?? []).map((r) => [r.artist_id, r.gage]))
+    // Niemand boekbaar in deze provincie → lege resultatenset.
+    if (provinceRates.size === 0) return []
+  }
+
   // Beste reviews bovenaan (dan online, dan meeste boekingen).
   let query = supabase
     .from("artists")
@@ -46,6 +78,9 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
   if (bookedIds.length > 0) {
     query = query.not("id", "in", `(${bookedIds.join(",")})`)
   }
+  if (provinceRates) {
+    query = query.in("id", [...provinceRates.keys()])
+  }
   if (filters.minRating && filters.minRating > 0) {
     query = query.gte("rating", filters.minRating)
   }
@@ -56,9 +91,17 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
   if (filters.city) {
     query = query.ilike("home_city", `%${filters.city}%`)
   }
-  if (filters.genre) {
-    const genreId = Number(filters.genre)
-    if (!Number.isNaN(genreId)) query = query.eq("genre_id", genreId)
+  if (!Number.isNaN(genreId)) {
+    // Primaire genre_id OF een van de gekoppelde stijlen.
+    const idClause = genreArtistIds.length
+      ? `,id.in.(${genreArtistIds.join(",")})`
+      : ""
+    query = query.or(`genre_id.eq.${genreId}${idClause}`)
+  }
+  if (filters.equipment === "sound") {
+    query = query.eq("has_sound", true)
+  } else if (filters.equipment === "light") {
+    query = query.eq("has_light", true)
   }
   if (filters.act) {
     query = query.eq("act_type", filters.act as Enums<"act_type">)
@@ -68,12 +111,25 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
       .gte("instagram_followers", filters.minFollowers)
       .order("instagram_followers", { ascending: false })
   }
-  if (filters.budget && filters.budget > 0) {
+  // Budget: in een gekozen provincie tellen we het provinciebedrag; anders de
+  // basis-gage (server-side voorfilter).
+  if (filters.budget && filters.budget > 0 && !provinceRates) {
     query = query.lte("base_gage", filters.budget)
   }
 
   const { data } = await query
-  return (data as Artist[] | null) ?? []
+  let rows = (data as Artist[] | null) ?? []
+
+  if (provinceRates) {
+    for (const a of rows) a.province_gage = provinceRates.get(a.id) ?? null
+    if (filters.budget && filters.budget > 0) {
+      rows = rows.filter((a) => (a.province_gage ?? a.base_gage) <= filters.budget!)
+    }
+    // Goedkoopste in de provincie eerst binnen de bestaande sortering blijft
+    // secundair; we laten de reviews-sortering leidend.
+  }
+
+  return rows
 }
 
 export async function getArtist(id: string): Promise<Artist | null> {
