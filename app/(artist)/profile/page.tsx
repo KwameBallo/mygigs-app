@@ -1,8 +1,13 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getGenres } from "@/lib/data/artists"
+import { PROVINCES } from "@/lib/utils/provinces"
 import { saveArtistProfile } from "./actions"
 import { SyncSocials } from "./sync-button"
+import { GenrePicker } from "./genre-picker"
+import { MediaManager } from "./media-manager"
+
+const EQUIPMENT = ["Microfoon", "Draaitafel", "Speakers", "Verlichting", "Bass"]
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -17,13 +22,38 @@ export default async function ProfilePage() {
     getGenres(),
   ])
 
+  let selectedGenres: number[] = []
+  const rates: Record<string, number> = {}
+  let media: { id: string; url: string; kind: string; path: string | null }[] = []
+  if (artist) {
+    const [{ data: ag }, { data: pr }, { data: md }] = await Promise.all([
+      supabase.from("artist_genres").select("genre_id").eq("artist_id", artist.id),
+      supabase
+        .from("artist_province_rates")
+        .select("province, gage")
+        .eq("artist_id", artist.id),
+      supabase
+        .from("artist_media")
+        .select("id, url, kind, path")
+        .eq("artist_id", artist.id)
+        .order("created_at", { ascending: false }),
+    ])
+    selectedGenres = (ag ?? []).map((r) => r.genre_id)
+    for (const r of pr ?? []) rates[r.province] = r.gage
+    media = md ?? []
+  }
+  // Val terug op de primaire genre_id als er nog geen meervoudige genres zijn.
+  if (selectedGenres.length === 0 && artist?.genre_id) {
+    selectedGenres = [artist.genre_id]
+  }
+
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">
         {artist ? "Mijn profiel" : "Maak je DJ-profiel"}
       </h1>
       <p className="mt-2 text-sm text-muted">
-        Dit is wat boekers zien op je publieke profiel.
+        Dit is wat boekers zien en waarop ze filteren.
       </p>
 
       {artist && (
@@ -34,6 +64,17 @@ export default async function ProfilePage() {
             tiktokFollowers={artist.tiktok_followers ?? 0}
           />
         </div>
+      )}
+
+      {artist && (
+        <section className="mt-8">
+          <h2 className="text-sm font-medium">Foto&apos;s &amp; video&apos;s</h2>
+          <p className="mb-3 mt-0.5 text-xs text-muted">
+            Laat boekers je sfeer zien — voeg foto&apos;s en korte video&apos;s
+            van je sets toe.
+          </p>
+          <MediaManager artistId={artist.id} userId={user.id} initial={media} />
+        </section>
       )}
 
       <form action={saveArtistProfile} className="mt-8 flex flex-col gap-5">
@@ -48,40 +89,123 @@ export default async function ProfilePage() {
         </Field>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Field label="Basis gage (€)">
-            <input
-              name="base_gage"
-              type="number"
-              min={0}
-              step={50}
-              defaultValue={artist?.base_gage ?? 0}
-              className="input h-11"
-            />
-          </Field>
-          <Field label="Genre">
+          <Field label="Provincie (thuisbasis)">
             <select
-              name="genre_id"
-              defaultValue={artist?.genre_id ?? ""}
+              name="province"
+              defaultValue={artist?.province ?? ""}
               className="input h-11"
             >
-              <option value="">Kies genre</option>
-              {genres.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
+              <option value="">Kies provincie</option>
+              {PROVINCES.map((p) => (
+                <option key={p.name} value={p.name}>
+                  {p.name}
                 </option>
               ))}
             </select>
           </Field>
+          <Field label="Woonplaats (optioneel)">
+            <input
+              name="home_city"
+              defaultValue={artist?.home_city ?? ""}
+              placeholder="Amsterdam"
+              className="input h-11"
+            />
+          </Field>
         </div>
 
-        <Field label="Thuisstad">
+        <Field label="Richtprijs / basis gage (€)">
           <input
-            name="home_city"
-            defaultValue={artist?.home_city ?? ""}
-            placeholder="Amsterdam"
+            name="base_gage"
+            type="number"
+            min={0}
+            step={50}
+            defaultValue={artist?.base_gage ?? 0}
             className="input h-11"
           />
+          <span className="text-xs text-muted">
+            Wordt gebruikt als voorstel; per provincie stel je hieronder je
+            precieze bedrag in.
+          </span>
         </Field>
+
+        {/* Genres — zoek & kies meerdere stijlen */}
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-sm font-medium">Genres / stijlen</legend>
+          <GenrePicker genres={genres} initial={selectedGenres} />
+        </fieldset>
+
+        {/* Apparatuur */}
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-sm font-medium">
+            Apparatuur die je meeneemt
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            {EQUIPMENT.map((item) => (
+              <label
+                key={item}
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm transition has-[:checked]:border-brand has-[:checked]:bg-brand/10"
+              >
+                <input
+                  type="checkbox"
+                  name="equipment_items"
+                  value={item}
+                  defaultChecked={(artist?.equipment_items ?? []).includes(item)}
+                  className="accent-brand"
+                />
+                {item}
+              </label>
+            ))}
+          </div>
+          <input
+            name="equipment"
+            defaultValue={artist?.equipment ?? ""}
+            placeholder="Details (optioneel): bv. Pioneer CDJ-3000, DJM-900"
+            className="input h-11"
+          />
+        </fieldset>
+
+        {/* Prijs + bereik per provincie */}
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-sm font-medium">
+            Prijs per provincie
+          </legend>
+          <span className="-mt-1 text-xs text-muted">
+            Vink de provincies aan waar je optreedt en zet je totaalbedrag
+            (incl. reiskosten). Niet aangevinkt = daar niet boekbaar.
+          </span>
+          <div className="mt-1 flex flex-col gap-2">
+            {PROVINCES.map((p) => {
+              const active = p.name in rates
+              return (
+                <div key={p.name} className="flex items-center gap-3">
+                  <label className="flex flex-1 cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name={`prov_${p.name}`}
+                      defaultChecked={active}
+                      className="accent-brand"
+                    />
+                    {p.name}
+                  </label>
+                  <div className="relative w-32">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
+                      €
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={50}
+                      name={`gage_${p.name}`}
+                      defaultValue={rates[p.name] ?? ""}
+                      placeholder={String(artist?.base_gage ?? "")}
+                      className="input h-10 w-full pl-7"
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </fieldset>
 
         <Field label="Bio">
           <textarea
@@ -90,15 +214,6 @@ export default async function ProfilePage() {
             defaultValue={artist?.bio ?? ""}
             placeholder="Vertel boekers wie je bent en wat je brengt."
             className="input py-3"
-          />
-        </Field>
-
-        <Field label="Apparatuur">
-          <input
-            name="equipment"
-            defaultValue={artist?.equipment ?? ""}
-            placeholder="Pioneer CDJ-3000, DJM-900"
-            className="input h-11"
           />
         </Field>
 
@@ -121,7 +236,8 @@ export default async function ProfilePage() {
           </Field>
         </div>
         <span className="-mt-2 text-xs text-muted">
-          Sla op en klik daarna op &ldquo;Synchroniseer nu&rdquo; om je volgers op te halen.
+          Sla op en klik daarna op &ldquo;Synchroniseer nu&rdquo; om je volgers
+          op te halen.
         </span>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">

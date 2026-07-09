@@ -131,6 +131,10 @@ export type Database = {
           total_bookings: number
           updated_at: string
           user_id: string | null
+          equipment_items: string[]
+          has_light: boolean
+          has_sound: boolean
+          province: string | null
           verified: boolean
         }
         Insert: {
@@ -164,6 +168,10 @@ export type Database = {
           total_bookings?: number
           updated_at?: string
           user_id?: string | null
+          equipment_items?: string[]
+          has_light?: boolean
+          has_sound?: boolean
+          province?: string | null
           verified?: boolean
         }
         Update: {
@@ -197,6 +205,10 @@ export type Database = {
           total_bookings?: number
           updated_at?: string
           user_id?: string | null
+          equipment_items?: string[]
+          has_light?: boolean
+          has_sound?: boolean
+          province?: string | null
           verified?: boolean
         }
         Relationships: [
@@ -212,6 +224,100 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artist_genres: {
+        Row: {
+          artist_id: string
+          genre_id: number
+        }
+        Insert: {
+          artist_id: string
+          genre_id: number
+        }
+        Update: {
+          artist_id?: string
+          genre_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_genres_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artist_genres_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "genres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artist_province_rates: {
+        Row: {
+          artist_id: string
+          gage: number
+          id: string
+          province: string
+        }
+        Insert: {
+          artist_id: string
+          gage: number
+          id?: string
+          province: string
+        }
+        Update: {
+          artist_id?: string
+          gage?: number
+          id?: string
+          province?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_province_rates_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artist_media: {
+        Row: {
+          artist_id: string
+          created_at: string
+          id: string
+          kind: string
+          path: string | null
+          url: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          id?: string
+          kind?: string
+          path?: string | null
+          url: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          path?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_media_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
             referencedColumns: ["id"]
           },
         ]

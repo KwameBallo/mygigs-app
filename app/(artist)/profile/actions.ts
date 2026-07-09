@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { ACT_TYPES } from "@/lib/utils/acts"
+import { PROVINCE_NAMES } from "@/lib/utils/provinces"
 
 export async function saveArtistProfile(formData: FormData) {
   const supabase = await createClient()
@@ -20,22 +21,35 @@ export async function saveArtistProfile(formData: FormData) {
   if (!stage_name) return
 
   const base_gage = Math.max(0, Number(formData.get("base_gage") ?? 0)) || 0
-  const genreRaw = str("genre_id")
-  const genre_id = genreRaw ? Number(genreRaw) : null
 
   const actRaw = String(formData.get("act_type") ?? "dj")
   const act_type = (ACT_TYPES as string[]).includes(actRaw)
     ? (actRaw as (typeof ACT_TYPES)[number])
     : "dj"
 
+  const genreIds = formData
+    .getAll("genres")
+    .map((v) => Number(v))
+    .filter((n) => Number.isFinite(n))
+
+  const equipment_items = formData.getAll("equipment_items").map(String)
+  const has_sound = equipment_items.some((i) =>
+    ["Microfoon", "Draaitafel", "Speakers", "Bass"].includes(i),
+  )
+  const has_light = equipment_items.includes("Verlichting")
+
   const fields = {
     stage_name,
     base_gage,
-    genre_id,
+    genre_id: genreIds[0] ?? null,
     act_type,
+    province: str("province"),
     home_city: str("home_city"),
     bio: str("bio"),
     equipment: str("equipment"),
+    equipment_items,
+    has_sound,
+    has_light,
     instagram_url: str("instagram_url"),
     tiktok_url: str("tiktok_url"),
     spotify_url: str("spotify_url"),
@@ -49,17 +63,53 @@ export async function saveArtistProfile(formData: FormData) {
     .eq("user_id", user.id)
     .maybeSingle()
 
+  let artistId: string
   if (existing) {
     await supabase.from("artists").update(fields).eq("id", existing.id)
+    artistId = existing.id
   } else {
     // Artiest worden is gratis: MyGigs verdient via 7% commissie per boeking.
-    await supabase.from("artists").insert({ user_id: user.id, ...fields })
+    const { data: created } = await supabase
+      .from("artists")
+      .insert({ user_id: user.id, ...fields })
+      .select("id")
+      .single()
+    await supabase.from("profiles").update({ role: "artist" }).eq("id", user.id)
+    if (!created) return
+    artistId = created.id
+  }
+
+  // Genres syncen (vervang de hele set).
+  await supabase.from("artist_genres").delete().eq("artist_id", artistId)
+  if (genreIds.length > 0) {
     await supabase
-      .from("profiles")
-      .update({ role: "artist" })
-      .eq("id", user.id)
+      .from("artist_genres")
+      .insert(genreIds.map((gid) => ({ artist_id: artistId, genre_id: gid })))
+  }
+
+  // Prijs + bereik per provincie syncen.
+  const toUpsert: { artist_id: string; province: string; gage: number }[] = []
+  const toDelete: string[] = []
+  for (const p of PROVINCE_NAMES) {
+    const active = formData.get(`prov_${p}`) != null
+    const gage = Math.max(0, Number(formData.get(`gage_${p}`) ?? 0))
+    if (active && gage > 0) toUpsert.push({ artist_id: artistId, province: p, gage })
+    else toDelete.push(p)
+  }
+  if (toUpsert.length > 0) {
+    await supabase
+      .from("artist_province_rates")
+      .upsert(toUpsert, { onConflict: "artist_id,province" })
+  }
+  if (toDelete.length > 0) {
+    await supabase
+      .from("artist_province_rates")
+      .delete()
+      .eq("artist_id", artistId)
+      .in("province", toDelete)
   }
 
   revalidatePath("/profile")
   revalidatePath("/dashboard")
+  revalidatePath("/discover")
 }
