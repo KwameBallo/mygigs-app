@@ -2,7 +2,9 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Stars } from "@/components/stars"
 import { BookForm } from "./book-form"
+import { EquipmentPlanner, type MiniSupplier } from "./equipment-planner"
 import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
+import { getSuppliers, type Supplier } from "@/lib/data/suppliers"
 import { getProfile } from "@/lib/auth"
 import { formatFollowers } from "@/lib/utils/format"
 
@@ -41,6 +43,23 @@ export default async function ArtistPage({
   ])
 
   if (!artist) notFound()
+
+  // Verhuur aanbieden voor wat de DJ niet meebrengt (top verhuurpartijen).
+  const [soundSuppliers, lightSuppliers] = await Promise.all([
+    artist.has_sound
+      ? Promise.resolve<Supplier[]>([])
+      : getSuppliers({ category: "sound" }),
+    artist.has_light
+      ? Promise.resolve<Supplier[]>([])
+      : getSuppliers({ category: "light" }),
+  ])
+  const toMini = (s: Supplier): MiniSupplier => ({
+    id: s.id,
+    name: s.name,
+    city: s.city,
+    day_rate: s.day_rate,
+    image_url: s.image_url,
+  })
 
   const initials = artist.stage_name
     .split(" ")
@@ -133,12 +152,18 @@ export default async function ArtistPage({
                     {artist.bio}
                   </p>
                 )}
-                {artist.equipment && (
-                  <div className="mt-5">
-                    <h3 className="text-sm font-semibold">Apparatuur</h3>
-                    <p className="mt-1 text-sm text-muted">{artist.equipment}</p>
-                  </div>
-                )}
+                <EquipmentPlanner
+                  hasSound={artist.has_sound}
+                  hasLight={artist.has_light}
+                  equipmentItems={artist.equipment_items ?? []}
+                  equipmentPrices={
+                    (artist.equipment_prices as Record<string, number> | null) ??
+                    {}
+                  }
+                  equipmentText={artist.equipment}
+                  soundSuppliers={soundSuppliers.slice(0, 3).map(toMini)}
+                  lightSuppliers={lightSuppliers.slice(0, 3).map(toMini)}
+                />
                 {links.length > 0 && (
                   <div className="mt-5 flex flex-wrap gap-2">
                     {links.map((l) => (

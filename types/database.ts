@@ -132,6 +132,7 @@ export type Database = {
           updated_at: string
           user_id: string | null
           equipment_items: string[]
+          equipment_prices: Json
           has_light: boolean
           has_sound: boolean
           province: string | null
@@ -169,6 +170,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           equipment_items?: string[]
+          equipment_prices?: Json
           has_light?: boolean
           has_sound?: boolean
           province?: string | null
@@ -206,6 +208,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           equipment_items?: string[]
+          equipment_prices?: Json
           has_light?: boolean
           has_sound?: boolean
           province?: string | null

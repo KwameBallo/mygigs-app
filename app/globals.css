@@ -149,3 +149,18 @@ body {
 .input:focus {
   border-color: var(--brand);
 }
+
+/* Browser-autofill in het donkere thema houden (geen spierwitte velden). */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--foreground);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-2) inset;
+  box-shadow: 0 0 0 1000px var(--surface-2) inset;
+  caret-color: var(--foreground);
+  border-color: var(--border);
+  transition: background-color 9999s ease-out 0s;
+}

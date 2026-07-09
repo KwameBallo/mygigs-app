@@ -7,8 +7,7 @@ import { SyncSocials } from "./sync-button"
 import { GenrePicker } from "./genre-picker"
 import { MediaManager } from "./media-manager"
 import { SmartPriceFill } from "./smart-price-fill"
-
-const EQUIPMENT = ["Microfoon", "Draaitafel", "Speakers", "Verlichting", "Bass"]
+import { EquipmentPicker } from "./equipment-picker"
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -47,6 +46,8 @@ export default async function ProfilePage() {
   if (selectedGenres.length === 0 && artist?.genre_id) {
     selectedGenres = [artist.genre_id]
   }
+  const equipmentPrices: Record<string, number> =
+    (artist?.equipment_prices as Record<string, number> | null) ?? {}
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
@@ -135,33 +136,24 @@ export default async function ProfilePage() {
           <GenrePicker genres={genres} initial={selectedGenres} />
         </fieldset>
 
-        {/* Apparatuur */}
+        {/* Apparatuur — met huurprijs per item */}
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-medium">
             Apparatuur die je meeneemt
           </legend>
-          <div className="flex flex-wrap gap-2">
-            {EQUIPMENT.map((item) => (
-              <label
-                key={item}
-                className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm transition has-[:checked]:border-brand has-[:checked]:bg-brand/10"
-              >
-                <input
-                  type="checkbox"
-                  name="equipment_items"
-                  value={item}
-                  defaultChecked={(artist?.equipment_items ?? []).includes(item)}
-                  className="accent-brand"
-                />
-                {item}
-              </label>
-            ))}
-          </div>
+          <span className="-mt-1 mb-1 text-xs text-muted">
+            Vink aan wat je meebrengt en zet je huurprijs erbij — dit wordt
+            verhuurd aan de boeker. De prijs verschijnt op je profiel.
+          </span>
+          <EquipmentPicker
+            initialItems={artist?.equipment_items ?? []}
+            initialPrices={equipmentPrices}
+          />
           <input
             name="equipment"
             defaultValue={artist?.equipment ?? ""}
             placeholder="Details (optioneel): bv. Pioneer CDJ-3000, DJM-900"
-            className="input h-11"
+            className="input mt-1 h-11"
           />
         </fieldset>
 
@@ -191,18 +183,16 @@ export default async function ProfilePage() {
                     />
                     {p.name}
                   </label>
-                  <div className="relative w-32">
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
-                      €
-                    </span>
+                  <div className="flex h-10 w-32 items-center gap-1.5 rounded-xl border border-border bg-surface-2 pl-3 pr-2 transition focus-within:border-brand">
+                    <span className="flex-none text-sm text-muted">€</span>
                     <input
                       type="number"
                       min={0}
-                      step={50}
+                      step={25}
                       name={`gage_${p.name}`}
                       defaultValue={rates[p.name] ?? ""}
                       placeholder={String(artist?.base_gage ?? "")}
-                      className="input h-10 w-full pl-7"
+                      className="h-full w-full bg-transparent text-sm tabular-nums outline-none placeholder:text-muted"
                     />
                   </div>
                 </div>

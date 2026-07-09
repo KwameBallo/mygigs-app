@@ -38,6 +38,13 @@ export async function saveArtistProfile(formData: FormData) {
   )
   const has_light = equipment_items.includes("Verlichting")
 
+  // Huurprijs per aangevinkt item (de DJ verhuurt z'n eigen apparatuur).
+  const equipment_prices: Record<string, number> = {}
+  for (const item of equipment_items) {
+    const price = Math.max(0, Number(formData.get(`equip_price_${item}`) ?? 0))
+    if (price > 0) equipment_prices[item] = Math.round(price)
+  }
+
   const fields = {
     stage_name,
     base_gage,
@@ -48,6 +55,7 @@ export async function saveArtistProfile(formData: FormData) {
     bio: str("bio"),
     equipment: str("equipment"),
     equipment_items,
+    equipment_prices,
     has_sound,
     has_light,
     instagram_url: str("instagram_url"),
