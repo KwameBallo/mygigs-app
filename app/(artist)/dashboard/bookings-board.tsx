@@ -5,6 +5,7 @@ import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import type { Database } from "@/types/database"
 import { updateBookingStatus, toggleBookingPublic } from "./actions"
+import { openBookingChat } from "@/lib/actions/chat"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
 
@@ -175,6 +176,18 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
               </button>
             </form>
           </>
+        )}
+
+        {CONFIRMED.includes(b.status) && (
+          <form action={openBookingChat}>
+            <input type="hidden" name="booking_id" value={b.id} />
+            <button
+              type="submit"
+              className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+            >
+              Chat met klant
+            </button>
+          </form>
         )}
 
         {PUBLIC_STATUSES.includes(b.status) && (

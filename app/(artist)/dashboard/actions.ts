@@ -11,9 +11,50 @@ export async function updateBookingStatus(formData: FormData) {
   const status = String(formData.get("status") ?? "") as BookingStatus
 
   const supabase = await createClient()
-  await supabase.from("bookings").update({ status }).eq("id", bookingId)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  // Verifieer dat de boeking bij de ingelogde DJ hoort.
+  const { data: artist } = await supabase
+    .from("artists")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle()
+  if (!artist) return
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, event_date")
+    .eq("id", bookingId)
+    .eq("artist_id", artist.id)
+    .maybeSingle()
+  if (!booking) return
+
+  await supabase
+    .from("bookings")
+    .update({ status })
+    .eq("id", bookingId)
+    .eq("artist_id", artist.id)
+
+  // Accepteren = die dag is geboekt → blokkeer 'm in je agenda/Ontdek.
+  if (status === "accepted") {
+    await supabase
+      .from("artist_availability")
+      .delete()
+      .eq("artist_id", artist.id)
+      .eq("date", booking.event_date)
+    await supabase.from("artist_availability").insert({
+      artist_id: artist.id,
+      date: booking.event_date,
+      status: "booked",
+    })
+  }
 
   revalidatePath("/dashboard")
+  revalidatePath("/availability")
+  revalidatePath("/discover")
 }
 
 export async function toggleBookingPublic(formData: FormData) {

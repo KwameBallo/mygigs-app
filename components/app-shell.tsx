@@ -10,12 +10,16 @@ import { LogoutIcon, Icon } from "@/components/icons"
 import { AiAssistant } from "@/components/ai-assistant"
 import { getProfile } from "@/lib/auth"
 import { getUnreadCount } from "@/lib/data/messages"
+import { getPendingBookingCount } from "@/lib/data/bookings"
 import { roleLabel, roleIcon } from "@/lib/roles"
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const profile = await getProfile()
   const isArtist = profile?.role === "artist" || profile?.role === "both"
   const unread = profile ? await getUnreadCount(profile.id) : 0
+  // Nieuwe boekingsaanvragen tonen als melding op het DJ-dashboard.
+  const pendingBookings =
+    profile && isArtist ? await getPendingBookingCount(profile.id) : 0
 
   const items = {
     home: { href: "/", label: "Beginscherm", icon: "home" } as NavItem,
@@ -23,7 +27,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     admin: { href: "/admin", label: "Beheer", icon: "settings" } as NavItem,
     bookings: {
       href: "/bookings",
-      label: "Boekingen",
+      label: "Mijn boekingen",
       icon: "calendar",
     } as NavItem,
     messages: {
@@ -61,6 +65,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       href: "/dashboard",
       label: "Dashboard",
       icon: "dashboard",
+      badge: pendingBookings,
     } as NavItem,
     availability: {
       href: "/availability",
@@ -91,16 +96,20 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       title: "Algemeen",
       items: [items.discover, items.events, items.messages, items.suppliers],
     })
+    // "Als klant" — de DJ kan zelf ook DJ's boeken; strikt gescheiden van de
+    // binnenkomende aanvragen op het Dashboard.
+    sections.push({
+      title: "Als klant",
+      items: [items.bookings],
+    })
     sections.push({
       title: "Organiseren",
       items: [items.manageEvents, items.advertise],
     })
     sections.push({ title: "Account", items: [items.settings] })
   } else {
-    // Consument: bewust simpel — alleen het beginscherm en Ontdek om een DJ
-    // te vinden. De rest blijft bestaan en bereikbaar via directe links / de
-    // boekingsflow, maar staat niet in het menu.
-    sections.push({ items: [items.home, items.discover] })
+    // Consument: beginscherm, Ontdek en de eigen boekingen.
+    sections.push({ items: [items.home, items.discover, items.bookings] })
   }
 
   if (profile?.role === "admin") {
@@ -117,7 +126,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       ]
     : profile?.role === "admin"
       ? [items.home, items.discover, items.admin]
-      : [items.home, items.discover]
+      : [items.home, items.discover, items.bookings]
 
   const initials = (profile?.full_name ?? profile?.email ?? "?")
     .slice(0, 1)

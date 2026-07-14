@@ -8,15 +8,23 @@ export const SUPPLIER_COMMISSION_RATE = 0.1
 
 export type PriceBreakdown = {
   gage: number // gage van de artiest (de boeker betaalt dit)
+  equipment: number // huurkosten apparatuur die de DJ meeneemt
   commission: number // 7% die MyGigs bij de artiest inhoudt
   payout: number // wat de artiest netto ontvangt
-  total: number // wat de boeker betaalt (= gage)
+  total: number // wat de boeker betaalt (= gage + apparatuur)
 }
 
-// De boeker betaalt de gage 1-op-1. MyGigs houdt 7% commissie in bij de artiest.
-export function priceBreakdown(gage: number): PriceBreakdown {
+// De boeker betaalt de gage 1-op-1 + eventuele apparatuurkosten die de DJ
+// meeneemt. MyGigs houdt 7% commissie in bij de artiest (over de gage).
+export function priceBreakdown(gage: number, equipment = 0): PriceBreakdown {
   const commission = Math.round(gage * ARTIST_COMMISSION_RATE)
-  return { gage, commission, payout: gage - commission, total: gage }
+  return {
+    gage,
+    equipment,
+    commission,
+    payout: gage - commission,
+    total: gage + equipment,
+  }
 }
 
 const euro = new Intl.NumberFormat("nl-NL", {

@@ -82,8 +82,10 @@ export async function saveArtistProfile(formData: FormData) {
       .insert({ user_id: user.id, ...fields })
       .select("id")
       .single()
-    await supabase.from("profiles").update({ role: "artist" }).eq("id", user.id)
+    // Pas de rol ómzetten naar 'artist' als het profiel écht is aangemaakt —
+    // anders krijg je een fantoom-DJ (rol=artist zonder profiel).
     if (!created) return
+    await supabase.from("profiles").update({ role: "artist" }).eq("id", user.id)
     artistId = created.id
   }
 

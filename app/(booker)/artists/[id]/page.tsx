@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { Stars } from "@/components/stars"
 import { BookForm } from "./book-form"
 import { EquipmentPlanner, type MiniSupplier } from "./equipment-planner"
+import { EquipmentSelectionProvider } from "./equipment-selection"
 import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
 import { getSuppliers, type Supplier } from "@/lib/data/suppliers"
 import { getProfile } from "@/lib/auth"
@@ -44,14 +45,14 @@ export default async function ArtistPage({
 
   if (!artist) notFound()
 
-  // Verhuur aanbieden voor wat de DJ niet meebrengt (top verhuurpartijen).
+  // Verhuur aanbieden zodra de DJ minstens één geluid- of licht-item mist.
+  const SOUND_ITEMS = ["Microfoon", "Draaitafel", "Speakers", "Bass"]
+  const items = artist.equipment_items ?? []
+  const missingSound = SOUND_ITEMS.some((i) => !items.includes(i))
+  const missingLight = !items.includes("Verlichting")
   const [soundSuppliers, lightSuppliers] = await Promise.all([
-    artist.has_sound
-      ? Promise.resolve<Supplier[]>([])
-      : getSuppliers({ category: "sound" }),
-    artist.has_light
-      ? Promise.resolve<Supplier[]>([])
-      : getSuppliers({ category: "light" }),
+    missingSound ? getSuppliers({ category: "sound" }) : Promise.resolve<Supplier[]>([]),
+    missingLight ? getSuppliers({ category: "light" }) : Promise.resolve<Supplier[]>([]),
   ])
   const toMini = (s: Supplier): MiniSupplier => ({
     id: s.id,
@@ -60,6 +61,11 @@ export default async function ArtistPage({
     day_rate: s.day_rate,
     image_url: s.image_url,
   })
+
+  // Huurprijzen van de apparatuur die de DJ meeneemt (de consument kiest
+  // hieruit; alleen het gekozene telt in de prijs).
+  const equipmentPrices: Record<string, number> =
+    (artist.equipment_prices as Record<string, number> | null) ?? {}
 
   const initials = artist.stage_name
     .split(" ")
@@ -82,6 +88,7 @@ export default async function ArtistPage({
           ← Terug naar ontdekken
         </Link>
 
+        <EquipmentSelectionProvider prices={equipmentPrices}>
         <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1.6fr_1fr]">
           <div>
             <div className="overflow-hidden rounded-3xl border border-border bg-surface">
@@ -153,13 +160,8 @@ export default async function ArtistPage({
                   </p>
                 )}
                 <EquipmentPlanner
-                  hasSound={artist.has_sound}
-                  hasLight={artist.has_light}
                   equipmentItems={artist.equipment_items ?? []}
-                  equipmentPrices={
-                    (artist.equipment_prices as Record<string, number> | null) ??
-                    {}
-                  }
+                  equipmentPrices={equipmentPrices}
                   equipmentText={artist.equipment}
                   soundSuppliers={soundSuppliers.slice(0, 3).map(toMini)}
                   lightSuppliers={lightSuppliers.slice(0, 3).map(toMini)}
@@ -266,6 +268,7 @@ export default async function ArtistPage({
             </section>
           </aside>
         </div>
+        </EquipmentSelectionProvider>
     </main>
   )
 }

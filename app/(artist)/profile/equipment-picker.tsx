@@ -49,21 +49,18 @@ export function EquipmentPicker({
               />
               {item}
             </label>
-            {/* Prijsvak blijft gemount (waarde behouden), maar telt alleen
-                mee als het item is aangevinkt (anders disabled). */}
-            <div
-              className={`flex h-10 w-32 items-center gap-1.5 rounded-xl border border-border bg-surface-2 pl-3 pr-2 transition focus-within:border-brand ${
-                on ? "" : "pointer-events-none opacity-40"
-              }`}
-            >
+            {/* Prijsvak altijd invulbaar; een bedrag vinkt het item auto aan. */}
+            <div className="flex h-10 w-32 items-center gap-1.5 rounded-xl border border-border bg-surface-2 pl-3 pr-2 transition focus-within:border-brand">
               <span className="flex-none text-sm text-muted">€</span>
               <input
                 type="number"
                 min={0}
                 step={5}
                 name={`equip_price_${item}`}
-                disabled={!on}
                 defaultValue={initialPrices[item] ?? ""}
+                onChange={(e) => {
+                  if (Number(e.target.value) > 0 && !on) toggle(item, true)
+                }}
                 placeholder="huur"
                 className="h-full w-full bg-transparent text-sm tabular-nums outline-none placeholder:text-muted"
               />

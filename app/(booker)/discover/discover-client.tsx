@@ -7,7 +7,7 @@ import { Stars } from "@/components/stars"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatFollowers } from "@/lib/utils/format"
 import { haversineKm } from "@/lib/utils/geo"
-import { PROVINCES } from "@/lib/utils/provinces"
+import { PROVINCES, provinceCentroid } from "@/lib/utils/provinces"
 import { aiSearch } from "./ai-actions"
 import type { MapPoint } from "./discover-map"
 import type { Artist, Genre } from "@/lib/data/artists"
@@ -54,6 +54,14 @@ const EQUIPMENT_LABELS: Record<string, string> = {
 // Prijs die de boeker betaalt: provinciebedrag indien gefilterd, anders basis.
 function priceFor(a: Artist): number {
   return a.province_gage ?? a.base_gage
+}
+
+// Kaartpositie: exacte coördinaten indien bekend, anders het middelpunt van
+// de opgegeven provincie — zo verschijnt élke echte DJ op de kaart.
+function artistPos(a: Artist): { lat: number; lng: number } | null {
+  if (a.lat != null && a.lng != null) return { lat: a.lat, lng: a.lng }
+  const c = provinceCentroid(a.province)
+  return c ? { lat: c.lat, lng: c.lng } : null
 }
 
 export function DiscoverClient({
@@ -124,23 +132,15 @@ export function DiscoverClient({
   const shownArtists =
     maxKm != null && userPos
       ? artists
-          .filter(
-            (a) =>
-              a.lat != null &&
-              a.lng != null &&
-              haversineKm(userPos, { lat: a.lat, lng: a.lng }) <= maxKm,
-          )
-          .sort(
-            (a, b) =>
-              haversineKm(userPos, {
-                lat: a.lat as number,
-                lng: a.lng as number,
-              }) -
-              haversineKm(userPos, {
-                lat: b.lat as number,
-                lng: b.lng as number,
-              }),
-          )
+          .filter((a) => {
+            const p = artistPos(a)
+            return p != null && haversineKm(userPos, p) <= maxKm
+          })
+          .sort((a, b) => {
+            const pa = artistPos(a)!
+            const pb = artistPos(b)!
+            return haversineKm(userPos, pa) - haversineKm(userPos, pb)
+          })
       : artists
 
   const points: MapPoint[] = isClubs
@@ -157,11 +157,15 @@ export function DiscoverClient({
           linkLabel: "Bekijk club",
         }))
     : shownArtists
-        .filter((a) => a.lat != null && a.lng != null)
-        .map((a) => ({
+        .map((a) => ({ a, pos: artistPos(a) }))
+        .filter(
+          (x): x is { a: Artist; pos: { lat: number; lng: number } } =>
+            x.pos != null,
+        )
+        .map(({ a, pos }) => ({
           id: a.id,
-          lat: a.lat as number,
-          lng: a.lng as number,
+          lat: pos.lat,
+          lng: pos.lng,
           pin: `€${Math.round(priceFor(a))}`,
           title: a.stage_name,
           genre: a.genres?.name,

@@ -40,7 +40,7 @@ export async function createBooking(formData: FormData) {
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("base_gage")
+    .select("base_gage, equipment_prices")
     .eq("id", artistId)
     .maybeSingle()
 
@@ -48,7 +48,19 @@ export async function createBooking(formData: FormData) {
     redirect(`/artists/${artistId}?error=notfound`)
   }
 
-  const { gage, commission, total } = priceBreakdown(artist.base_gage)
+  // Alleen de door de boeker gekozen DJ-apparatuur telt mee in het totaal.
+  const selectedEquip = formData.getAll("dj_equipment").map(String)
+  const prices = (artist.equipment_prices as Record<string, number> | null) ?? {}
+  const equipmentCost = selectedEquip.reduce(
+    (sum, i) => sum + (Number(prices[i]) || 0),
+    0,
+  )
+
+  // Gage + apparatuur is de consumentprijs inclusief 21% btw.
+  const { gage, commission, total } = priceBreakdown(
+    artist.base_gage,
+    equipmentCost,
+  )
 
   const { error } = await supabase.from("bookings").insert({
     artist_id: artistId,

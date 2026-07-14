@@ -3,11 +3,14 @@
 import { useState } from "react"
 import Link from "next/link"
 import { createBooking } from "./actions"
+import { useEquipmentSelection } from "./equipment-selection"
 import {
   priceBreakdown,
+  vatBreakdown,
   formatEuro,
   formatPercent,
   ARTIST_COMMISSION_RATE,
+  VAT_RATE,
 } from "@/lib/utils/pricing"
 
 type BookingType = "prive" | "zakelijk"
@@ -28,7 +31,10 @@ export function BookForm({
   }
 }) {
   const [type, setType] = useState<BookingType>("prive")
-  const { gage, total } = priceBreakdown(baseGage)
+  const { selected, equipmentCost } = useEquipmentSelection()
+  const { gage, equipment, total: gross } = priceBreakdown(baseGage, equipmentCost)
+  // Gage + apparatuur is de consumentprijs inclusief 21% btw; btw terugrekenen.
+  const { net, vat } = vatBreakdown(gross)
 
   if (!isLoggedIn) {
     return (
@@ -50,6 +56,10 @@ export function BookForm({
       className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6"
     >
       <input type="hidden" name="artist_id" value={artistId} />
+      {/* Gekozen DJ-apparatuur (telt in de prijs). */}
+      {[...selected].map((item) => (
+        <input key={item} type="hidden" name="dj_equipment" value={item} />
+      ))}
       <h2 className="text-lg font-semibold tracking-tight">Boek deze DJ</h2>
 
       {/* Privé of zakelijk */}
@@ -169,11 +179,38 @@ export function BookForm({
 
       <div className="rounded-xl border border-border bg-surface-2 p-4 text-sm">
         <Row label="Gage" value={formatEuro(gage)} />
+        {equipment > 0 && (
+          <Row label="Apparatuur (huur van DJ)" value={formatEuro(equipment)} />
+        )}
         <div className="my-2 border-t border-border" />
-        <Row label="Jij betaalt" value={formatEuro(total)} strong />
+        <Row
+          label={type === "zakelijk" ? "Totaal (incl. btw)" : "Jij betaalt (incl. btw)"}
+          value={formatEuro(gross)}
+          strong
+        />
+        <Row
+          label={`waarvan btw (${formatPercent(VAT_RATE)})`}
+          value={formatEuro(vat)}
+        />
+        {type === "zakelijk" ? (
+          <p className="mt-2 rounded-lg bg-brand/10 px-3 py-2 text-xs text-brand">
+            Excl. btw: {formatEuro(net)}. Als bedrijf vorder je{" "}
+            {formatEuro(vat)} btw terug → netto {formatEuro(net)}.
+          </p>
+        ) : (
+          <p className="mt-2 text-xs text-muted">
+            Particulier: dit is de totaalprijs, inclusief btw.
+          </p>
+        )}
+        {equipment > 0 && (
+          <p className="mt-2 text-xs text-muted">
+            Incl. {formatEuro(equipment)} apparatuurkosten — deze DJ neemt eigen
+            geluid/licht mee.
+          </p>
+        )}
         <p className="mt-2 text-xs text-muted">
-          Je betaalt de gage 1-op-1. MyGigs rekent{" "}
-          {formatPercent(ARTIST_COMMISSION_RATE)} commissie bij de DJ.
+          MyGigs rekent {formatPercent(ARTIST_COMMISSION_RATE)} commissie bij de
+          DJ. Je betaalt pas na acceptatie.
         </p>
       </div>
 

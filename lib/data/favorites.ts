@@ -5,7 +5,7 @@ export async function getFavorites(bookerId: string): Promise<Artist[]> {
   const supabase = await createClient()
   const { data } = await supabase
     .from("favorites")
-    .select("artists(*, genres(*))")
+    .select("artists(*, genres!artists_genre_id_fkey(*))")
     .eq("booker_id", bookerId)
     .order("created_at", { ascending: false })
 

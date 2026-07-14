@@ -3,6 +3,8 @@ import { redirect } from "next/navigation"
 import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
+import { cancelBooking, payBooking } from "./actions"
+import { openBookingChat } from "@/lib/actions/chat"
 
 export default async function BookingsPage({
   searchParams,
@@ -86,13 +88,56 @@ export default async function BookingsPage({
                     <span className="text-lg font-semibold text-brand">
                       {formatEuro(b.total)}
                     </span>
-                    {b.booking_type === "zakelijk" && (
-                      <Link
-                        href={`/bookings/${b.id}/invoice`}
-                        className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted transition hover:border-brand/50 hover:text-foreground"
-                      >
-                        Factuur
-                      </Link>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {b.booking_type === "zakelijk" && (
+                        <Link
+                          href={`/bookings/${b.id}/invoice`}
+                          className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted transition hover:border-brand/50 hover:text-foreground"
+                        >
+                          Factuur
+                        </Link>
+                      )}
+                      {/* Na acceptatie: chatten voor meer info. */}
+                      {(b.status === "accepted" || b.status === "paid") && (
+                        <form action={openBookingChat}>
+                          <input type="hidden" name="booking_id" value={b.id} />
+                          <button
+                            type="submit"
+                            className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted transition hover:border-brand/50 hover:text-foreground"
+                          >
+                            Chat
+                          </button>
+                        </form>
+                      )}
+                      {/* Geaccepteerd → betalen (in escrow bij MyGigs). */}
+                      {b.status === "accepted" && (
+                        <form action={payBooking}>
+                          <input type="hidden" name="booking_id" value={b.id} />
+                          <button
+                            type="submit"
+                            className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-black transition hover:bg-brand-strong"
+                          >
+                            Betalen
+                          </button>
+                        </form>
+                      )}
+                      {(b.status === "pending" || b.status === "accepted") && (
+                        <form action={cancelBooking}>
+                          <input type="hidden" name="booking_id" value={b.id} />
+                          <button
+                            type="submit"
+                            className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted transition hover:border-red-400/50 hover:text-red-400"
+                          >
+                            Annuleren
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                    {b.status === "paid" && (
+                      <span className="text-xs text-green-400">
+                        Betaald — geld staat bij MyGigs, uitbetaling binnen 5
+                        werkdagen.
+                      </span>
                     )}
                   </div>
                 </div>

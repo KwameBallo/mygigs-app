@@ -70,7 +70,7 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
   // Beste reviews bovenaan (dan online, dan meeste boekingen).
   let query = supabase
     .from("artists")
-    .select("*, genres(*)")
+    .select("*, genres!artists_genre_id_fkey(*)")
     .order("rating", { ascending: false })
     .order("online", { ascending: false })
     .order("total_bookings", { ascending: false })
@@ -136,7 +136,7 @@ export async function getArtist(id: string): Promise<Artist | null> {
   const supabase = await createClient()
   const { data } = await supabase
     .from("artists")
-    .select("*, genres(*)")
+    .select("*, genres!artists_genre_id_fkey(*)")
     .eq("id", id)
     .maybeSingle()
   return (data as Artist | null) ?? null
