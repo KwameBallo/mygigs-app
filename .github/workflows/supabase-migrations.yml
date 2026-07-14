@@ -1,0 +1,27 @@
+name: Supabase migraties toepassen
+
+# Draait automatisch zodra er een migratie wijzigt op main. Zo hoef je geen
+# SQL meer handmatig in de Supabase-editor te plakken.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch: {}
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      PROJECT_REF: obvvbeniswpertarxobj
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Koppelen aan project
+        run: supabase link --project-ref "$PROJECT_REF"
+      - name: Nieuwe migraties toepassen
+        run: supabase db push
