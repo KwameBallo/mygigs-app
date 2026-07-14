@@ -9,7 +9,6 @@ import {
   vatBreakdown,
   formatEuro,
   formatPercent,
-  ARTIST_COMMISSION_RATE,
   VAT_RATE,
 } from "@/lib/utils/pricing"
 
@@ -209,8 +208,7 @@ export function BookForm({
           </p>
         )}
         <p className="mt-2 text-xs text-muted">
-          MyGigs rekent {formatPercent(ARTIST_COMMISSION_RATE)} commissie bij de
-          DJ. Je betaalt pas na acceptatie.
+          Je betaalt pas na acceptatie.
         </p>
       </div>
 
