@@ -33,7 +33,12 @@ export function BookForm({
   const { selected, equipmentCost } = useEquipmentSelection()
   const { gage, equipment, total: gross } = priceBreakdown(baseGage, equipmentCost)
   // Gage + apparatuur is de consumentprijs inclusief 21% btw; btw terugrekenen.
-  const { net, vat } = vatBreakdown(gross)
+  const { vat } = vatBreakdown(gross)
+  // Zakelijk toont ex-btw per regel (bedrijven rekenen exclusief btw).
+  const gageExcl = Math.round(gage / (1 + VAT_RATE))
+  const equipExcl = Math.round(equipment / (1 + VAT_RATE))
+  const netExcl = gageExcl + equipExcl
+  const vatExcl = gross - netExcl
 
   if (!isLoggedIn) {
     return (
@@ -177,39 +182,60 @@ export function BookForm({
       </label>
 
       <div className="rounded-xl border border-border bg-surface-2 p-4 text-sm">
-        <Row label="Gage" value={formatEuro(gage)} />
-        {equipment > 0 && (
-          <Row label="Apparatuur (huur van DJ)" value={formatEuro(equipment)} />
-        )}
-        <div className="my-2 border-t border-border" />
-        <Row
-          label={type === "zakelijk" ? "Totaal (incl. btw)" : "Jij betaalt (incl. btw)"}
-          value={formatEuro(gross)}
-          strong
-        />
-        <Row
-          label={`waarvan btw (${formatPercent(VAT_RATE)})`}
-          value={formatEuro(vat)}
-        />
         {type === "zakelijk" ? (
-          <p className="mt-2 rounded-lg bg-brand/10 px-3 py-2 text-xs text-brand">
-            Excl. btw: {formatEuro(net)}. Als bedrijf vorder je{" "}
-            {formatEuro(vat)} btw terug → netto {formatEuro(net)}.
-          </p>
+          <>
+            <Row label="Gage (excl. btw)" value={formatEuro(gageExcl)} />
+            {equipment > 0 && (
+              <Row
+                label="Apparatuur (excl. btw)"
+                value={formatEuro(equipExcl)}
+              />
+            )}
+            <div className="my-2 border-t border-border" />
+            <Row
+              label="Subtotaal (excl. btw)"
+              value={formatEuro(netExcl)}
+              strong
+            />
+            <Row
+              label={`Btw (${formatPercent(VAT_RATE)})`}
+              value={formatEuro(vatExcl)}
+            />
+            <Row label="Totaal (incl. btw)" value={formatEuro(gross)} />
+            <p className="mt-2 text-xs text-muted">
+              Zakelijk: prijzen zijn exclusief btw; de btw vorder je terug.
+            </p>
+          </>
         ) : (
-          <p className="mt-2 text-xs text-muted">
-            Particulier: dit is de totaalprijs, inclusief btw.
-          </p>
+          <>
+            <Row label="Gage" value={formatEuro(gage)} />
+            {equipment > 0 && (
+              <Row
+                label="Apparatuur (huur van DJ)"
+                value={formatEuro(equipment)}
+              />
+            )}
+            <div className="my-2 border-t border-border" />
+            <Row
+              label="Jij betaalt (incl. btw)"
+              value={formatEuro(gross)}
+              strong
+            />
+            <Row
+              label={`waarvan btw (${formatPercent(VAT_RATE)})`}
+              value={formatEuro(vat)}
+            />
+            <p className="mt-2 text-xs text-muted">
+              Particulier: dit is de totaalprijs, inclusief btw.
+            </p>
+          </>
         )}
         {equipment > 0 && (
           <p className="mt-2 text-xs text-muted">
-            Incl. {formatEuro(equipment)} apparatuurkosten — deze DJ neemt eigen
-            geluid/licht mee.
+            De DJ neemt eigen geluid/licht mee — apparatuurkosten inbegrepen.
           </p>
         )}
-        <p className="mt-2 text-xs text-muted">
-          Je betaalt pas na acceptatie.
-        </p>
+        <p className="mt-2 text-xs text-muted">Je betaalt pas na acceptatie.</p>
       </div>
 
       <button
