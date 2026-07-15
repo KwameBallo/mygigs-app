@@ -6,7 +6,7 @@ import { saveArtistProfile } from "./actions"
 import { SyncSocials } from "./sync-button"
 import { GenrePicker } from "./genre-picker"
 import { MediaManager } from "./media-manager"
-import { SmartPriceFill } from "./smart-price-fill"
+import { ProvinceMap } from "./province-map"
 import { EquipmentPicker } from "./equipment-picker"
 
 export default async function ProfilePage() {
@@ -163,41 +163,11 @@ export default async function ProfilePage() {
             Prijs per provincie
           </legend>
           <span className="-mt-1 text-xs text-muted">
-            Vink de provincies aan waar je optreedt en zet je totaalbedrag
-            (incl. reiskosten). Niet aangevinkt = daar niet boekbaar.
+            Klik een provincie op de kaart en zet je totaalbedrag (incl.
+            reiskosten). Oranje = boekbaar, leeg = daar niet boekbaar.
           </span>
-          <div className="mt-1">
-            <SmartPriceFill />
-          </div>
-          <div className="mt-1 flex flex-col gap-2">
-            {PROVINCES.map((p) => {
-              const active = p.name in rates
-              return (
-                <div key={p.name} className="flex items-center gap-3">
-                  <label className="flex flex-1 cursor-pointer items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      name={`prov_${p.name}`}
-                      defaultChecked={active}
-                      className="accent-brand"
-                    />
-                    {p.name}
-                  </label>
-                  <div className="flex h-10 w-32 items-center gap-1.5 rounded-xl border border-border bg-surface-2 pl-3 pr-2 transition focus-within:border-brand">
-                    <span className="flex-none text-sm text-muted">€</span>
-                    <input
-                      type="number"
-                      min={0}
-                      step={25}
-                      name={`gage_${p.name}`}
-                      defaultValue={rates[p.name] ?? ""}
-                      placeholder={String(artist?.base_gage ?? "")}
-                      className="h-full w-full bg-transparent text-sm tabular-nums outline-none placeholder:text-muted"
-                    />
-                  </div>
-                </div>
-              )
-            })}
+          <div className="mt-2">
+            <ProvinceMap initial={rates} />
           </div>
         </fieldset>
 
