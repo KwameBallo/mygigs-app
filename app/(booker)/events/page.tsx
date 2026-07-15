@@ -38,8 +38,8 @@ export default async function EventsPage({
         </Link>
       </div>
 
-      {/* Genre-chips */}
-      <div className="mt-4 flex flex-wrap gap-2">
+      {/* Genre-balk: één rij, horizontaal scrollbaar (compact op mobiel). */}
+      <div className="mt-4 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <GenreChip label="Alles" href="/events" active={!genre} />
         {genres.map((g) => {
           const params = new URLSearchParams()
@@ -119,7 +119,7 @@ function GenreChip({
   return (
     <Link
       href={href}
-      className={`rounded-full border px-3 py-1 text-xs transition ${
+      className={`flex-none whitespace-nowrap rounded-full border px-3 py-1 text-xs transition ${
         active
           ? "border-brand bg-brand text-black"
           : "border-border bg-surface-2 text-muted hover:border-brand/50 hover:text-foreground"

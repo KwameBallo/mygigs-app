@@ -57,6 +57,8 @@ export function EquipmentPicker({
                 min={0}
                 step={5}
                 name={`equip_price_${item}`}
+                autoComplete="off"
+                data-1p-ignore
                 defaultValue={initialPrices[item] ?? ""}
                 onChange={(e) => {
                   if (Number(e.target.value) > 0 && !on) toggle(item, true)
