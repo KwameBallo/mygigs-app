@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getGenres } from "@/lib/data/artists"
@@ -57,6 +58,21 @@ export default async function ProfilePage() {
       <p className="mt-2 text-sm text-muted">
         Dit is wat boekers zien en waarop ze filteren.
       </p>
+
+      {artist && (
+        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-brand/30 bg-brand/10 p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+            <span className="flex h-2 w-2 rounded-full bg-green-400" />
+            Je profiel is live en zichtbaar voor boekers.
+          </div>
+          <Link
+            href={`/artists/${artist.id}`}
+            className="ml-auto rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-black transition hover:bg-brand-strong"
+          >
+            Bekijk je openbare profiel →
+          </Link>
+        </div>
+      )}
 
       {artist && (
         <div className="mt-6">

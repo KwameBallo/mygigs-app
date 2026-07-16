@@ -23,7 +23,7 @@ export default async function DashboardPage() {
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("*, genres(name)")
+    .select("*, genres!artists_genre_id_fkey(name)")
     .eq("user_id", user.id)
     .maybeSingle()
 
