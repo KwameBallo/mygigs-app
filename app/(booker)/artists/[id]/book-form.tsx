@@ -31,14 +31,16 @@ export function BookForm({
 }) {
   const [type, setType] = useState<BookingType>("prive")
   const { selected, equipmentCost } = useEquipmentSelection()
-  const { gage, equipment, total: gross } = priceBreakdown(baseGage, equipmentCost)
-  // Gage + apparatuur is de consumentprijs inclusief 21% btw; btw terugrekenen.
-  const { vat } = vatBreakdown(gross)
-  // Zakelijk toont ex-btw per regel (bedrijven rekenen exclusief btw).
-  const gageExcl = Math.round(gage / (1 + VAT_RATE))
-  const equipExcl = Math.round(equipment / (1 + VAT_RATE))
-  const netExcl = gageExcl + equipExcl
-  const vatExcl = gross - netExcl
+  const { gage, equipment, total: grossIncl } = priceBreakdown(
+    baseGage,
+    equipmentCost,
+  )
+  // Particulier: gage + apparatuur is inclusief 21% btw (btw terugrekenen).
+  const { vat: vatIncl } = vatBreakdown(grossIncl)
+  // Zakelijk: gage + apparatuur zijn exclusief btw; 21% komt er bovenop.
+  const netZak = gage + equipment
+  const vatZak = Math.round(netZak * VAT_RATE * 100) / 100
+  const grossZak = netZak + vatZak
 
   if (!isLoggedIn) {
     return (
@@ -184,26 +186,27 @@ export function BookForm({
       <div className="rounded-xl border border-border bg-surface-2 p-4 text-sm">
         {type === "zakelijk" ? (
           <>
-            <Row label="Gage (excl. btw)" value={formatEuro(gageExcl)} />
+            <Row label="Gage (excl. btw)" value={formatEuro(gage)} />
             {equipment > 0 && (
               <Row
                 label="Apparatuur (excl. btw)"
-                value={formatEuro(equipExcl)}
+                value={formatEuro(equipment)}
               />
             )}
             <div className="my-2 border-t border-border" />
             <Row
               label="Subtotaal (excl. btw)"
-              value={formatEuro(netExcl)}
+              value={formatEuro(netZak)}
               strong
             />
             <Row
               label={`Btw (${formatPercent(VAT_RATE)})`}
-              value={formatEuro(vatExcl)}
+              value={formatEuro(vatZak)}
             />
-            <Row label="Totaal (incl. btw)" value={formatEuro(gross)} />
+            <Row label="Totaal (incl. btw)" value={formatEuro(grossZak)} />
             <p className="mt-2 text-xs text-muted">
-              Zakelijk: prijzen zijn exclusief btw; de btw vorder je terug.
+              Zakelijk: prijzen zijn exclusief btw; de btw staat apart op de
+              factuur en vorder je terug.
             </p>
           </>
         ) : (
@@ -218,12 +221,12 @@ export function BookForm({
             <div className="my-2 border-t border-border" />
             <Row
               label="Jij betaalt (incl. btw)"
-              value={formatEuro(gross)}
+              value={formatEuro(grossIncl)}
               strong
             />
             <Row
               label={`waarvan btw (${formatPercent(VAT_RATE)})`}
-              value={formatEuro(vat)}
+              value={formatEuro(vatIncl)}
             />
             <p className="mt-2 text-xs text-muted">
               Particulier: dit is de totaalprijs, inclusief btw.

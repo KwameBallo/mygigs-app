@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { priceBreakdown } from "@/lib/utils/pricing"
+import { priceBreakdown, VAT_RATE } from "@/lib/utils/pricing"
 
 export async function createBooking(formData: FormData) {
   const artistId = String(formData.get("artist_id") ?? "")
@@ -56,11 +56,16 @@ export async function createBooking(formData: FormData) {
     0,
   )
 
-  // Gage + apparatuur is de consumentprijs inclusief 21% btw.
-  const { gage, commission, total } = priceBreakdown(
+  const { gage, commission, total: grossIncl } = priceBreakdown(
     artist.base_gage,
     equipmentCost,
   )
+  // Particulier: gage + apparatuur is incl. btw. Zakelijk: dat bedrag is
+  // exclusief btw en de boeker betaalt 21% btw erbovenop (t.b.v. de factuur).
+  const total =
+    bookingType === "zakelijk"
+      ? Math.round(grossIncl * (1 + VAT_RATE) * 100) / 100
+      : grossIncl
 
   const { error } = await supabase.from("bookings").insert({
     artist_id: artistId,
