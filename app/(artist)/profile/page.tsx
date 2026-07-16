@@ -7,6 +7,7 @@ import { saveArtistProfile } from "./actions"
 import { SyncSocials } from "./sync-button"
 import { GenrePicker } from "./genre-picker"
 import { MediaManager } from "./media-manager"
+import { AvatarUploader } from "./avatar-uploader"
 import { ProvinceMap } from "./province-map"
 import { EquipmentPicker } from "./equipment-picker"
 
@@ -49,6 +50,12 @@ export default async function ProfilePage() {
   }
   const equipmentPrices: Record<string, number> =
     (artist?.equipment_prices as Record<string, number> | null) ?? {}
+  const initials = (artist?.stage_name ?? "?")
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase()
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
@@ -82,6 +89,21 @@ export default async function ProfilePage() {
             tiktokFollowers={artist.tiktok_followers ?? 0}
           />
         </div>
+      )}
+
+      {artist && (
+        <section className="mt-8">
+          <h2 className="text-sm font-medium">Profielfoto</h2>
+          <p className="mb-3 mt-0.5 text-xs text-muted">
+            Verschijnt op je profiel en in de zoekresultaten — in plaats van je
+            initialen.
+          </p>
+          <AvatarUploader
+            userId={user.id}
+            initialUrl={artist.avatar_url}
+            initials={initials}
+          />
+        </section>
       )}
 
       {artist && (

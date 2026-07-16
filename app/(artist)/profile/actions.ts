@@ -123,3 +123,21 @@ export async function saveArtistProfile(formData: FormData) {
   revalidatePath("/dashboard")
   revalidatePath("/discover")
 }
+
+// Profielfoto (avatar) instellen — verschijnt op het profiel en in de
+// zoekresultaten i.p.v. de initialen.
+export async function setArtistAvatar(url: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  await supabase
+    .from("artists")
+    .update({ avatar_url: url })
+    .eq("user_id", user.id)
+
+  revalidatePath("/profile")
+  revalidatePath("/discover")
+}
