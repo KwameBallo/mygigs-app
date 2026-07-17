@@ -92,14 +92,26 @@ export default async function ArtistPage({
         <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1.6fr_1fr]">
           <div>
             <div className="overflow-hidden rounded-3xl border border-border bg-surface">
-              <div className="relative aspect-[16/9] bg-surface-2">
+              <div className="relative aspect-[4/3] overflow-hidden bg-surface-2 sm:aspect-[16/9]">
                 {artist.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={artist.avatar_url}
-                    alt={artist.stage_name}
-                    className="h-full w-full object-cover"
-                  />
+                  <>
+                    {/* Vervaagde vulling: dezelfde foto, zodat de zijkanten van
+                        een staande foto niet leeg/afgesneden ogen. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={artist.avatar_url}
+                      alt=""
+                      aria-hidden
+                      className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+                    />
+                    {/* De volledige foto, nooit afgesneden. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={artist.avatar_url}
+                      alt={artist.stage_name}
+                      className="relative h-full w-full object-contain"
+                    />
+                  </>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-6xl font-semibold text-muted">
                     {initials}
