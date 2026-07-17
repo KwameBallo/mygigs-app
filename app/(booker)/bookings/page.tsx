@@ -3,15 +3,15 @@ import { redirect } from "next/navigation"
 import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
-import { cancelBooking, payBooking } from "./actions"
+import { cancelBooking } from "./actions"
 import { openBookingChat } from "@/lib/actions/chat"
 
 export default async function BookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ shortlist?: string; created?: string }>
+  searchParams: Promise<{ shortlist?: string; created?: string; paid?: string }>
 }) {
-  const { shortlist } = await searchParams
+  const { shortlist, paid } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -35,6 +35,13 @@ export default async function BookingsPage({
           <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/10 p-4 text-sm text-brand">
             Je aanvraag is naar alle geselecteerde DJ&apos;s gestuurd. Je ziet
             hieronder per DJ de status.
+          </div>
+        )}
+
+        {paid === "1" && (
+          <div className="mt-6 rounded-2xl border border-green-500/40 bg-green-500/10 p-4 text-sm text-green-300">
+            Betaling gelukt! Je bedrag staat veilig bij MyGigs en gaat pas ná
+            het optreden naar de DJ. Je kunt nu via de chat de details afstemmen.
           </div>
         )}
 
@@ -109,17 +116,14 @@ export default async function BookingsPage({
                           </button>
                         </form>
                       )}
-                      {/* Geaccepteerd → betalen (in escrow bij MyGigs). */}
+                      {/* Geaccepteerd → naar het betaalscherm (escrow bij MyGigs). */}
                       {b.status === "accepted" && (
-                        <form action={payBooking}>
-                          <input type="hidden" name="booking_id" value={b.id} />
-                          <button
-                            type="submit"
-                            className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-black transition hover:bg-brand-strong"
-                          >
-                            Betalen
-                          </button>
-                        </form>
+                        <Link
+                          href={`/bookings/${b.id}/pay`}
+                          className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-black transition hover:bg-brand-strong"
+                        >
+                          Betalen
+                        </Link>
                       )}
                       {(b.status === "pending" || b.status === "accepted") && (
                         <form action={cancelBooking}>

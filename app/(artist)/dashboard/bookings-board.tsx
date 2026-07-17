@@ -134,6 +134,10 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
 
 function BookingCard({ booking: b }: { booking: DashBooking }) {
   const isPending = b.status === "pending"
+  // AVG/dataminimalisatie: de naam van de klant komt pas vrij zodra er een
+  // grondslag is — d.w.z. de aanvraag is geaccepteerd. Daarvóór blijft de
+  // klant anoniem voor de DJ.
+  const contactUnlocked = ["accepted", "paid", "completed"].includes(b.status)
   const u = isPending ? urgencyLabel(b.created_at) : null
   const [open, setOpen] = useState(false)
   const eventDate = new Date(b.event_date).toLocaleDateString("nl-NL", {
@@ -215,10 +219,21 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
             <DetailRow label="Stad" value={b.city} />
             <DetailRow label="Locatie" value={b.venue_name} />
             <DetailRow label="Adres" value={b.address} />
-            <DetailRow
-              label={b.booking_type === "zakelijk" ? "Bedrijf" : "Opdrachtgever"}
-              value={b.company_name ?? b.booker_name}
-            />
+            {contactUnlocked ? (
+              <DetailRow
+                label={b.booking_type === "zakelijk" ? "Bedrijf" : "Klant"}
+                value={b.company_name ?? b.booker_name}
+              />
+            ) : (
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                  Klant
+                </dt>
+                <dd className="mt-0.5 text-sm text-muted">
+                  Naam zichtbaar na acceptatie
+                </dd>
+              </div>
+            )}
           </dl>
 
           {b.message && (
@@ -260,8 +275,8 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
                 <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
                 <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" strokeLinecap="round" />
               </svg>
-              Contactgegevens van de klant komen beschikbaar zodra je de aanvraag
-              accepteert.
+              Om privacyredenen (AVG) zie je de naam van de klant pas nadat je
+              accepteert. Verdere afstemming loopt daarna veilig via de chat.
             </p>
           )}
         </div>

@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -33,6 +34,13 @@ export async function payBooking(formData: FormData) {
   const bookingId = String(formData.get("booking_id") ?? "")
   if (!bookingId) return
 
+  // Alleen digitale betaalmethoden — geen contant. Nu nog gesimuleerd; zodra
+  // Stripe gekoppeld is komt hier een echte iDEAL/creditcard-PaymentIntent.
+  const rawMethod = String(formData.get("payment_method") ?? "")
+  const paymentMethod = ["ideal", "card"].includes(rawMethod)
+    ? rawMethod
+    : "ideal"
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -50,11 +58,14 @@ export async function payBooking(formData: FormData) {
   const admin = createAdminClient()
 
   // 1) Betaling vastleggen — geld staat vast bij MyGigs (escrow).
+  //    provider_ref markeert (voorlopig) de gekozen methode; straks de
+  //    Stripe PaymentIntent-id.
   await admin.from("payments").insert({
     booking_id: booking.id,
     amount: booking.total,
     currency: "eur",
     provider: "mock",
+    provider_ref: `sim-${paymentMethod}`,
     status: "held",
   })
 
@@ -75,4 +86,5 @@ export async function payBooking(formData: FormData) {
 
   revalidatePath("/bookings")
   revalidatePath("/dashboard")
+  redirect("/bookings?paid=1")
 }
