@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Logo } from "@/components/logo"
 import { signIn, signUp } from "./actions"
+import { PasswordFields } from "./password-fields"
 
 type SearchParams = Promise<{
   mode?: string
@@ -119,17 +120,7 @@ export default async function LoginPage({
               className="input"
             />
           </Field>
-          <Field label="Wachtwoord">
-            <input
-              name="password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete={isSignup ? "new-password" : "current-password"}
-              placeholder="••••••••"
-              className="input"
-            />
-          </Field>
+          <PasswordFields isSignup={isSignup} />
           {isSignup && (
             <label className="flex items-start gap-2.5 text-sm text-muted">
               <input

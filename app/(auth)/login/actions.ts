@@ -50,10 +50,16 @@ function signupError(message: string, isDj: boolean): never {
 export async function signUp(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim()
   const password = String(formData.get("password") ?? "")
+  const passwordConfirm = String(formData.get("password_confirm") ?? "")
   const fullName = String(formData.get("full_name") ?? "").trim()
   const role = (String(formData.get("role") ?? "booker") as Role) || "booker"
   const acceptedTerms = formData.get("accept_terms") != null
   const isDj = role === "artist" || role === "both"
+
+  // Beide wachtwoorden moeten gelijk zijn (voorkomt typefouten).
+  if (password !== passwordConfirm) {
+    signupError("De wachtwoorden komen niet overeen.", isDj)
+  }
 
   // AVG-grondslag: zonder akkoord op voorwaarden + privacybeleid geen account.
   if (!acceptedTerms) {
