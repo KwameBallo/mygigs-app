@@ -51,7 +51,7 @@ export default async function DashboardPage() {
   const [{ data: bookings }, { count: openDays }] = await Promise.all([
     supabase
       .from("bookings")
-      .select("*")
+      .select("*, booker:profiles!bookings_booker_id_fkey(full_name)")
       .eq("artist_id", artist.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -63,17 +63,30 @@ export default async function DashboardPage() {
   ])
 
   const list = bookings ?? []
-  const dashBookings: DashBooking[] = list.map((b) => ({
-    id: b.id,
-    status: b.status,
-    event_date: b.event_date,
-    city: b.city,
-    venue_name: b.venue_name,
-    message: b.message,
-    gage: b.gage,
-    is_public: b.is_public,
-    created_at: b.created_at,
-  }))
+  const dashBookings: DashBooking[] = list.map((b) => {
+    // Supabase kan een embedded to-one als object óf 1-element-array teruggeven.
+    const booker = Array.isArray(b.booker) ? b.booker[0] : b.booker
+    return {
+      id: b.id,
+      status: b.status,
+      event_date: b.event_date,
+      city: b.city,
+      venue_name: b.venue_name,
+      address: b.address,
+      message: b.message,
+      gage: b.gage,
+      service_fee: b.service_fee,
+      total: b.total,
+      booking_type: b.booking_type,
+      occasion: b.occasion,
+      company_name: b.company_name,
+      start_time: b.start_time,
+      end_time: b.end_time,
+      booker_name: booker?.full_name ?? null,
+      is_public: b.is_public,
+      created_at: b.created_at,
+    }
+  })
 
   const pending = list.filter((b) => b.status === "pending")
   const accepted = list.filter((b) =>

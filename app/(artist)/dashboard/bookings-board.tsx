@@ -9,14 +9,25 @@ import { openBookingChat } from "@/lib/actions/chat"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
 
+type BookingKind = Database["public"]["Enums"]["booking_type"]
+
 export type DashBooking = {
   id: string
   status: BookingStatus
   event_date: string
   city: string | null
   venue_name: string | null
+  address: string | null
   message: string | null
   gage: number
+  service_fee: number
+  total: number
+  booking_type: BookingKind
+  occasion: string | null
+  company_name: string | null
+  start_time: string | null
+  end_time: string | null
+  booker_name: string | null
   is_public: boolean
   created_at: string
 }
@@ -39,6 +50,21 @@ function urgencyLabel(iso: string) {
   if (d <= 0) return { text: "Nieuw vandaag", urgent: false }
   if (d === 1) return { text: "1 dag open", urgent: false }
   return { text: `${d} dagen open`, urgent: d >= 3 }
+}
+
+// "20:00:00" → "20:00". Geeft null terug voor lege/ongeldige tijden.
+function formatTime(t: string | null) {
+  if (!t) return null
+  const m = /^(\d{2}):(\d{2})/.exec(t)
+  return m ? `${m[1]}:${m[2]}` : null
+}
+
+// Tijdvenster van het event, bijv. "20:00 – 01:00" of alleen de starttijd.
+function timeRange(start: string | null, end: string | null) {
+  const s = formatTime(start)
+  const e = formatTime(end)
+  if (s && e) return `${s} – ${e}`
+  return s ?? e
 }
 
 export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
@@ -109,22 +135,34 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
 function BookingCard({ booking: b }: { booking: DashBooking }) {
   const isPending = b.status === "pending"
   const u = isPending ? urgencyLabel(b.created_at) : null
+  const [open, setOpen] = useState(false)
   const eventDate = new Date(b.event_date).toLocaleDateString("nl-NL", {
+    weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   })
+  const typeLabel = b.booking_type === "zakelijk" ? "Zakelijk" : "Privé"
 
   return (
     <div
-      className={`rounded-2xl border bg-surface p-5 ${
+      className={`rounded-2xl border bg-surface ${
         u?.urgent ? "border-brand/50" : "border-border"
       }`}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      {/* Kop: klikbaar om details uit/in te klappen */}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-start justify-between gap-3 p-5 text-left"
+      >
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={b.status} />
+            <span className="rounded-full border border-border bg-surface-2 px-2 py-0.5 text-xs text-muted">
+              {typeLabel}
+            </span>
             {u && (
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -142,17 +180,99 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
             {b.city ? ` · ${b.city}` : ""}
             {b.venue_name ? ` · ${b.venue_name}` : ""}
           </p>
-          {b.message && (
-            <p className="mt-2 max-w-lg text-sm text-muted">“{b.message}”</p>
+          {b.occasion && (
+            <p className="mt-1 truncate text-sm font-medium">{b.occasion}</p>
           )}
         </div>
-        <span className="flex-none text-lg font-semibold text-brand">
-          {formatEuro(b.gage)}
-        </span>
-      </div>
+        <div className="flex flex-none flex-col items-end gap-1">
+          <span className="text-lg font-semibold text-brand">
+            {formatEuro(b.gage)}
+          </span>
+          <span className="flex items-center gap-1 text-xs text-muted">
+            {open ? "Minder" : "Details"}
+            <svg
+              viewBox="0 0 12 12"
+              className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
+              <path d="M2.5 4.5 L6 8 L9.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        </div>
+      </button>
+
+      {/* Detailpaneel */}
+      {open && (
+        <div className="border-t border-border px-5 pb-5 pt-4">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+            <DetailRow label="Type" value={typeLabel} />
+            <DetailRow label="Gelegenheid" value={b.occasion} />
+            <DetailRow label="Datum" value={eventDate} />
+            <DetailRow label="Tijd" value={timeRange(b.start_time, b.end_time)} />
+            <DetailRow label="Stad" value={b.city} />
+            <DetailRow label="Locatie" value={b.venue_name} />
+            <DetailRow label="Adres" value={b.address} />
+            <DetailRow
+              label={b.booking_type === "zakelijk" ? "Bedrijf" : "Opdrachtgever"}
+              value={b.company_name ?? b.booker_name}
+            />
+          </dl>
+
+          {b.message && (
+            <div className="mt-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                Bericht van de klant
+              </p>
+              <p className="mt-1 rounded-xl border border-border bg-surface-2 p-3 text-sm">
+                “{b.message}”
+              </p>
+            </div>
+          )}
+
+          {/* Uitbetaling: wat de DJ overhoudt (gage) vs. wat de klant betaalt. */}
+          <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4 text-sm">
+            <div className="flex items-center justify-between py-0.5">
+              <span className="font-medium">Jouw gage</span>
+              <span className="font-semibold text-brand">
+                {formatEuro(b.gage)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-0.5 text-muted">
+              <span>Klant betaalt (incl. servicekosten &amp; btw)</span>
+              <span>{formatEuro(b.total)}</span>
+            </div>
+          </div>
+
+          {/* Contactgegevens komen vrij na acceptatie (volgende stap). */}
+          {isPending && (
+            <p className="mt-4 flex items-center gap-2 text-xs text-muted">
+              <svg
+                viewBox="0 0 16 16"
+                className="h-3.5 w-3.5 flex-none"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                aria-hidden="true"
+              >
+                <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
+                <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" strokeLinecap="round" />
+              </svg>
+              Contactgegevens van de klant komen beschikbaar zodra je de aanvraag
+              accepteert.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Acties */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+      <div
+        className={`flex flex-wrap items-center gap-2 px-5 pb-5 ${
+          open ? "border-t border-border pt-4" : ""
+        }`}
+      >
         {isPending && (
           <>
             <form action={updateBookingStatus}>
@@ -212,6 +332,19 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
           </form>
         )}
       </div>
+    </div>
+  )
+}
+
+// Eén regel in het detailpaneel. Verbergt zichzelf als er geen waarde is.
+function DetailRow({ label, value }: { label: string; value: string | null }) {
+  if (!value) return null
+  return (
+    <div>
+      <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+        {label}
+      </dt>
+      <dd className="mt-0.5 text-sm">{value}</dd>
     </div>
   )
 }
