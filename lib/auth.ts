@@ -19,3 +19,24 @@ export async function getProfile(): Promise<Profile | null> {
 
   return data
 }
+
+// Zoals getProfile(), maar geeft ook terug of het e-mailadres bevestigd is —
+// nodig om boeken/betalen pas toe te staan na e-mailbevestiging.
+export async function getViewer(): Promise<{
+  profile: Profile | null
+  emailConfirmed: boolean
+}> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { profile: null, emailConfirmed: false }
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle()
+
+  return { profile: data, emailConfirmed: !!user.email_confirmed_at }
+}

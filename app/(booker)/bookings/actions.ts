@@ -46,6 +46,8 @@ export async function payBooking(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return
+  // Betalen kan alleen met een bevestigd e-mailadres.
+  if (!user.email_confirmed_at) redirect("/bookings")
 
   const { data: booking } = await supabase
     .from("bookings")

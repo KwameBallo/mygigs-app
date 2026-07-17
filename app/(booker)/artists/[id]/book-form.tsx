@@ -18,11 +18,13 @@ export function BookForm({
   artistId,
   baseGage,
   isLoggedIn,
+  emailConfirmed,
   company,
 }: {
   artistId: string
   baseGage: number
   isLoggedIn: boolean
+  emailConfirmed: boolean
   company?: {
     name: string | null
     vat: string | null
@@ -52,6 +54,27 @@ export function BookForm({
         >
           Inloggen om te boeken
         </Link>
+      </div>
+    )
+  }
+
+  // Boeken kan pas nadat het e-mailadres is bevestigd (voorkomt nep-accounts
+  // en geeft de DJ zekerheid dat de aanvraag echt is).
+  if (!emailConfirmed) {
+    return (
+      <div className="rounded-2xl border border-border bg-surface p-6">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Bevestig eerst je e-mailadres
+        </h2>
+        <p className="mt-2 text-sm text-muted">
+          We hebben je een bevestigingsmail gestuurd. Klik op de link in die
+          mail om je account te activeren — daarna kun je deze DJ boeken. Zo
+          weet de DJ zeker dat elke aanvraag echt is.
+        </p>
+        <p className="mt-3 text-xs text-muted">
+          Geen mail ontvangen? Check je spam, of log opnieuw in om een nieuwe
+          bevestigingsmail te ontvangen.
+        </p>
       </div>
     )
   }

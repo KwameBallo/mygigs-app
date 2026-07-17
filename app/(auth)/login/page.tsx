@@ -130,6 +130,36 @@ export default async function LoginPage({
               className="input"
             />
           </Field>
+          {isSignup && (
+            <label className="flex items-start gap-2.5 text-sm text-muted">
+              <input
+                name="accept_terms"
+                type="checkbox"
+                required
+                value="yes"
+                className="mt-0.5 h-4 w-4 flex-none accent-brand"
+              />
+              <span>
+                Ik ga akkoord met de{" "}
+                <Link
+                  href="/voorwaarden"
+                  target="_blank"
+                  className="font-medium text-brand hover:underline"
+                >
+                  algemene voorwaarden
+                </Link>{" "}
+                en het{" "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="font-medium text-brand hover:underline"
+                >
+                  privacybeleid
+                </Link>
+                .
+              </span>
+            </label>
+          )}
           <button
             type="submit"
             className="mt-2 rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong"

@@ -6,7 +6,7 @@ import { EquipmentPlanner, type MiniSupplier } from "./equipment-planner"
 import { EquipmentSelectionProvider } from "./equipment-selection"
 import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
 import { getSuppliers, type Supplier } from "@/lib/data/suppliers"
-import { getProfile } from "@/lib/auth"
+import { getViewer } from "@/lib/auth"
 import { formatFollowers } from "@/lib/utils/format"
 
 const MONTHS = [
@@ -36,12 +36,13 @@ export default async function ArtistPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [artist, reviews, shows, profile] = await Promise.all([
+  const [artist, reviews, shows, viewer] = await Promise.all([
     getArtist(id),
     getArtistReviews(id),
     getPublicShows(id),
-    getProfile(),
+    getViewer(),
   ])
+  const { profile, emailConfirmed } = viewer
 
   if (!artist) notFound()
 
@@ -226,6 +227,7 @@ export default async function ArtistPage({
               artistId={artist.id}
               baseGage={artist.base_gage}
               isLoggedIn={!!profile}
+              emailConfirmed={emailConfirmed}
               company={
                 profile
                   ? {

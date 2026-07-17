@@ -38,6 +38,11 @@ export async function createBooking(formData: FormData) {
     redirect(`/login?next=/artists/${artistId}`)
   }
 
+  // E-mailbevestiging verplicht voordat er geboekt kan worden.
+  if (!user.email_confirmed_at) {
+    redirect(`/artists/${artistId}?error=confirm-email`)
+  }
+
   const { data: artist } = await supabase
     .from("artists")
     .select("base_gage, equipment_prices")
