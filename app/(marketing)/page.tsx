@@ -1,10 +1,10 @@
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { ArtistCard } from "@/components/artist-card"
-import { getArtists, getGenres } from "@/lib/data/artists"
+import { getArtists } from "@/lib/data/artists"
 
 export default async function Home() {
-  const [artists, genres] = await Promise.all([getArtists(), getGenres()])
+  const artists = await getArtists()
   const featured = artists.slice(0, 4)
 
   return (
@@ -39,20 +39,6 @@ export default async function Home() {
               Word DJ
             </Link>
           </div>
-
-          {genres.length > 0 && (
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
-              {genres.slice(0, 8).map((g) => (
-                <Link
-                  key={g.id}
-                  href={`/discover?genre=${g.id}`}
-                  className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-sm text-muted transition hover:border-brand/50 hover:text-foreground"
-                >
-                  {g.name}
-                </Link>
-              ))}
-            </div>
-          )}
         </section>
 
         <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-12">
