@@ -75,7 +75,19 @@ export async function markConversationRead(conversationId: string) {
   } = await supabase.auth.getUser()
   if (!user) return
 
-  const { data: updated } = await supabase
+  // Verifieer via de RLS-beschermde SELECT dat de gebruiker deelnemer is:
+  // alleen deelnemers kunnen dit gesprek überhaupt ophalen.
+  const { data: conv } = await supabase
+    .from("conversations")
+    .select("id")
+    .eq("id", conversationId)
+    .maybeSingle()
+  if (!conv) return
+
+  // read_at bijwerken via de service-role: op messages bestaat geen UPDATE-
+  // RLS-policy, dus een gewone client zou hier 0 rijen bijwerken.
+  const admin = createAdminClient()
+  const { data: updated } = await admin
     .from("messages")
     .update({ read_at: new Date().toISOString() })
     .eq("conversation_id", conversationId)
