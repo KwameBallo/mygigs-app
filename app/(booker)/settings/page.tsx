@@ -60,10 +60,9 @@ export default async function SettingsPage() {
                 defaultValue={profile.gender ?? ""}
                 className="input h-11"
               >
-                <option value="">Zeg ik liever niet</option>
+                <option value="">Kies…</option>
                 <option value="man">Man</option>
                 <option value="vrouw">Vrouw</option>
-                <option value="non-binair">Non-binair</option>
                 <option value="anders">Anders</option>
               </select>
             </label>
