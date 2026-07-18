@@ -949,6 +949,7 @@ export type Database = {
           flag_count: number
           flagged: boolean
           full_name: string | null
+          gender: string | null
           id: string
           invoice_address: string | null
           invoice_email: string | null
@@ -973,6 +974,7 @@ export type Database = {
           flag_count?: number
           flagged?: boolean
           full_name?: string | null
+          gender?: string | null
           id: string
           invoice_address?: string | null
           invoice_email?: string | null
@@ -997,6 +999,7 @@ export type Database = {
           flag_count?: number
           flagged?: boolean
           full_name?: string | null
+          gender?: string | null
           id?: string
           invoice_address?: string | null
           invoice_email?: string | null

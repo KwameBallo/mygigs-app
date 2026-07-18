@@ -94,19 +94,41 @@ export default async function LoginPage({
           <input type="hidden" name="role" value={role} />
           {isSignup && (
             <>
-              <Field label="Naam">
+              <Field label={isDj ? "Naam" : "Volledige naam"}>
                 <input
                   name="full_name"
                   type="text"
                   required
-                  placeholder={isDj ? "Jouw DJ-naam" : "Jouw naam"}
+                  autoComplete="name"
+                  placeholder={isDj ? "Jouw DJ-naam" : "Voor- en achternaam"}
                   className="input"
                 />
               </Field>
               {!isDj && (
-                <p className="-mt-1 text-xs text-muted">
-                  Je kunt later altijd ook DJ worden vanuit je account.
-                </p>
+                <>
+                  <Field label="Gender (optioneel)">
+                    <select name="gender" defaultValue="" className="input">
+                      <option value="">Zeg ik liever niet</option>
+                      <option value="man">Man</option>
+                      <option value="vrouw">Vrouw</option>
+                      <option value="non-binair">Non-binair</option>
+                      <option value="anders">Anders</option>
+                    </select>
+                  </Field>
+                  <Field label="Telefoonnummer (optioneel)">
+                    <input
+                      name="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      placeholder="06 12345678"
+                      className="input"
+                    />
+                  </Field>
+                  <p className="-mt-1 text-xs text-muted">
+                    Je telefoonnummer delen we nooit met de DJ. Je kunt later ook
+                    zelf DJ worden vanuit je account.
+                  </p>
+                </>
               )}
             </>
           )}

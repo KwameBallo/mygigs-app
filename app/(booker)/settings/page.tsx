@@ -46,16 +46,43 @@ export default async function SettingsPage() {
 
       <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
         <h2 className="text-lg font-semibold">Account</h2>
+        <p className="mt-1 text-sm text-muted">Je persoonlijke gegevens.</p>
         <form action={updateAccount} className="mt-4 flex flex-col gap-4">
           <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium">Naam</span>
+            <span className="text-sm font-medium">Volledige naam</span>
             <input
               name="full_name"
               defaultValue={profile.full_name ?? ""}
-              placeholder="Je naam"
+              placeholder="Voor- en achternaam"
               className="input h-11"
             />
           </label>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">Gender</span>
+              <select
+                name="gender"
+                defaultValue={profile.gender ?? ""}
+                className="input h-11"
+              >
+                <option value="">Zeg ik liever niet</option>
+                <option value="man">Man</option>
+                <option value="vrouw">Vrouw</option>
+                <option value="non-binair">Non-binair</option>
+                <option value="anders">Anders</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">Telefoonnummer</span>
+              <input
+                name="phone"
+                type="tel"
+                defaultValue={profile.phone ?? ""}
+                placeholder="06 12345678"
+                className="input h-11"
+              />
+            </label>
+          </div>
           <label className="flex flex-col gap-1.5">
             <span className="text-sm font-medium">E-mail</span>
             <input
@@ -64,6 +91,10 @@ export default async function SettingsPage() {
               className="input h-11 opacity-60"
             />
           </label>
+          <p className="text-xs text-muted">
+            Je telefoonnummer en e-mailadres delen we nooit met de DJ — die ziet
+            na acceptatie alleen je naam.
+          </p>
           <div className="flex items-center gap-2 text-sm text-muted">
             <span>Rol:</span>
             <span className="rounded-full bg-surface-2 px-3 py-1 text-xs">
@@ -195,6 +226,67 @@ export default async function SettingsPage() {
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <h2 className="text-lg font-semibold">Privacy en gegevens</h2>
+        <p className="mt-1 text-sm text-muted">
+          Jij houdt de controle over je gegevens. Hier lees je wat we opslaan en
+          wat je rechten zijn.
+        </p>
+
+        <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4">
+          <p className="text-sm font-medium">Wat de DJ van jou ziet</p>
+          <p className="mt-1 text-sm text-muted">
+            Alleen je naam, en pas nadat de DJ je aanvraag heeft geaccepteerd.
+            Je telefoonnummer en e-mailadres blijven privé; alle afstemming loopt
+            via de beveiligde chat op MyGigs.
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-sm font-medium">Jouw rechten (AVG)</p>
+          <ul className="mt-2 flex flex-col gap-1.5 text-sm text-muted">
+            <RightItem>Inzage in de gegevens die we van je hebben</RightItem>
+            <RightItem>Correctie van onjuiste gegevens</RightItem>
+            <RightItem>Verwijdering van je account en gegevens</RightItem>
+            <RightItem>Bezwaar tegen bepaalde verwerkingen</RightItem>
+            <RightItem>Een kopie van je gegevens (dataportabiliteit)</RightItem>
+          </ul>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link
+            href="/privacy"
+            className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+          >
+            Privacybeleid
+          </Link>
+          <Link
+            href="/voorwaarden"
+            className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+          >
+            Algemene voorwaarden
+          </Link>
+          <Link
+            href="/reset-password"
+            className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+          >
+            Wachtwoord wijzigen
+          </Link>
+        </div>
+
+        <p className="mt-4 text-xs text-muted">
+          Wil je je gegevens inzien, laten corrigeren, downloaden of je account
+          laten verwijderen? Mail{" "}
+          <a
+            href="mailto:privacy@mygigs.nl"
+            className="font-medium text-brand hover:underline"
+          >
+            privacy@mygigs.nl
+          </a>{" "}
+          en we regelen het binnen 30 dagen.
+        </p>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
         <h2 className="text-lg font-semibold">Sessie</h2>
         <p className="mt-1 text-sm text-muted">
           Log uit op dit apparaat.
@@ -217,6 +309,15 @@ function FeeRow({ label, value }: { label: string; value: string }) {
     <li className="flex items-center justify-between rounded-xl bg-surface-2 px-4 py-2.5">
       <span className="text-muted">{label}</span>
       <span className="font-medium">{value}</span>
+    </li>
+  )
+}
+
+function RightItem({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-2">
+      <span className="mt-0.5 flex-none text-brand">✓</span>
+      <span>{children}</span>
     </li>
   )
 }

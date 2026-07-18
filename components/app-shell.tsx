@@ -110,6 +110,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   } else {
     // Consument: beginscherm, Ontdek en de eigen boekingen.
     sections.push({ items: [items.home, items.discover, items.bookings] })
+    sections.push({ title: "Account", items: [items.settings] })
   }
 
   if (profile?.role === "admin") {
@@ -126,7 +127,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       ]
     : profile?.role === "admin"
       ? [items.home, items.discover, items.admin]
-      : [items.home, items.discover, items.bookings]
+      : [items.home, items.discover, items.bookings, items.settings]
 
   const initials = (profile?.full_name ?? profile?.email ?? "?")
     .slice(0, 1)

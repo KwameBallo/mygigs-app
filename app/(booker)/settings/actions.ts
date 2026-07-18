@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server"
 
 export async function updateAccount(formData: FormData) {
   const full_name = String(formData.get("full_name") ?? "").trim()
+  const gender = String(formData.get("gender") ?? "").trim()
+  const phone = String(formData.get("phone") ?? "").trim()
   const supabase = await createClient()
   const {
     data: { user },
@@ -13,7 +15,11 @@ export async function updateAccount(formData: FormData) {
 
   await supabase
     .from("profiles")
-    .update({ full_name: full_name || null })
+    .update({
+      full_name: full_name || null,
+      gender: gender || null,
+      phone: phone || null,
+    })
     .eq("id", user.id)
 
   revalidatePath("/settings")
