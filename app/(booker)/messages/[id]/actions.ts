@@ -64,6 +64,32 @@ async function flagConversation(
   )
 }
 
+// Markeer inkomende berichten als gelezen en ververs de ongelezen-badge in de
+// zijbalk (die in de layout zit en niet vanzelf her-rendert bij navigatie).
+export async function markConversationRead(conversationId: string) {
+  if (!conversationId) return
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data: updated } = await supabase
+    .from("messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("conversation_id", conversationId)
+    .is("read_at", null)
+    .neq("sender_id", user.id)
+    .select("id")
+
+  // Alleen verversen als er echt iets is bijgewerkt (voorkomt onnodige renders).
+  if (updated && updated.length > 0) {
+    revalidatePath("/messages")
+    revalidatePath("/", "layout")
+  }
+}
+
 export async function sendMessage(formData: FormData) {
   const conversationId = String(formData.get("conversation_id") ?? "")
   const body = String(formData.get("body") ?? "").trim()

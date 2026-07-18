@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { sendMessage } from "./actions"
+import { MarkRead } from "./mark-read"
 
 export default async function ThreadPage({
   params,
@@ -44,14 +45,6 @@ export default async function ThreadPage({
     ? (booker?.full_name ?? "Boeker")
     : (artist?.stage_name ?? "DJ")
 
-  // Mark incoming messages as read.
-  await supabase
-    .from("messages")
-    .update({ read_at: new Date().toISOString() })
-    .eq("conversation_id", id)
-    .is("read_at", null)
-    .neq("sender_id", user.id)
-
   const { data: messages } = await supabase
     .from("messages")
     .select("id, body, sender_id, created_at")
@@ -62,6 +55,7 @@ export default async function ThreadPage({
 
   return (
     <div className="mx-auto flex h-full w-full max-w-2xl flex-col px-4">
+      <MarkRead conversationId={id} />
       <div className="flex items-center gap-3 border-b border-border py-4">
         <Link
           href="/messages"
