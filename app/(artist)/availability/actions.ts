@@ -38,6 +38,33 @@ export async function addAvailability(formData: FormData) {
   revalidatePath("/availability")
 }
 
+// Eén dag aan/uit zetten vanuit de kalender. Geboekte dagen blijven staan.
+export async function toggleAvailability(date: string) {
+  if (!date) return
+  const artistId = await myArtistId()
+  if (!artistId) return
+
+  const supabase = await createClient()
+  const { data: existing } = await supabase
+    .from("artist_availability")
+    .select("id, status")
+    .eq("artist_id", artistId)
+    .eq("date", date)
+    .maybeSingle()
+
+  if (existing) {
+    if (existing.status === "booked") return // geboekt: niet wijzigen
+    await supabase.from("artist_availability").delete().eq("id", existing.id)
+  } else {
+    await supabase
+      .from("artist_availability")
+      .insert({ artist_id: artistId, date, status: "available" })
+  }
+
+  revalidatePath("/availability")
+  revalidatePath("/dashboard")
+}
+
 export async function removeAvailability(formData: FormData) {
   const id = String(formData.get("id") ?? "")
   if (!id) return
