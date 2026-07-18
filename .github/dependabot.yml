@@ -1,0 +1,18 @@
+# Geautomatiseerd kwetsbaarheden-/updatebeheer (ISO/IEC 27002:2022 A.8.8).
+# Dependabot opent wekelijks PR's voor kwetsbare/verouderde dependencies.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"

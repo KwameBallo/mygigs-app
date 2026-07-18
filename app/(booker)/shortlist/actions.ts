@@ -76,7 +76,10 @@ export async function createShortlist(formData: FormData) {
   const { error } = await supabase.from("bookings").insert(rows)
 
   if (error) {
-    redirect(`/shortlist?error=${encodeURIComponent(error.message)}`)
+    console.error("createShortlist failed:", error.message)
+    redirect(
+      `/shortlist?error=${encodeURIComponent("Je aanvraag kon niet worden verstuurd. Probeer het opnieuw.")}`,
+    )
   }
 
   redirect("/bookings?shortlist=1")

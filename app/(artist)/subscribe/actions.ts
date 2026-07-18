@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import {
   PLANS,
   TRIAL_DAYS,
@@ -32,7 +33,10 @@ export async function startSubscription(formData: FormData) {
   const trialEnd = addDays(now, TRIAL_DAYS)
   const periodEnd = addMonths(trialEnd, plan.months)
 
-  const { error } = await supabase
+  // Abonnementsvelden zijn client-side niet meer wijzigbaar (kolomrechten):
+  // deze status wordt met de service-role gezet. Straks vervangt Stripe dit.
+  const admin = createAdminClient()
+  const { error } = await admin
     .from("profiles")
     .update({
       subscription_status: "trialing",
@@ -43,7 +47,10 @@ export async function startSubscription(formData: FormData) {
     .eq("id", user.id)
 
   if (error) {
-    redirect(`/subscribe?error=${encodeURIComponent(error.message)}`)
+    console.error("startSubscription failed:", error.message)
+    redirect(
+      `/subscribe?error=${encodeURIComponent("Er ging iets mis. Probeer het opnieuw.")}`,
+    )
   }
 
   revalidatePath("/subscribe")

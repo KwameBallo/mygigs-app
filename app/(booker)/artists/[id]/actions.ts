@@ -90,7 +90,10 @@ export async function createBooking(formData: FormData) {
   })
 
   if (error) {
-    redirect(`/artists/${artistId}?error=${encodeURIComponent(error.message)}`)
+    console.error("createBooking failed:", error.message)
+    redirect(
+      `/artists/${artistId}?error=${encodeURIComponent("Je aanvraag kon niet worden verstuurd. Probeer het opnieuw.")}`,
+    )
   }
 
   redirect("/bookings?created=1")

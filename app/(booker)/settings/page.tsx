@@ -4,6 +4,7 @@ import { getProfile } from "@/lib/auth"
 import { PLANS, hasActiveSubscription } from "@/lib/subscriptions"
 import { roleLabel } from "@/lib/roles"
 import { updateAccount, updateCompanyDetails } from "./actions"
+import { DeleteAccountButton } from "./delete-account-button"
 
 const SUB_STATUS_LABEL: Record<string, string> = {
   inactive: "Geen abonnement",
@@ -249,8 +250,7 @@ export default async function SettingsPage() {
         </div>
 
         <p className="mt-4 text-xs text-muted">
-          Wil je je gegevens inzien, laten corrigeren, downloaden of je account
-          laten verwijderen? Mail{" "}
+          Wil je je gegevens inzien, laten corrigeren of downloaden? Mail{" "}
           <a
             href="mailto:privacy@mygigs.nl"
             className="font-medium text-brand hover:underline"
@@ -259,6 +259,17 @@ export default async function SettingsPage() {
           </a>{" "}
           en we regelen het binnen 30 dagen.
         </p>
+
+        <div className="mt-5 border-t border-border pt-4">
+          <p className="text-sm font-medium text-red-400">Account verwijderen</p>
+          <p className="mt-1 text-xs text-muted">
+            Verwijdert je account en je gegevens permanent. Dit kan niet ongedaan
+            worden gemaakt.
+          </p>
+          <div className="mt-3">
+            <DeleteAccountButton />
+          </div>
+        </div>
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">

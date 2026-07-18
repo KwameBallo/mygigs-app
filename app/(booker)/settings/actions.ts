@@ -1,7 +1,29 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
+
+// AVG — recht op verwijdering: wist het account en (via cascade) de gekoppelde
+// gegevens. Best-effort: bij een FK-conflict wordt niets half verwijderd.
+export async function deleteAccount() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
+
+  const admin = createAdminClient()
+  const { error } = await admin.auth.admin.deleteUser(user.id)
+  if (error) {
+    console.error("deleteAccount failed:", error.message)
+    redirect("/settings?error=delete")
+  }
+
+  await supabase.auth.signOut()
+  redirect("/?deleted=1")
+}
 
 export async function updateAccount(formData: FormData) {
   const full_name = String(formData.get("full_name") ?? "").trim()

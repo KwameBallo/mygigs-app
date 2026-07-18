@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { ACT_TYPES } from "@/lib/utils/acts"
 import { PROVINCE_NAMES } from "@/lib/utils/provinces"
 
@@ -85,7 +86,10 @@ export async function saveArtistProfile(formData: FormData) {
     // Pas de rol ómzetten naar 'artist' als het profiel écht is aangemaakt —
     // anders krijg je een fantoom-DJ (rol=artist zonder profiel).
     if (!created) return
-    await supabase.from("profiles").update({ role: "artist" }).eq("id", user.id)
+    // Rol is client-side niet meer wijzigbaar (kolomrechten): via service-role,
+    // en alleen naar 'artist' — nooit naar 'admin'.
+    const admin = createAdminClient()
+    await admin.from("profiles").update({ role: "artist" }).eq("id", user.id)
     artistId = created.id
   }
 

@@ -19,7 +19,14 @@ export async function signIn(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`)
+    // Ruwe fout alleen server-side loggen; gebruiker krijgt een generieke
+    // melding (voorkomt user-enumeratie en info-disclosure).
+    console.error("signIn failed:", error.message)
+    redirect(
+      `/login?error=${encodeURIComponent(
+        "Inloggen mislukt. Controleer je e-mailadres en wachtwoord.",
+      )}`,
+    )
   }
 
   const profile = await supabase.auth
@@ -53,7 +60,13 @@ export async function signUp(formData: FormData) {
   const password = String(formData.get("password") ?? "")
   const passwordConfirm = String(formData.get("password_confirm") ?? "")
   const fullName = String(formData.get("full_name") ?? "").trim()
-  const role = (String(formData.get("role") ?? "booker") as Role) || "booker"
+  // Rol beperken tot toegestane waarden — nooit 'admin' via de client.
+  const rawRole = String(formData.get("role") ?? "booker")
+  const role: Role = (["booker", "artist", "both"] as const).includes(
+    rawRole as "booker" | "artist" | "both",
+  )
+    ? (rawRole as Role)
+    : "booker"
   const gender = String(formData.get("gender") ?? "").trim() || null
   const phone = String(formData.get("phone") ?? "").trim() || null
   const acceptedTerms = formData.get("accept_terms") != null
@@ -89,7 +102,11 @@ export async function signUp(formData: FormData) {
   })
 
   if (error) {
-    redirect(`/login?mode=signup&error=${encodeURIComponent(error.message)}`)
+    console.error("signUp failed:", error.message)
+    signupError(
+      "Aanmelden mislukt. Controleer je gegevens of probeer een ander e-mailadres.",
+      isDj,
+    )
   }
 
   // Profiel aanvullen met naam/rol/gender/telefoon. Via de service-role zodat
