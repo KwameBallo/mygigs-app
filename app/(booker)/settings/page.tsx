@@ -2,11 +2,6 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getProfile } from "@/lib/auth"
 import { PLANS, hasActiveSubscription } from "@/lib/subscriptions"
-import {
-  ARTIST_COMMISSION_RATE,
-  SUPPLIER_COMMISSION_RATE,
-  formatPercent,
-} from "@/lib/utils/pricing"
 import { roleLabel } from "@/lib/roles"
 import { updateAccount, updateCompanyDetails } from "./actions"
 
@@ -207,25 +202,6 @@ export default async function SettingsPage() {
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
-        <h2 className="text-lg font-semibold">Verdienmodel</h2>
-        <p className="mt-1 text-sm text-muted">
-          Zo verdient MyGigs aan de verschillende partijen.
-        </p>
-        <ul className="mt-4 flex flex-col gap-2 text-sm">
-          <FeeRow label="Clubs & organisatoren" value="Abonnement" />
-          <FeeRow
-            label="DJ's"
-            value={`${formatPercent(ARTIST_COMMISSION_RATE)} commissie per boeking`}
-          />
-          <FeeRow
-            label="Leveranciers"
-            value={`${formatPercent(SUPPLIER_COMMISSION_RATE)} commissie`}
-          />
-          <FeeRow label="Drankmerken" value="Advertentiekosten" />
-        </ul>
-      </section>
-
-      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
         <h2 className="text-lg font-semibold">Privacy en gegevens</h2>
         <p className="mt-1 text-sm text-muted">
           Jij houdt de controle over je gegevens. Hier lees je wat we opslaan en
@@ -301,15 +277,6 @@ export default async function SettingsPage() {
         </form>
       </section>
     </main>
-  )
-}
-
-function FeeRow({ label, value }: { label: string; value: string }) {
-  return (
-    <li className="flex items-center justify-between rounded-xl bg-surface-2 px-4 py-2.5">
-      <span className="text-muted">{label}</span>
-      <span className="font-medium">{value}</span>
-    </li>
   )
 }
 
