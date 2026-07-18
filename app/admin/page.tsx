@@ -14,7 +14,7 @@ export default async function AdminPage() {
   if (!profile || profile.role !== "admin") redirect("/")
 
   const admin = createAdminClient()
-  const [uRes, aRes, bRes, fRes] = await Promise.all([
+  const [uRes, aRes, bRes, fRes, logRes] = await Promise.all([
     admin
       .from("profiles")
       .select("id, full_name, email, role, created_at")
@@ -32,12 +32,18 @@ export default async function AdminPage() {
       .select("id, reason, created_at")
       .order("created_at", { ascending: false })
       .limit(15),
+    admin
+      .from("audit_log")
+      .select("id, action, actor_id, target_type, target_id, created_at")
+      .order("created_at", { ascending: false })
+      .limit(25),
   ])
 
   const users = uRes.data ?? []
   const artists = aRes.data ?? []
   const bookings = bRes.data ?? []
   const flags = fRes.data ?? []
+  const auditLogs = logRes.data ?? []
 
   const byRole = (r: string) => users.filter((u) => u.role === r).length
   const avgRating =
@@ -180,6 +186,21 @@ export default async function AdminPage() {
               f.created_at ? new Date(f.created_at).toLocaleString("nl-NL") : "—",
             ])}
             empty="Geen gemarkeerde berichten."
+          />
+        </Panel>
+
+        <Panel title="Audit-log" className="mt-4">
+          <Table
+            head={["Actie", "Doel", "Actor", "Wanneer"]}
+            rows={auditLogs.map((l) => [
+              l.action,
+              [l.target_type, l.target_id].filter(Boolean).join(" · ") || "—",
+              l.actor_id ? `${l.actor_id.slice(0, 8)}…` : "systeem",
+              l.created_at
+                ? new Date(l.created_at).toLocaleString("nl-NL")
+                : "—",
+            ])}
+            empty="Nog geen audit-gebeurtenissen."
           />
         </Panel>
       </main>

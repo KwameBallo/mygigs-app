@@ -12,6 +12,10 @@
 
 begin;
 
+-- 0. Zorg dat de gender-kolom bestaat (nodig voor de grant hieronder). Veilig
+--    om te draaien, ook als je 'm al eerder had toegevoegd.
+alter table public.profiles add column if not exists gender text;
+
 -- 1a. Kolom-niveau: authenticated mag alleen eigen, niet-gevoelige profielvelden
 --     bijwerken. role, subscription_* , stripe_* , flagged, flag_count kunnen
 --     hierna NIET meer door de gebruiker gezet worden (alleen via service-role).

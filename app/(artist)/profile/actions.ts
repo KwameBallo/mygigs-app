@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { logAudit } from "@/lib/audit"
 import { ACT_TYPES } from "@/lib/utils/acts"
 import { PROVINCE_NAMES } from "@/lib/utils/provinces"
 
@@ -90,6 +91,13 @@ export async function saveArtistProfile(formData: FormData) {
     // en alleen naar 'artist' — nooit naar 'admin'.
     const admin = createAdminClient()
     await admin.from("profiles").update({ role: "artist" }).eq("id", user.id)
+    await logAudit({
+      actorId: user.id,
+      action: "role.change",
+      targetType: "profile",
+      targetId: user.id,
+      metadata: { to: "artist" },
+    })
     artistId = created.id
   }
 

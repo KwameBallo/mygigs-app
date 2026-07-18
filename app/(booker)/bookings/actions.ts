@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { logAudit } from "@/lib/audit"
 
 // De boeker annuleert een eigen aanvraag. Alleen als de boeking nog niet
 // definitief is (in afwachting of geaccepteerd) en van deze gebruiker is.
@@ -85,6 +86,15 @@ export async function payBooking(formData: FormData) {
 
   // 3) Boeking op 'betaald' zetten.
   await admin.from("bookings").update({ status: "paid" }).eq("id", booking.id)
+
+  // Audit: betaling in escrow + geplande uitbetaling (A.8.15).
+  await logAudit({
+    actorId: user.id,
+    action: "payment.hold",
+    targetType: "booking",
+    targetId: booking.id,
+    metadata: { amount: booking.total, method: paymentMethod, payout },
+  })
 
   revalidatePath("/bookings")
   revalidatePath("/dashboard")

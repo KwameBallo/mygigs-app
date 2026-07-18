@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { logAudit } from "@/lib/audit"
 
 // AVG — recht op verwijdering: wist het account en (via cascade) de gekoppelde
 // gegevens. Best-effort: bij een FK-conflict wordt niets half verwijderd.
@@ -15,6 +16,13 @@ export async function deleteAccount() {
   if (!user) redirect("/login")
 
   const admin = createAdminClient()
+  // Audit vóór verwijderen (daarna is de gebruiker weg) (A.8.15).
+  await logAudit({
+    actorId: user.id,
+    action: "account.delete",
+    targetType: "profile",
+    targetId: user.id,
+  })
   const { error } = await admin.auth.admin.deleteUser(user.id)
   if (error) {
     console.error("deleteAccount failed:", error.message)

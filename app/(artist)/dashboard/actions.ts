@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { logAudit } from "@/lib/audit"
 import type { Database } from "@/types/database"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
@@ -37,6 +38,14 @@ export async function updateBookingStatus(formData: FormData) {
     .update({ status })
     .eq("id", bookingId)
     .eq("artist_id", artist.id)
+
+  await logAudit({
+    actorId: user.id,
+    action: "booking.status",
+    targetType: "booking",
+    targetId: bookingId,
+    metadata: { status },
+  })
 
   // Accepteren = die dag is geboekt → blokkeer 'm in je agenda/Ontdek.
   if (status === "accepted") {

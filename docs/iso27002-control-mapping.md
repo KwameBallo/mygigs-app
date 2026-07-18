@@ -63,7 +63,8 @@ belangrijkste resterende gat is **kolom-niveau leesrechten op `profiles`/
 | Maatregel | Status | Opmerking |
 |---|---|---|
 | Incident-log contact-guard | 🟡 | `chat_flags` logt overtredingen (`0009_chat_guard.sql`) |
-| Audit-log (auth, rolwijziging, admin, betalingen) | 🔴 | Toevoegen: append-only `audit_log` via service-role + Supabase auth-log-drain |
+| Audit-log app-gebeurtenissen | ✅ (fix 19-07) | Append-only `audit_log` (`_audit_log.sql`) + `lib/audit.ts`; logt rolwijziging, boekingstatus, betaling/uitbetaling, account-verwijdering; zichtbaar in `/admin` |
+| Audit-log auth-events (login/uitlog) | 🟡 | App-events staan; login-events nog via Supabase log-drain koppelen |
 | Alerting/anomaliedetectie | 🔴 | `flag_count`-drempel → auto-actie/notificatie |
 
 ## A.8.9 — Veilige configuratie
@@ -113,14 +114,15 @@ belangrijkste resterende gat is **kolom-niveau leesrechten op `profiles`/
 - `app/error.tsx` + `app/global-error.tsx`.
 - `.github/dependabot.yml`.
 - Account-verwijdering (AVG): `deleteAccount` + knop in Instellingen.
+- Audit-log: `supabase/_audit_log.sql` + `lib/audit.ts`, gewired in betaling, boekingstatus, rolwijziging en account-verwijdering; getoond in `/admin`.
 - `supabase/_security_hardening.sql` (handmatig te draaien) — profiles/bookings kolomrechten, trigger-rolklem, review-integriteit, én profiles-leesrecht ingeperkt tot eigen + deelnemer.
 
 ## Direct te doen (buiten deze ronde)
-1. **`supabase/_security_hardening.sql` draaien** in de Supabase SQL-editor (test daarna chat- en dashboard-klantnamen; rollback = `create policy ... using(true)`).
+1. **`supabase/_security_hardening.sql` én `supabase/_audit_log.sql` draaien** in de Supabase SQL-editor (test daarna chat- en dashboard-klantnamen; rollback = `create policy ... using(true)`).
 2. **Service-role-key roteren** (was eerder gedeeld) en key-management vastleggen.
 3. **Supabase "Confirm email" aan** (bevestigen) + minimum wachtwoordlengte ≥8–12.
 4. Publieke `bookings`-view (kolom-minimalisatie) + profiles-view "alleen naam".
-5. Audit-log + MFA voor admin + nonce-CSP + `zod`-validatie + CI security-scan.
+5. MFA voor admin + nonce-CSP + `zod`-validatie + CI security-scan + alerting op `flag_count`.
 
 ---
 
