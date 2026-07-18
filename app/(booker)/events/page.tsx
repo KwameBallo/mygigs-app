@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { getEvents } from "@/lib/data/events"
-import { getGenres } from "@/lib/data/artists"
 import { AdSlot } from "@/components/ad-slot"
 import { EventCard } from "./event-card"
 
@@ -16,10 +15,7 @@ export default async function EventsPage({
   searchParams: SearchParams
 }) {
   const { q, city, genre } = await searchParams
-  const [events, genres] = await Promise.all([
-    getEvents({ q, city, genre }),
-    getGenres(),
-  ])
+  const events = await getEvents({ q, city, genre })
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6">
@@ -36,25 +32,6 @@ export default async function EventsPage({
         >
           Event uploaden
         </Link>
-      </div>
-
-      {/* Genre-balk: één rij, horizontaal scrollbaar (compact op mobiel). */}
-      <div className="mt-4 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <GenreChip label="Alles" href="/events" active={!genre} />
-        {genres.map((g) => {
-          const params = new URLSearchParams()
-          params.set("genre", String(g.id))
-          if (q) params.set("q", q)
-          if (city) params.set("city", city)
-          return (
-            <GenreChip
-              key={g.id}
-              label={g.name}
-              href={`/events?${params.toString()}`}
-              active={genre === String(g.id)}
-            />
-          )
-        })}
       </div>
 
       {/* Zoekformulier */}
@@ -104,28 +81,5 @@ export default async function EventsPage({
         </div>
       )}
     </div>
-  )
-}
-
-function GenreChip({
-  label,
-  href,
-  active,
-}: {
-  label: string
-  href: string
-  active: boolean
-}) {
-  return (
-    <Link
-      href={href}
-      className={`flex-none whitespace-nowrap rounded-full border px-3 py-1 text-xs transition ${
-        active
-          ? "border-brand bg-brand text-black"
-          : "border-border bg-surface-2 text-muted hover:border-brand/50 hover:text-foreground"
-      }`}
-    >
-      {label}
-    </Link>
   )
 }
