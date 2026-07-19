@@ -653,6 +653,7 @@ export type Database = {
           end_time: string | null
           event_date: string
           gage: number
+          hours: number
           id: string
           invoice_email: string | null
           is_public: boolean
@@ -678,6 +679,7 @@ export type Database = {
           end_time?: string | null
           event_date: string
           gage: number
+          hours?: number
           id?: string
           invoice_email?: string | null
           is_public?: boolean
@@ -703,6 +705,7 @@ export type Database = {
           end_time?: string | null
           event_date?: string
           gage?: number
+          hours?: number
           id?: string
           invoice_email?: string | null
           is_public?: boolean

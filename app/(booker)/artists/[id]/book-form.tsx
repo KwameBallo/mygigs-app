@@ -14,6 +14,14 @@ import {
 
 type BookingType = "prive" | "zakelijk"
 
+// Boekingsduur in halve uren, van 1 tot 8 uur.
+const HOURS_OPTIONS = Array.from({ length: 15 }, (_, i) => 1 + i * 0.5)
+
+function formatHours(h: number) {
+  const label = Number.isInteger(h) ? String(h) : h.toString().replace(".", ",")
+  return `${label} uur`
+}
+
 export function BookForm({
   artistId,
   baseGage,
@@ -32,9 +40,11 @@ export function BookForm({
   }
 }) {
   const [type, setType] = useState<BookingType>("prive")
+  const [hours, setHours] = useState(2)
   const { selected, equipmentCost } = useEquipmentSelection()
+  // Basisgage is een uurtarief; langer draaien schaalt de gage automatisch mee.
   const { gage, equipment, total: grossIncl } = priceBreakdown(
-    baseGage,
+    Math.round(baseGage * hours),
     equipmentCost,
   )
   // Particulier: gage + apparatuur is inclusief 21% btw (btw terugrekenen).
@@ -148,6 +158,27 @@ export function BookForm({
         />
       </label>
 
+      {/* Duur — bepaalt de gage via het uurtarief. */}
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium">Hoe lang draait de DJ?</span>
+        <select
+          value={hours}
+          onChange={(e) => setHours(Number(e.target.value))}
+          className="input"
+        >
+          {HOURS_OPTIONS.map((h) => (
+            <option key={h} value={h}>
+              {formatHours(h)}
+            </option>
+          ))}
+        </select>
+        <span className="text-xs text-muted">
+          Tarief is per uur ({formatEuro(baseGage)}/uur). Langer draaien = hogere
+          gage.
+        </span>
+      </label>
+      <input type="hidden" name="hours" value={hours} />
+
       {/* Zakelijke factuurgegevens */}
       {type === "zakelijk" && (
         <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-2 p-4">
@@ -209,7 +240,10 @@ export function BookForm({
       <div className="rounded-xl border border-border bg-surface-2 p-4 text-sm">
         {type === "zakelijk" ? (
           <>
-            <Row label="Gage (excl. btw)" value={formatEuro(gage)} />
+            <Row
+              label={`Gage · ${formatHours(hours)} (excl. btw)`}
+              value={formatEuro(gage)}
+            />
             {equipment > 0 && (
               <Row
                 label="Apparatuur (excl. btw)"
@@ -234,7 +268,7 @@ export function BookForm({
           </>
         ) : (
           <>
-            <Row label="Gage" value={formatEuro(gage)} />
+            <Row label={`Gage · ${formatHours(hours)}`} value={formatEuro(gage)} />
             {equipment > 0 && (
               <Row
                 label="Apparatuur (huur van DJ)"

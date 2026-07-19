@@ -11,6 +11,12 @@ export async function createBooking(formData: FormData) {
   const venue = String(formData.get("venue_name") ?? "").trim() || null
   const message = String(formData.get("message") ?? "").trim() || null
 
+  // Duur in uren (halve uren), begrensd op 1–8. Bepaalt de gage via het uurtarief.
+  const rawHours = Number(formData.get("hours"))
+  const hours = Number.isFinite(rawHours)
+    ? Math.min(8, Math.max(1, Math.round(rawHours * 2) / 2))
+    : 1
+
   const bookingType =
     String(formData.get("booking_type") ?? "prive") === "zakelijk"
       ? "zakelijk"
@@ -61,8 +67,9 @@ export async function createBooking(formData: FormData) {
     0,
   )
 
+  // Basisgage is een uurtarief; schaal mee met de gekozen duur.
   const { gage, commission, total: grossIncl } = priceBreakdown(
-    artist.base_gage,
+    Math.round(artist.base_gage * hours),
     equipmentCost,
   )
   // Particulier: gage + apparatuur is incl. btw. Zakelijk: dat bedrag is
@@ -82,6 +89,7 @@ export async function createBooking(formData: FormData) {
     gage,
     service_fee: commission,
     total,
+    hours,
     booking_type: bookingType,
     occasion,
     company_name: companyName,

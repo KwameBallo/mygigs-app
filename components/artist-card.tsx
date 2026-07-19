@@ -55,6 +55,7 @@ export function ArtistCard({ artist }: { artist: Artist }) {
           <span className="text-lg font-semibold text-brand">
             {formatEuro(artist.base_gage)}
           </span>
+          <span className="text-xs text-muted">/uur</span>
         </div>
       </div>
     </Link>

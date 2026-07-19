@@ -22,6 +22,7 @@ export type DashBooking = {
   gage: number
   service_fee: number
   total: number
+  hours: number
   booking_type: BookingKind
   occasion: string | null
   company_name: string | null
@@ -215,6 +216,10 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
             <DetailRow label="Type" value={typeLabel} />
             <DetailRow label="Gelegenheid" value={b.occasion} />
             <DetailRow label="Datum" value={eventDate} />
+            <DetailRow
+              label="Duur"
+              value={`${String(b.hours).replace(".", ",")} uur`}
+            />
             <DetailRow label="Tijd" value={timeRange(b.start_time, b.end_time)} />
             <DetailRow label="Stad" value={b.city} />
             <DetailRow label="Locatie" value={b.venue_name} />

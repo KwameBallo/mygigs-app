@@ -77,6 +77,7 @@ export default async function DashboardPage() {
       gage: b.gage,
       service_fee: b.service_fee,
       total: b.total,
+      hours: b.hours,
       booking_type: b.booking_type,
       occasion: b.occasion,
       company_name: b.company_name,
