@@ -10,6 +10,7 @@ export default async function Home() {
   // DJ-werving (Word DJ / Word geboekt) tonen we alleen aan uitgelogde
   // bezoekers; ingelogde klanten regelen DJ-worden via de aanvraag.
   const showDjRecruitment = !profile
+  const isArtist = profile?.role === "artist" || profile?.role === "both"
 
   return (
     <>
@@ -33,12 +34,21 @@ export default async function Home() {
             escrow. Geen tussenkomst van boekingskantoren.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/discover"
-              className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
-            >
-              Boek een DJ
-            </Link>
+            {isArtist ? (
+              <Link
+                href="/dashboard"
+                className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
+              >
+                Naar dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/discover"
+                className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
+              >
+                Boek een DJ
+              </Link>
+            )}
             {showDjRecruitment && (
               <Link
                 href="/login?mode=signup&type=dj"

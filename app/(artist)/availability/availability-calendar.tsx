@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { toggleAvailability } from "./actions"
 
 type Slot = { date: string; status: string }
@@ -32,10 +33,24 @@ export function AvailabilityCalendar({
   slots: Slot[]
   today: string
 }) {
-  const statusByDate = useMemo(() => {
-    const m = new Map<string, string>()
-    for (const s of slots) m.set(s.date, s.status)
-    return m
+  const router = useRouter()
+
+  // Geboekte dagen zijn niet te wijzigen; beschikbare dagen wél (optimistisch).
+  const booked = useMemo(
+    () => new Set(slots.filter((s) => s.status === "booked").map((s) => s.date)),
+    [slots],
+  )
+  const [available, setAvailable] = useState<Set<string>>(
+    () =>
+      new Set(
+        slots.filter((s) => s.status === "available").map((s) => s.date),
+      ),
+  )
+  // Sync met verse server-data na een refresh.
+  useEffect(() => {
+    setAvailable(
+      new Set(slots.filter((s) => s.status === "available").map((s) => s.date)),
+    )
   }, [slots])
 
   const [ty, tmonth] = today.split("-").map(Number) // jaar, maand (1-12)
@@ -53,12 +68,8 @@ export function AvailabilityCalendar({
     cells.push(`${view.y}-${pad(view.m + 1)}-${pad(d)}`)
   }
 
-  // Niet vóór de huidige maand navigeren (verleden heeft geen zin).
   const canGoPrev = view.y > ty || (view.y === ty && view.m > tmonth - 1)
-
-  const availableCount = slots.filter(
-    (s) => s.status === "available" && s.date >= today,
-  ).length
+  const availableCount = [...available].filter((d) => d >= today).length
 
   function shift(delta: number) {
     setView((v) => {
@@ -68,10 +79,18 @@ export function AvailabilityCalendar({
   }
 
   function onToggle(dateStr: string) {
-    if (statusByDate.get(dateStr) === "booked" || dateStr < today) return
+    if (booked.has(dateStr) || dateStr < today) return
+    // Optimistisch meteen omzetten voor directe feedback.
+    setAvailable((prev) => {
+      const next = new Set(prev)
+      if (next.has(dateStr)) next.delete(dateStr)
+      else next.add(dateStr)
+      return next
+    })
     setBusyDate(dateStr)
     startTransition(async () => {
       await toggleAvailability(dateStr)
+      router.refresh()
       setBusyDate(null)
     })
   }
@@ -112,19 +131,18 @@ export function AvailabilityCalendar({
       <div className="mt-1 grid grid-cols-7 gap-1">
         {cells.map((dateStr, i) => {
           if (!dateStr) return <div key={`b${i}`} />
-          const status = statusByDate.get(dateStr)
           const isPast = dateStr < today
           const isToday = dateStr === today
-          const booked = status === "booked"
-          const available = status === "available"
-          const day = Number(dateStr.slice(8))
+          const isBooked = booked.has(dateStr)
+          const isAvailable = available.has(dateStr)
 
           let cls =
             "border-border bg-surface-2 text-foreground hover:border-brand/50"
-          if (booked) {
-            cls = "border-red-500/40 bg-red-500/15 text-red-300 cursor-not-allowed"
-          } else if (available) {
-            cls = "border-brand/50 bg-brand/15 text-brand hover:bg-brand/25"
+          if (isBooked) {
+            cls =
+              "border-red-500/40 bg-red-500/15 text-red-300 cursor-not-allowed"
+          } else if (isAvailable) {
+            cls = "border-brand bg-brand/20 text-brand hover:bg-brand/30"
           } else if (isPast) {
             cls = "border-transparent text-muted/30 cursor-not-allowed"
           }
@@ -133,13 +151,13 @@ export function AvailabilityCalendar({
             <button
               key={dateStr}
               type="button"
-              disabled={isPast || booked || busyDate === dateStr}
+              disabled={isPast || isBooked}
               onClick={() => onToggle(dateStr)}
               className={`aspect-square rounded-lg border text-sm font-medium transition ${cls} ${
                 isToday ? "ring-1 ring-brand" : ""
-              } ${busyDate === dateStr ? "opacity-50" : ""}`}
+              } ${busyDate === dateStr ? "opacity-60" : ""}`}
             >
-              {day}
+              {Number(dateStr.slice(8))}
             </button>
           )
         })}

@@ -11,12 +11,15 @@ export async function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Logo />
         <nav className="flex items-center gap-1 text-sm">
-          <Link
-            href="/discover"
-            className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
-          >
-            Ontdek
-          </Link>
+          {/* DJ's browsen niet zelf op Ontdek. */}
+          {!isArtist && (
+            <Link
+              href="/discover"
+              className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
+            >
+              Ontdek
+            </Link>
+          )}
           <Link
             href="/zakelijk"
             className="hidden rounded-full px-3 py-2 text-muted transition hover:text-foreground sm:block"
