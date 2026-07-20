@@ -6,6 +6,7 @@ import { Logo } from "@/components/logo"
 import { LogoutIcon } from "@/components/icons"
 import { formatEuro } from "@/lib/utils/pricing"
 import { roleLabel } from "@/lib/roles"
+import { approveDjApplication, rejectDjApplication } from "./actions"
 
 export const dynamic = "force-dynamic"
 
@@ -14,7 +15,7 @@ export default async function AdminPage() {
   if (!profile || profile.role !== "admin") redirect("/")
 
   const admin = createAdminClient()
-  const [uRes, aRes, bRes, fRes, logRes] = await Promise.all([
+  const [uRes, aRes, bRes, fRes, logRes, appRes] = await Promise.all([
     admin
       .from("profiles")
       .select("id, full_name, email, role, created_at")
@@ -37,6 +38,11 @@ export default async function AdminPage() {
       .select("id, action, actor_id, target_type, target_id, created_at")
       .order("created_at", { ascending: false })
       .limit(25),
+    admin
+      .from("dj_applications")
+      .select("user_id, motivation, created_at")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true }),
   ])
 
   const users = uRes.data ?? []
@@ -44,6 +50,7 @@ export default async function AdminPage() {
   const bookings = bRes.data ?? []
   const flags = fRes.data ?? []
   const auditLogs = logRes.data ?? []
+  const pendingApps = appRes.data ?? []
 
   const byRole = (r: string) => users.filter((u) => u.role === r).length
   const avgRating =
@@ -178,6 +185,58 @@ export default async function AdminPage() {
         </Panel>
 
         {/* Chat-flags */}
+        <Panel
+          title={`DJ-aanvragen${pendingApps.length ? ` (${pendingApps.length})` : ""}`}
+          className="mt-4"
+        >
+          {pendingApps.length === 0 ? (
+            <p className="text-sm text-muted">Geen openstaande aanvragen.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {pendingApps.map((app) => {
+                const u = users.find((x) => x.id === app.user_id)
+                return (
+                  <div
+                    key={app.user_id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface-2 p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">
+                        {u?.full_name ?? u?.email ?? app.user_id.slice(0, 8)}
+                      </p>
+                      {app.motivation && (
+                        <p className="mt-0.5 text-xs text-muted">
+                          {app.motivation}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-none gap-2">
+                      <form action={approveDjApplication}>
+                        <input type="hidden" name="user_id" value={app.user_id} />
+                        <button
+                          type="submit"
+                          className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-black transition hover:bg-brand-strong"
+                        >
+                          Goedkeuren
+                        </button>
+                      </form>
+                      <form action={rejectDjApplication}>
+                        <input type="hidden" name="user_id" value={app.user_id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-border px-3 py-1 text-xs text-muted transition hover:border-red-400/50 hover:text-red-400"
+                        >
+                          Afwijzen
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </Panel>
+
         <Panel title="Recente chat-flags" className="mt-4">
           <Table
             head={["Reden", "Wanneer"]}

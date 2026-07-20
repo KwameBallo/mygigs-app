@@ -19,6 +19,15 @@ export default async function ProfilePage() {
 
   if (!user) redirect("/login?next=/profile")
 
+  // Het DJ-profiel is alleen voor goedgekeurde DJ's. Organisatoren moeten eerst
+  // een aanvraag doen die een beheerder goedkeurt.
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle()
+  if (me?.role !== "artist" && me?.role !== "both") redirect("/dj-aanvraag")
+
   const [{ data: artist }, genres] = await Promise.all([
     supabase.from("artists").select("*").eq("user_id", user.id).maybeSingle(),
     getGenres(),

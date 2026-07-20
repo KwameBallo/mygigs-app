@@ -124,8 +124,8 @@ export default async function LoginPage({
                     />
                   </Field>
                   <p className="-mt-1 text-xs text-muted">
-                    Je telefoonnummer delen we nooit met de DJ. Je kunt later ook
-                    zelf DJ worden vanuit je account.
+                    Je telefoonnummer delen we nooit met de DJ. Wil je later DJ
+                    worden? Dat kan via een aanvraag die we goedkeuren.
                   </p>
                 </>
               )}

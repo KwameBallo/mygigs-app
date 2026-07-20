@@ -150,11 +150,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarNav sections={sections} />
           {profile && !isArtist && (
             <Link
-              href="/profile"
+              href="/dj-aanvraag"
               className="mt-6 flex items-center gap-3 rounded-xl border border-dashed border-border px-3 py-2.5 text-sm font-medium text-muted transition hover:border-brand/50 hover:text-foreground"
             >
               <Icon name="user" className="h-5 w-5 flex-none" />
-              <span className="flex-1">Word ook DJ</span>
+              <span className="flex-1">DJ worden</span>
             </Link>
           )}
         </div>
