@@ -92,9 +92,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       title: "DJ",
       items: [items.dashboard, items.availability, items.earnings, items.profile],
     })
+    // DJ's browsen niet zelf op de Ontdek-kaart tussen andere DJ's.
     sections.push({
       title: "Algemeen",
-      items: [items.discover, items.events, items.messages, items.suppliers],
+      items: [items.events, items.messages, items.suppliers],
     })
     // "Als klant" — de DJ kan zelf ook DJ's boeken; strikt gescheiden van de
     // binnenkomende aanvragen op het Dashboard.

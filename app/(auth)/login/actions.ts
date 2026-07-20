@@ -60,17 +60,15 @@ export async function signUp(formData: FormData) {
   const password = String(formData.get("password") ?? "")
   const passwordConfirm = String(formData.get("password_confirm") ?? "")
   const fullName = String(formData.get("full_name") ?? "").trim()
-  // Rol beperken tot toegestane waarden — nooit 'admin' via de client.
+  // Nieuwe accounts zijn ALTIJD 'booker'. DJ worden kan alleen via een aanvraag
+  // die een beheerder goedkeurt — de signup kan dus geen DJ/admin aanmaken.
   const rawRole = String(formData.get("role") ?? "booker")
-  const role: Role = (["booker", "artist", "both"] as const).includes(
-    rawRole as "booker" | "artist" | "both",
-  )
-    ? (rawRole as Role)
-    : "booker"
+  const wantsDj = rawRole === "artist" || rawRole === "both"
+  const role: Role = "booker"
   const gender = String(formData.get("gender") ?? "").trim() || null
   const phone = String(formData.get("phone") ?? "").trim() || null
   const acceptedTerms = formData.get("accept_terms") != null
-  const isDj = role === "artist" || role === "both"
+  const isDj = wantsDj
 
   // Beide wachtwoorden moeten gelijk zijn (voorkomt typefouten).
   if (password !== passwordConfirm) {
@@ -122,6 +120,15 @@ export async function signUp(formData: FormData) {
       gender,
       phone,
     })
+    // Koos iemand de DJ-tab? Zet meteen een DJ-aanvraag klaar (ter goedkeuring).
+    if (wantsDj) {
+      await admin
+        .from("dj_applications")
+        .upsert(
+          { user_id: data.user.id, status: "pending" },
+          { onConflict: "user_id" },
+        )
+    }
   }
 
   // Geen sessie = e-mailbevestiging vereist.
@@ -129,5 +136,6 @@ export async function signUp(formData: FormData) {
     redirect("/login?message=check-email")
   }
 
-  redirect(destinationFor(role))
+  // DJ-intentie → naar de aanvraagpagina; anders naar Ontdek.
+  redirect(wantsDj ? "/dj-aanvraag" : destinationFor(role))
 }

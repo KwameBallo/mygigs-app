@@ -2,10 +2,14 @@ import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { ArtistCard } from "@/components/artist-card"
 import { getArtists } from "@/lib/data/artists"
+import { getProfile } from "@/lib/auth"
 
 export default async function Home() {
-  const artists = await getArtists()
+  const [artists, profile] = await Promise.all([getArtists(), getProfile()])
   const featured = artists.slice(0, 4)
+  // DJ-werving (Word DJ / Word geboekt) tonen we alleen aan uitgelogde
+  // bezoekers; ingelogde klanten regelen DJ-worden via de aanvraag.
+  const showDjRecruitment = !profile
 
   return (
     <>
@@ -18,7 +22,7 @@ export default async function Home() {
             DJ&apos;s rechtstreeks boeken
           </span>
           <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
-            Boek DJ&apos;s <span className="text-brand">rechtstreeks.</span>
+            Be the <span className="text-brand">star</span> you want to be.
           </h1>
           <p className="mt-6 max-w-xl text-balance text-lg text-muted">
             MyGigs koppelt boekers rechtstreeks aan DJ&apos;s. Filter op locatie,
@@ -32,12 +36,14 @@ export default async function Home() {
             >
               Boek een DJ
             </Link>
-            <Link
-              href="/login?mode=signup&type=dj"
-              className="rounded-full border border-border bg-surface px-7 py-3.5 font-medium transition hover:border-brand/50"
-            >
-              Word DJ
-            </Link>
+            {showDjRecruitment && (
+              <Link
+                href="/login?mode=signup&type=dj"
+                className="rounded-full border border-border bg-surface px-7 py-3.5 font-medium transition hover:border-brand/50"
+              >
+                Word DJ
+              </Link>
+            )}
           </div>
         </section>
 
@@ -51,13 +57,15 @@ export default async function Home() {
               href="/discover"
               primary
             />
-            <SideCard
-              tag="Voor DJ's"
-              title="Word geboekt"
-              body="Maak een DJ-profiel aan, toon je demo's en volgers, en ontvang boekingsaanvragen. Aanmelden is gratis: MyGigs verdient 7% per boeking."
-              cta="Word DJ"
-              href="/login?mode=signup&type=dj"
-            />
+            {showDjRecruitment && (
+              <SideCard
+                tag="Voor DJ's"
+                title="Word geboekt"
+                body="Maak een DJ-profiel aan, toon je demo's en volgers, en ontvang boekingsaanvragen. Aanmelden is gratis: MyGigs verdient 7% per boeking."
+                cta="Word DJ"
+                href="/login?mode=signup&type=dj"
+              />
+            )}
             <SideCard
               tag="Voor bedrijven"
               title="Zakelijk boeken"
@@ -109,24 +117,26 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="relative z-10 mx-auto w-full max-w-4xl px-6 pb-24 pt-8">
-          <div className="overflow-hidden rounded-3xl border border-border bg-surface p-10 text-center">
-            <div className="brand-glow pointer-events-none absolute" />
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Klaar om te beginnen?
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-muted">
-              Maak een profiel aan en ontvang je eerste boekingsaanvraag. Aanmelden
-              is gratis.
-            </p>
-            <Link
-              href="/login?mode=signup&type=dj"
-              className="mt-8 inline-block rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
-            >
-              Aan de slag
-            </Link>
-          </div>
-        </section>
+        {showDjRecruitment && (
+          <section className="relative z-10 mx-auto w-full max-w-4xl px-6 pb-24 pt-8">
+            <div className="overflow-hidden rounded-3xl border border-border bg-surface p-10 text-center">
+              <div className="brand-glow pointer-events-none absolute" />
+              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                Klaar om te beginnen?
+              </h2>
+              <p className="mx-auto mt-3 max-w-md text-muted">
+                Maak een profiel aan en ontvang je eerste boekingsaanvraag.
+                Aanmelden is gratis.
+              </p>
+              <Link
+                href="/login?mode=signup&type=dj"
+                className="mt-8 inline-block rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
+              >
+                Aan de slag
+              </Link>
+            </div>
+          </section>
+        )}
 
         <footer className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 text-center text-xs text-muted">
           MyGigs. Het boekingsplatform voor DJ&apos;s en events.
