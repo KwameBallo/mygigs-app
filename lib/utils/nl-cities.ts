@@ -1,0 +1,67 @@
+// Benaderende coördinaten van Nederlandse steden, om boekingen (die alleen een
+// stadsnaam opslaan) op een kaart te kunnen plaatsen. Niet uitputtend; onbekende
+// steden komen in een lijst onder de kaart.
+const CITY_COORDS: Record<string, [number, number]> = {
+  amsterdam: [52.3676, 4.9041],
+  rotterdam: [51.9244, 4.4777],
+  "den haag": [52.0705, 4.3007],
+  "'s-gravenhage": [52.0705, 4.3007],
+  utrecht: [52.0907, 5.1214],
+  eindhoven: [51.4416, 5.4697],
+  groningen: [53.2194, 6.5665],
+  tilburg: [51.5555, 5.0913],
+  almere: [52.3508, 5.2647],
+  breda: [51.5719, 4.7683],
+  nijmegen: [51.8426, 5.8546],
+  apeldoorn: [52.2112, 5.9699],
+  haarlem: [52.3874, 4.6462],
+  arnhem: [51.9851, 5.8987],
+  enschede: [52.2215, 6.8937],
+  amersfoort: [52.1561, 5.3878],
+  zaanstad: [52.4574, 4.7511],
+  zaandam: [52.4389, 4.8265],
+  "s-hertogenbosch": [51.6978, 5.3037],
+  "'s-hertogenbosch": [51.6978, 5.3037],
+  "den bosch": [51.6978, 5.3037],
+  zoetermeer: [52.0575, 4.4931],
+  zwolle: [52.5168, 6.0830],
+  leiden: [52.1601, 4.4970],
+  leeuwarden: [53.2012, 5.7999],
+  maastricht: [50.8514, 5.6910],
+  dordrecht: [51.8133, 4.6901],
+  ede: [52.0402, 5.6649],
+  alphen: [52.1252, 4.6574],
+  "alphen aan den rijn": [52.1252, 4.6574],
+  emmen: [52.7850, 6.8956],
+  delft: [52.0116, 4.3571],
+  venlo: [51.3704, 6.1724],
+  deventer: [52.2551, 6.1639],
+  helmond: [51.4793, 5.6570],
+  oss: [51.7650, 5.5180],
+  hilversum: [52.2292, 5.1669],
+  heerlen: [50.8882, 5.9795],
+  amstelveen: [52.3080, 4.8470],
+  purmerend: [52.5050, 4.9592],
+  roosendaal: [51.5308, 4.4653],
+  schiedam: [51.9195, 4.3988],
+  gouda: [52.0115, 4.7104],
+  spijkenisse: [51.8459, 4.3294],
+  vlaardingen: [51.9124, 4.3419],
+  assen: [52.9925, 6.5649],
+  bergen: [51.4977, 4.2870],
+  "bergen op zoom": [51.4977, 4.2870],
+  capelle: [51.9297, 4.5772],
+  veenendaal: [52.0286, 5.5580],
+  katwijk: [52.2036, 4.3998],
+  lelystad: [52.5185, 5.4714],
+  hoorn: [52.6425, 5.0597],
+  den_helder: [52.9563, 4.7601],
+  "den helder": [52.9563, 4.7601],
+}
+
+// Zoekt de coördinaten van een stad op (hoofdletter- en spatie-ongevoelig).
+export function cityToCoords(city: string | null): [number, number] | null {
+  if (!city) return null
+  const key = city.trim().toLowerCase()
+  return CITY_COORDS[key] ?? null
+}

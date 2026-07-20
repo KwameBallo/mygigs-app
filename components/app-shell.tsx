@@ -72,6 +72,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       label: "Agenda",
       icon: "clock",
     } as NavItem,
+    kaart: {
+      href: "/kaart",
+      label: "Kaart",
+      icon: "map",
+    } as NavItem,
     earnings: {
       href: "/earnings",
       label: "Verdiensten",
@@ -90,7 +95,13 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     // DJ-kant: volledige cockpit.
     sections.push({
       title: "DJ",
-      items: [items.dashboard, items.availability, items.earnings, items.profile],
+      items: [
+        items.dashboard,
+        items.availability,
+        items.kaart,
+        items.earnings,
+        items.profile,
+      ],
     })
     // DJ's browsen niet zelf op de Ontdek-kaart tussen andere DJ's.
     sections.push({
