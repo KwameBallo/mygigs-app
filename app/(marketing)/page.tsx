@@ -26,7 +26,7 @@ export default async function Home() {
             Be the <span className="text-brand">star</span> you want to be.
           </h1>
           <p className="mt-6 max-w-xl text-balance text-lg font-medium text-muted">
-            Het nummer 1 DJ-boekingsplatform van Nederland.
+            Het nummer 1 boekingsplatform.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             {isArtist ? (
