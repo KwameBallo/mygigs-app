@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { getI18n } from "@/lib/i18n"
 import { getGenres } from "@/lib/data/artists"
 import { PROVINCES } from "@/lib/utils/provinces"
 import { saveArtistProfile } from "./actions"
@@ -27,6 +28,9 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .maybeSingle()
   if (me?.role !== "artist" && me?.role !== "both") redirect("/dj-aanvraag")
+
+  const { t } = await getI18n()
+  const p = t.profile
 
   const [{ data: artist }, genres] = await Promise.all([
     supabase.from("artists").select("*").eq("user_id", user.id).maybeSingle(),
@@ -69,23 +73,21 @@ export default async function ProfilePage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">
-        {artist ? "Mijn profiel" : "Maak je DJ-profiel"}
+        {artist ? p.titleEdit : p.titleCreate}
       </h1>
-      <p className="mt-2 text-sm text-muted">
-        Dit is wat boekers zien en waarop ze filteren.
-      </p>
+      <p className="mt-2 text-sm text-muted">{p.subtitle}</p>
 
       {artist && (
         <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-brand/30 bg-brand/10 p-4">
           <div className="flex items-center gap-2 text-sm font-medium text-brand">
             <span className="flex h-2 w-2 rounded-full bg-green-400" />
-            Je profiel is live en zichtbaar voor boekers.
+            {p.liveBadge}
           </div>
           <Link
             href={`/artists/${artist.id}`}
             className="ml-auto rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-black transition hover:bg-brand-strong"
           >
-            Bekijk je openbare profiel →
+            {p.viewPublic}
           </Link>
         </div>
       )}
@@ -102,11 +104,8 @@ export default async function ProfilePage() {
 
       {artist && (
         <section className="mt-8">
-          <h2 className="text-sm font-medium">Profielfoto</h2>
-          <p className="mb-3 mt-0.5 text-xs text-muted">
-            Verschijnt op je profiel en in de zoekresultaten — in plaats van je
-            initialen.
-          </p>
+          <h2 className="text-sm font-medium">{p.photoHeading}</h2>
+          <p className="mb-3 mt-0.5 text-xs text-muted">{p.photoHint}</p>
           <AvatarUploader
             userId={user.id}
             initialUrl={artist.avatar_url}
@@ -117,52 +116,49 @@ export default async function ProfilePage() {
 
       {artist && (
         <section className="mt-8">
-          <h2 className="text-sm font-medium">Foto&apos;s &amp; video&apos;s</h2>
-          <p className="mb-3 mt-0.5 text-xs text-muted">
-            Laat boekers je sfeer zien — voeg foto&apos;s en korte video&apos;s
-            van je sets toe.
-          </p>
+          <h2 className="text-sm font-medium">{p.mediaHeading}</h2>
+          <p className="mb-3 mt-0.5 text-xs text-muted">{p.mediaHint}</p>
           <MediaManager artistId={artist.id} userId={user.id} initial={media} />
         </section>
       )}
 
       <form action={saveArtistProfile} className="mt-8 flex flex-col gap-5">
-        <Field label="DJ-naam" required>
+        <Field label={p.djName} required>
           <input
             name="stage_name"
             required
             defaultValue={artist?.stage_name ?? ""}
-            placeholder="DJ Voorbeeld"
+            placeholder={p.djNamePlaceholder}
             className="input h-11"
           />
         </Field>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Field label="Provincie (thuisbasis)">
+          <Field label={p.province}>
             <select
               name="province"
               defaultValue={artist?.province ?? ""}
               className="input h-11"
             >
-              <option value="">Kies provincie</option>
-              {PROVINCES.map((p) => (
-                <option key={p.name} value={p.name}>
-                  {p.name}
+              <option value="">{p.chooseProvince}</option>
+              {PROVINCES.map((prov) => (
+                <option key={prov.name} value={prov.name}>
+                  {prov.name}
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="Woonplaats (optioneel)">
+          <Field label={p.homeCity}>
             <input
               name="home_city"
               defaultValue={artist?.home_city ?? ""}
-              placeholder="Amsterdam"
+              placeholder={p.homeCityPlaceholder}
               className="input h-11"
             />
           </Field>
         </div>
 
-        <Field label="Richtprijs / basis gage (€)">
+        <Field label={p.baseGage}>
           <input
             name="base_gage"
             type="number"
@@ -171,26 +167,22 @@ export default async function ProfilePage() {
             defaultValue={artist?.base_gage ?? 0}
             className="input h-11"
           />
-          <span className="text-xs text-muted">
-            Wordt gebruikt als voorstel; per provincie stel je hieronder je
-            precieze bedrag in.
-          </span>
+          <span className="text-xs text-muted">{p.baseGageHint}</span>
         </Field>
 
         {/* Genres — zoek & kies meerdere stijlen */}
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-sm font-medium">Genres / stijlen</legend>
+          <legend className="mb-1 text-sm font-medium">{p.genresHeading}</legend>
           <GenrePicker genres={genres} initial={selectedGenres} />
         </fieldset>
 
         {/* Apparatuur — met huurprijs per item */}
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-medium">
-            Apparatuur die je meeneemt
+            {p.equipmentHeading}
           </legend>
           <span className="-mt-1 mb-1 text-xs text-muted">
-            Vink aan wat je meebrengt en zet je huurprijs erbij — dit wordt
-            verhuurd aan de boeker. De prijs verschijnt op je profiel.
+            {p.equipmentHint}
           </span>
           <EquipmentPicker
             initialItems={artist?.equipment_items ?? []}
@@ -199,7 +191,7 @@ export default async function ProfilePage() {
           <input
             name="equipment"
             defaultValue={artist?.equipment ?? ""}
-            placeholder="Details (optioneel): bv. Pioneer CDJ-3000, DJM-900"
+            placeholder={p.equipmentDetailsPlaceholder}
             className="input mt-1 h-11"
           />
         </fieldset>
@@ -207,23 +199,22 @@ export default async function ProfilePage() {
         {/* Prijs + bereik per provincie */}
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-medium">
-            Prijs per provincie
+            {p.pricePerProvinceHeading}
           </legend>
           <span className="-mt-1 text-xs text-muted">
-            Klik een provincie op de kaart en zet je totaalbedrag (incl.
-            reiskosten). Oranje = boekbaar, leeg = daar niet boekbaar.
+            {p.pricePerProvinceHint}
           </span>
           <div className="mt-2">
             <ProvinceMap initial={rates} />
           </div>
         </fieldset>
 
-        <Field label="Bio">
+        <Field label={p.bio}>
           <textarea
             name="bio"
             rows={4}
             defaultValue={artist?.bio ?? ""}
-            placeholder="Vertel boekers wie je bent en wat je brengt."
+            placeholder={p.bioPlaceholder}
             className="input py-3"
           />
         </Field>
@@ -246,10 +237,7 @@ export default async function ProfilePage() {
             />
           </Field>
         </div>
-        <span className="-mt-2 text-xs text-muted">
-          Sla op en klik daarna op &ldquo;Synchroniseer nu&rdquo; om je volgers
-          op te halen.
-        </span>
+        <span className="-mt-2 text-xs text-muted">{p.socialSaveHint}</span>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Field label="Spotify">
@@ -282,7 +270,7 @@ export default async function ProfilePage() {
           type="submit"
           className="mt-2 h-12 rounded-full bg-brand px-6 font-medium text-black transition hover:bg-brand-strong"
         >
-          {artist ? "Opslaan" : "Profiel aanmaken"}
+          {artist ? p.save : p.create}
         </button>
       </form>
     </main>

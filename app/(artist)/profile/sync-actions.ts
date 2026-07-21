@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { getI18n } from "@/lib/i18n"
 import {
   fetchSpotifyArtist,
   spotifyConfigured,
@@ -25,10 +26,13 @@ export async function syncSocials(
   _formData: FormData,
 ): Promise<SyncState> {
   const supabase = await createClient()
+  const { locale, t } = await getI18n()
+  const p = t.profile
+  const numLocale = locale === "nl" ? "nl-NL" : "en-GB"
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, message: "Niet ingelogd." }
+  if (!user) return { ok: false, message: p.syncNotLoggedIn }
 
   const { data: artist } = await supabase
     .from("artists")
@@ -37,7 +41,7 @@ export async function syncSocials(
     )
     .eq("user_id", user.id)
     .maybeSingle()
-  if (!artist) return { ok: false, message: "Geen DJ-profiel gevonden." }
+  if (!artist) return { ok: false, message: p.syncNoProfile }
 
   const update: {
     spotify_followers?: number
@@ -52,11 +56,11 @@ export async function syncSocials(
   const spotify = await fetchSpotifyArtist(artist.spotify_url)
   if (spotify) {
     update.spotify_followers = spotify.followers
-    done.push(`Spotify (${spotify.followers.toLocaleString("nl-NL")})`)
+    done.push(`Spotify (${spotify.followers.toLocaleString(numLocale)})`)
   } else if (!spotifyConfigured()) {
-    skipped.push("Spotify (koppeling niet geconfigureerd)")
+    skipped.push(`Spotify (${p.syncReasonNotConfigured})`)
   } else if (artist.spotify_url) {
-    skipped.push("Spotify (kon profiel niet ophalen)")
+    skipped.push(`Spotify (${p.syncReasonFetchFailed})`)
   }
 
   const igInput = artist.instagram_url ?? artist.instagram_handle
@@ -64,11 +68,11 @@ export async function syncSocials(
   if (instagram) {
     update.instagram_followers = instagram.followers
     update.instagram_handle = instagram.handle
-    done.push(`Instagram (${instagram.followers.toLocaleString("nl-NL")})`)
+    done.push(`Instagram (${instagram.followers.toLocaleString(numLocale)})`)
   } else if (!instagramConfigured()) {
-    skipped.push("Instagram (koppeling niet geconfigureerd)")
+    skipped.push(`Instagram (${p.syncReasonNotConfigured})`)
   } else if (igInput) {
-    skipped.push("Instagram (kon profiel niet ophalen)")
+    skipped.push(`Instagram (${p.syncReasonFetchFailed})`)
   }
 
   const ttInput = artist.tiktok_url ?? artist.tiktok_handle
@@ -76,11 +80,11 @@ export async function syncSocials(
   if (tiktok) {
     update.tiktok_followers = tiktok.followers
     update.tiktok_handle = tiktok.handle
-    done.push(`TikTok (${tiktok.followers.toLocaleString("nl-NL")})`)
+    done.push(`TikTok (${tiktok.followers.toLocaleString(numLocale)})`)
   } else if (!tiktokConfigured()) {
-    skipped.push("TikTok (koppeling niet geconfigureerd)")
+    skipped.push(`TikTok (${p.syncReasonNotConfigured})`)
   } else if (ttInput) {
-    skipped.push("TikTok (kon profiel niet ophalen)")
+    skipped.push(`TikTok (${p.syncReasonFetchFailed})`)
   }
 
   if (Object.keys(update).length > 0) {
@@ -95,11 +99,19 @@ export async function syncSocials(
       ok: false,
       message:
         skipped.length > 0
-          ? `Niets gesynchroniseerd: ${skipped.join(", ")}.`
-          : "Vul eerst je Spotify- of Instagram-link in.",
+          ? p.syncNothingWithSkipped.replace("{list}", skipped.join(", "))
+          : p.syncNothingNoLinks,
     }
   }
 
-  const tail = skipped.length > 0 ? ` Overgeslagen: ${skipped.join(", ")}.` : ""
-  return { ok: true, message: `Gesynchroniseerd: ${done.join(", ")}.${tail}` }
+  const tail =
+    skipped.length > 0
+      ? p.syncSkippedTail.replace("{list}", skipped.join(", "))
+      : ""
+  return {
+    ok: true,
+    message: p.syncDoneMsg
+      .replace("{list}", done.join(", "))
+      .replace("{tail}", tail),
+  }
 }

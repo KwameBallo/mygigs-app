@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useT } from "@/components/i18n-provider"
 
 type Media = { id: string; url: string; kind: string; path: string | null }
 
@@ -14,6 +15,8 @@ export function MediaManager({
   userId: string
   initial: Media[]
 }) {
+  const { t } = useT()
+  const p = t.profile
   const supabase = createClient()
   const [items, setItems] = useState<Media[]>(initial)
   const [busy, setBusy] = useState(false)
@@ -42,7 +45,7 @@ export function MediaManager({
           .select("id, url, kind, path")
           .single()
         if (insErr || !row) {
-          setError(insErr?.message ?? "Opslaan mislukt")
+          setError(insErr?.message ?? p.mediaSaveFailed)
           continue
         }
         setItems((s) => [row as Media, ...s])
@@ -72,7 +75,7 @@ export function MediaManager({
             e.target.value = ""
           }}
         />
-        {busy ? "Uploaden…" : "+ Foto's / video's uploaden"}
+        {busy ? p.uploading : p.mediaUpload}
       </label>
       {error && <span className="text-xs text-red-400">{error}</span>}
 
@@ -100,7 +103,7 @@ export function MediaManager({
               <button
                 type="button"
                 onClick={() => remove(m)}
-                aria-label="Verwijder media"
+                aria-label={p.mediaRemove}
                 className="absolute right-1.5 top-1.5 rounded-full bg-black/60 px-2 py-0.5 text-sm text-white opacity-0 transition group-hover:opacity-100"
               >
                 ×

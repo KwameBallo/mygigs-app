@@ -376,6 +376,93 @@ const nl = {
     business: "Zakelijk",
     hoursUnit: "uur",
   },
+  profile: {
+    titleEdit: "Mijn profiel",
+    titleCreate: "Maak je DJ-profiel",
+    subtitle: "Dit is wat boekers zien en waarop ze filteren.",
+    liveBadge: "Je profiel is live en zichtbaar voor boekers.",
+    viewPublic: "Bekijk je openbare profiel →",
+    photoHeading: "Profielfoto",
+    photoHint:
+      "Verschijnt op je profiel en in de zoekresultaten — in plaats van je initialen.",
+    mediaHeading: "Foto's & video's",
+    mediaHint:
+      "Laat boekers je sfeer zien — voeg foto's en korte video's van je sets toe.",
+    djName: "DJ-naam",
+    djNamePlaceholder: "DJ Voorbeeld",
+    province: "Provincie (thuisbasis)",
+    chooseProvince: "Kies provincie",
+    homeCity: "Woonplaats (optioneel)",
+    homeCityPlaceholder: "Amsterdam",
+    baseGage: "Richtprijs / basis gage (€)",
+    baseGageHint:
+      "Wordt gebruikt als voorstel; per provincie stel je hieronder je precieze bedrag in.",
+    genresHeading: "Genres / stijlen",
+    equipmentHeading: "Apparatuur die je meeneemt",
+    equipmentHint:
+      "Vink aan wat je meebrengt en zet je huurprijs erbij — dit wordt verhuurd aan de boeker. De prijs verschijnt op je profiel.",
+    equipmentDetailsPlaceholder:
+      "Details (optioneel): bv. Pioneer CDJ-3000, DJM-900",
+    pricePerProvinceHeading: "Prijs per provincie",
+    pricePerProvinceHint:
+      "Klik een provincie op de kaart en zet je totaalbedrag (incl. reiskosten). Oranje = boekbaar, leeg = daar niet boekbaar.",
+    bio: "Bio",
+    bioPlaceholder: "Vertel boekers wie je bent en wat je brengt.",
+    socialSaveHint:
+      "Sla op en klik daarna op “Synchroniseer nu” om je volgers op te halen.",
+    save: "Opslaan",
+    create: "Profiel aanmaken",
+    // Volgers-sync
+    syncHeading: "Volgers synchroniseren",
+    syncHint: "Haalt je actuele volgersaantal op uit Spotify en Instagram.",
+    syncing: "Synchroniseren…",
+    syncNow: "Synchroniseer nu",
+    // Genre-picker
+    genreRemove: "Verwijder {name}",
+    genreSearchPlaceholder: "Zoek een stijl… (bv. techno, house, afro)",
+    genreEmpty:
+      "Typ om stijlen te zoeken en aan te klikken — kies er zoveel als je wilt.",
+    // Media-manager
+    uploading: "Uploaden…",
+    mediaUpload: "+ Foto's / video's uploaden",
+    mediaSaveFailed: "Opslaan mislukt",
+    mediaRemove: "Verwijder media",
+    // Avatar
+    avatarAlt: "Profielfoto",
+    avatarChange: "Foto wijzigen",
+    avatarAdd: "Foto toevoegen",
+    // Equipment items
+    equipMicrophone: "Microfoon",
+    equipTurntable: "Draaitafel",
+    equipSpeakers: "Speakers",
+    equipLighting: "Verlichting",
+    equipBass: "Bass",
+    equipRent: "huur",
+    // Province-map
+    autoFill: "✨ Vul automatisch in",
+    autoFillHint: "o.b.v. thuisprovincie + richtprijs (reiskosten + reistijd)",
+    autoFillNoProvince: "Kies eerst je thuisprovincie hierboven.",
+    autoFillNoBase: "Vul eerst je richtprijs in.",
+    autoFillDone: "Ingevuld vanuit {province} — pas gerust per provincie aan.",
+    mapAria:
+      "Kaart van Nederland — klik een provincie om je bedrag in te stellen",
+    provinceTotalHint: "Totaalbedrag incl. reiskosten. Leeg = daar niet boekbaar.",
+    amountPlaceholder: "bedrag",
+    notBookable: "Niet boekbaar",
+    mapEmpty:
+      "Klik een provincie op de kaart om je bedrag in te stellen. Oranje provincies zijn boekbaar.",
+    provincesBookableOne: "{n} provincie boekbaar.",
+    provincesBookableMany: "{n} provincies boekbaar.",
+    // Sync-actions (server)
+    syncNotLoggedIn: "Niet ingelogd.",
+    syncNoProfile: "Geen DJ-profiel gevonden.",
+    syncReasonNotConfigured: "koppeling niet geconfigureerd",
+    syncReasonFetchFailed: "kon profiel niet ophalen",
+    syncNothingWithSkipped: "Niets gesynchroniseerd: {list}.",
+    syncNothingNoLinks: "Vul eerst je Spotify- of Instagram-link in.",
+    syncSkippedTail: " Overgeslagen: {list}.",
+    syncDoneMsg: "Gesynchroniseerd: {list}.{tail}",
+  },
 }
 
 const en: typeof nl = {
@@ -748,6 +835,93 @@ const en: typeof nl = {
     private: "Private",
     business: "Business",
     hoursUnit: "hr",
+  },
+  profile: {
+    titleEdit: "My profile",
+    titleCreate: "Create your DJ profile",
+    subtitle: "This is what bookers see and filter on.",
+    liveBadge: "Your profile is live and visible to bookers.",
+    viewPublic: "View your public profile →",
+    photoHeading: "Profile photo",
+    photoHint:
+      "Appears on your profile and in search results — instead of your initials.",
+    mediaHeading: "Photos & videos",
+    mediaHint:
+      "Show bookers your vibe — add photos and short videos of your sets.",
+    djName: "DJ name",
+    djNamePlaceholder: "DJ Example",
+    province: "Province (home base)",
+    chooseProvince: "Choose province",
+    homeCity: "City (optional)",
+    homeCityPlaceholder: "Amsterdam",
+    baseGage: "Guide price / base fee (€)",
+    baseGageHint:
+      "Used as a suggestion; you set your exact amount per province below.",
+    genresHeading: "Genres / styles",
+    equipmentHeading: "Equipment you bring",
+    equipmentHint:
+      "Tick what you bring and add your rental price — this is rented to the booker. The price appears on your profile.",
+    equipmentDetailsPlaceholder:
+      "Details (optional): e.g. Pioneer CDJ-3000, DJM-900",
+    pricePerProvinceHeading: "Price per province",
+    pricePerProvinceHint:
+      "Click a province on the map and set your total amount (incl. travel costs). Orange = bookable, empty = not bookable there.",
+    bio: "Bio",
+    bioPlaceholder: "Tell bookers who you are and what you bring.",
+    socialSaveHint:
+      "Save, then click “Sync now” to fetch your followers.",
+    save: "Save",
+    create: "Create profile",
+    // Followers sync
+    syncHeading: "Sync followers",
+    syncHint: "Fetches your current follower count from Spotify and Instagram.",
+    syncing: "Syncing…",
+    syncNow: "Sync now",
+    // Genre picker
+    genreRemove: "Remove {name}",
+    genreSearchPlaceholder: "Search a style… (e.g. techno, house, afro)",
+    genreEmpty:
+      "Type to search styles and click to add — pick as many as you like.",
+    // Media manager
+    uploading: "Uploading…",
+    mediaUpload: "+ Upload photos / videos",
+    mediaSaveFailed: "Save failed",
+    mediaRemove: "Remove media",
+    // Avatar
+    avatarAlt: "Profile photo",
+    avatarChange: "Change photo",
+    avatarAdd: "Add photo",
+    // Equipment items
+    equipMicrophone: "Microphone",
+    equipTurntable: "Turntable",
+    equipSpeakers: "Speakers",
+    equipLighting: "Lighting",
+    equipBass: "Bass",
+    equipRent: "rent",
+    // Province map
+    autoFill: "✨ Auto-fill",
+    autoFillHint: "based on home province + guide price (travel cost + time)",
+    autoFillNoProvince: "Choose your home province above first.",
+    autoFillNoBase: "Enter your guide price first.",
+    autoFillDone: "Filled from {province} — feel free to adjust per province.",
+    mapAria:
+      "Map of the Netherlands — click a province to set your amount",
+    provinceTotalHint: "Total amount incl. travel costs. Empty = not bookable there.",
+    amountPlaceholder: "amount",
+    notBookable: "Not bookable",
+    mapEmpty:
+      "Click a province on the map to set your amount. Orange provinces are bookable.",
+    provincesBookableOne: "{n} province bookable.",
+    provincesBookableMany: "{n} provinces bookable.",
+    // Sync-actions (server)
+    syncNotLoggedIn: "Not logged in.",
+    syncNoProfile: "No DJ profile found.",
+    syncReasonNotConfigured: "integration not configured",
+    syncReasonFetchFailed: "could not fetch profile",
+    syncNothingWithSkipped: "Nothing synced: {list}.",
+    syncNothingNoLinks: "Enter your Spotify or Instagram link first.",
+    syncSkippedTail: " Skipped: {list}.",
+    syncDoneMsg: "Synced: {list}.{tail}",
   },
 }
 

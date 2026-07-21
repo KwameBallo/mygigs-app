@@ -3,6 +3,7 @@
 import { useActionState } from "react"
 import { syncSocials, type SyncState } from "./sync-actions"
 import { formatFollowers } from "@/lib/utils/format"
+import { useT } from "@/components/i18n-provider"
 
 const initial: SyncState = { ok: false, message: "" }
 
@@ -16,15 +17,15 @@ export function SyncSocials({
   tiktokFollowers: number
 }) {
   const [state, action, pending] = useActionState(syncSocials, initial)
+  const { t } = useT()
+  const p = t.profile
 
   return (
     <section className="rounded-2xl border border-border bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold">Volgers synchroniseren</h2>
-          <p className="mt-1 text-xs text-muted">
-            Haalt je actuele volgersaantal op uit Spotify en Instagram.
-          </p>
+          <h2 className="text-sm font-semibold">{p.syncHeading}</h2>
+          <p className="mt-1 text-xs text-muted">{p.syncHint}</p>
         </div>
         <form action={action}>
           <button
@@ -32,7 +33,7 @@ export function SyncSocials({
             disabled={pending}
             className="h-10 rounded-full bg-brand px-5 text-sm font-medium text-black transition hover:bg-brand-strong disabled:opacity-50"
           >
-            {pending ? "Synchroniseren…" : "Synchroniseer nu"}
+            {pending ? p.syncing : p.syncNow}
           </button>
         </form>
       </div>

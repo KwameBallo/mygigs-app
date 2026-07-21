@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { setArtistAvatar } from "./actions"
+import { useT } from "@/components/i18n-provider"
 
 // Upload een profielfoto naar Storage en zet 'm als avatar op de artiest.
 export function AvatarUploader({
@@ -14,6 +15,8 @@ export function AvatarUploader({
   initialUrl: string | null
   initials: string
 }) {
+  const { t } = useT()
+  const p = t.profile
   const supabase = createClient()
   const [url, setUrl] = useState<string | null>(initialUrl)
   const [busy, setBusy] = useState(false)
@@ -46,7 +49,7 @@ export function AvatarUploader({
       <div className="flex h-20 w-20 flex-none items-center justify-center overflow-hidden rounded-full border border-border bg-surface-2 text-xl font-semibold text-muted">
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={url} alt="Profielfoto" className="h-full w-full object-cover" />
+          <img src={url} alt={p.avatarAlt} className="h-full w-full object-cover" />
         ) : (
           initials
         )}
@@ -63,7 +66,7 @@ export function AvatarUploader({
               e.target.value = ""
             }}
           />
-          {busy ? "Uploaden…" : url ? "Foto wijzigen" : "Foto toevoegen"}
+          {busy ? p.uploading : url ? p.avatarChange : p.avatarAdd}
         </label>
         {error && <span className="text-xs text-red-400">{error}</span>}
       </div>

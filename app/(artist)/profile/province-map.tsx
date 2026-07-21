@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react"
 import { NL_MAP_VIEWBOX, NL_PROVINCE_PATHS } from "@/lib/utils/nl-map"
 import { PROVINCE_NAMES } from "@/lib/utils/provinces"
 import { suggestProvinceRates } from "@/lib/utils/travel"
+import { useT } from "@/components/i18n-provider"
 
 type Rates = Record<string, number>
 type Point = { x: number; y: number }
@@ -11,6 +12,8 @@ type Point = { x: number; y: number }
 // Klikbare kaart van Nederland: elke provincie is een knop met haar bedrag.
 // Actief (bedrag > 0) = huisstijl-oranje; de rest regel je met één klik.
 export function ProvinceMap({ initial }: { initial: Rates }) {
+  const { t } = useT()
+  const p = t.profile
   const wrap = useRef<HTMLDivElement>(null)
   const pathRefs = useRef<Record<string, SVGPathElement | null>>({})
   const [rates, setRates] = useState<Rates>(initial)
@@ -51,8 +54,8 @@ export function ProvinceMap({ initial }: { initial: Rates }) {
       (form?.querySelector('[name="base_gage"]') as HTMLInputElement | null)
         ?.value ?? 0,
     )
-    if (!province) return setNote("Kies eerst je thuisprovincie hierboven.")
-    if (!base || base <= 0) return setNote("Vul eerst je richtprijs in.")
+    if (!province) return setNote(p.autoFillNoProvince)
+    if (!base || base <= 0) return setNote(p.autoFillNoBase)
 
     const suggestions = suggestProvinceRates(province, base)
     setRates(() => {
@@ -60,7 +63,7 @@ export function ProvinceMap({ initial }: { initial: Rates }) {
       for (const s of suggestions) if (s.inRange) next[s.province] = s.suggested
       return next
     })
-    setNote(`Ingevuld vanuit ${province} — pas gerust per provincie aan.`)
+    setNote(p.autoFillDone.replace("{province}", province))
   }
 
   const active = (name: string) => (rates[name] ?? 0) > 0
@@ -73,11 +76,9 @@ export function ProvinceMap({ initial }: { initial: Rates }) {
           onClick={autoFill}
           className="flex items-center gap-2 rounded-full border border-brand/50 bg-brand/10 px-4 py-2 text-sm font-medium text-brand transition hover:bg-brand/20"
         >
-          ✨ Vul automatisch in
+          {p.autoFill}
         </button>
-        <span className="text-xs text-muted">
-          o.b.v. thuisprovincie + richtprijs (reiskosten + reistijd)
-        </span>
+        <span className="text-xs text-muted">{p.autoFillHint}</span>
       </div>
       {note && <span className="text-xs text-brand">{note}</span>}
 
@@ -87,7 +88,7 @@ export function ProvinceMap({ initial }: { initial: Rates }) {
           viewBox={NL_MAP_VIEWBOX}
           className="w-full max-w-[300px] flex-none select-none"
           role="img"
-          aria-label="Kaart van Nederland — klik een provincie om je bedrag in te stellen"
+          aria-label={p.mapAria}
         >
           {PROVINCE_NAMES.map((name) => {
             const on = active(name)
@@ -135,9 +136,7 @@ export function ProvinceMap({ initial }: { initial: Rates }) {
           {selected ? (
             <div className="rounded-2xl border border-border bg-surface-2/50 p-4">
               <p className="text-sm font-medium">{selected}</p>
-              <p className="mt-0.5 text-xs text-muted">
-                Totaalbedrag incl. reiskosten. Leeg = daar niet boekbaar.
-              </p>
+              <p className="mt-0.5 text-xs text-muted">{p.provinceTotalHint}</p>
               <div className="mt-2 flex items-center gap-2">
                 <div className="flex h-10 w-32 items-center gap-1.5 rounded-xl border border-border bg-surface pl-3 pr-2 focus-within:border-brand">
                   <span className="flex-none text-sm text-muted">€</span>
@@ -148,7 +147,7 @@ export function ProvinceMap({ initial }: { initial: Rates }) {
                     autoFocus
                     value={rates[selected] ?? ""}
                     onChange={(e) => setAmount(selected, Number(e.target.value))}
-                    placeholder="bedrag"
+                    placeholder={p.amountPlaceholder}
                     className="h-full w-full bg-transparent text-sm tabular-nums outline-none placeholder:text-muted"
                   />
                 </div>
@@ -158,21 +157,22 @@ export function ProvinceMap({ initial }: { initial: Rates }) {
                     onClick={() => setAmount(selected, 0)}
                     className="rounded-full border border-border px-3 py-1.5 text-xs text-muted transition hover:border-red-400/50 hover:text-red-400"
                   >
-                    Niet boekbaar
+                    {p.notBookable}
                   </button>
                 )}
               </div>
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-surface-2/30 p-4 text-sm text-muted">
-              Klik een provincie op de kaart om je bedrag in te stellen. Oranje
-              provincies zijn boekbaar.
+              {p.mapEmpty}
             </div>
           )}
 
           <p className="mt-3 text-xs text-muted">
-            {Object.keys(rates).length} provincie
-            {Object.keys(rates).length === 1 ? "" : "s"} boekbaar.
+            {(Object.keys(rates).length === 1
+              ? p.provincesBookableOne
+              : p.provincesBookableMany
+            ).replace("{n}", String(Object.keys(rates).length))}
           </p>
         </div>
       </div>

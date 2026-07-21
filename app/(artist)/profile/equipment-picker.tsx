@@ -1,8 +1,17 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n-provider"
 
-const EQUIPMENT = ["Microfoon", "Draaitafel", "Speakers", "Verlichting", "Bass"]
+// De opgeslagen waarde blijft canoniek (Nederlands) zodat bestaande data blijft
+// werken; alleen het label wordt vertaald.
+const EQUIPMENT = [
+  { value: "Microfoon", key: "equipMicrophone" },
+  { value: "Draaitafel", key: "equipTurntable" },
+  { value: "Speakers", key: "equipSpeakers" },
+  { value: "Verlichting", key: "equipLighting" },
+  { value: "Bass", key: "equipBass" },
+] as const
 
 // De DJ vinkt aan wat hij meebrengt en zet er een huurprijs bij; die prijs
 // verschijnt op zijn publieke profiel (apparatuur wordt in feite verhuurd).
@@ -13,6 +22,8 @@ export function EquipmentPicker({
   initialItems: string[]
   initialPrices: Record<string, number>
 }) {
+  const { t } = useT()
+  const p = t.profile
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set(initialItems),
   )
@@ -28,7 +39,7 @@ export function EquipmentPicker({
 
   return (
     <div className="flex flex-col gap-2">
-      {EQUIPMENT.map((item) => {
+      {EQUIPMENT.map(({ value: item, key }) => {
         const on = selected.has(item)
         return (
           <div key={item} className="flex items-center gap-2">
@@ -47,7 +58,7 @@ export function EquipmentPicker({
                 onChange={(e) => toggle(item, e.target.checked)}
                 className="accent-brand"
               />
-              {item}
+              {p[key]}
             </label>
             {/* Prijsvak altijd invulbaar; een bedrag vinkt het item auto aan. */}
             <div className="flex h-10 w-32 items-center gap-1.5 rounded-xl border border-border bg-surface-2 pl-3 pr-2 transition focus-within:border-brand">
@@ -63,7 +74,7 @@ export function EquipmentPicker({
                 onChange={(e) => {
                   if (Number(e.target.value) > 0 && !on) toggle(item, true)
                 }}
-                placeholder="huur"
+                placeholder={p.equipRent}
                 className="h-full w-full bg-transparent text-sm tabular-nums outline-none placeholder:text-muted"
               />
             </div>

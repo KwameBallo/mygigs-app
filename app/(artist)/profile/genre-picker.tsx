@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n-provider"
 
 type G = { id: number; name: string }
 
@@ -11,6 +12,8 @@ export function GenrePicker({
   genres: G[]
   initial: number[]
 }) {
+  const { t } = useT()
+  const p = t.profile
   const [selected, setSelected] = useState<number[]>(initial)
   const [q, setQ] = useState("")
 
@@ -54,7 +57,7 @@ export function GenrePicker({
                 <button
                   type="button"
                   onClick={() => remove(id)}
-                  aria-label={`Verwijder ${g.name}`}
+                  aria-label={p.genreRemove.replace("{name}", g.name)}
                   className="text-base leading-none text-brand/70 transition hover:text-brand"
                 >
                   ×
@@ -69,7 +72,7 @@ export function GenrePicker({
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Zoek een stijl… (bv. techno, house, afro)"
+          placeholder={p.genreSearchPlaceholder}
           className="input h-11 w-full"
         />
         {matches.length > 0 && (
@@ -89,9 +92,7 @@ export function GenrePicker({
       </div>
 
       {selected.length === 0 && (
-        <span className="text-xs text-muted">
-          Typ om stijlen te zoeken en aan te klikken — kies er zoveel als je wilt.
-        </span>
+        <span className="text-xs text-muted">{p.genreEmpty}</span>
       )}
     </div>
   )
