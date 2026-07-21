@@ -19,19 +19,14 @@ export default async function Home() {
         <div className="brand-glow pointer-events-none absolute inset-x-0 top-0 h-[640px]" />
 
         <section className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 pb-16 pt-20 text-center sm:pt-28">
-          <p className="mb-4 text-2xl font-bold tracking-tight sm:text-3xl">
+          <p className="mb-6 text-2xl font-bold tracking-tight sm:text-3xl">
             My<span className="text-brand">Gigs</span>
           </p>
-          <span className="mb-6 rounded-full border border-border bg-surface px-4 py-1.5 text-xs text-muted">
-            DJ&apos;s rechtstreeks boeken
-          </span>
           <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
             Be the <span className="text-brand">star</span> you want to be.
           </h1>
-          <p className="mt-6 max-w-xl text-balance text-lg text-muted">
-            MyGigs koppelt boekers rechtstreeks aan DJ&apos;s. Filter op locatie,
-            genre, budget en datum. Transparante tarieven, veilige betaling via
-            escrow. Geen tussenkomst van boekingskantoren.
+          <p className="mt-6 max-w-xl text-balance text-lg font-medium text-muted">
+            Het nummer 1 DJ-boekingsplatform van Nederland.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             {isArtist ? (
