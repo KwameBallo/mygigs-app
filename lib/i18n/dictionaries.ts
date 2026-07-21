@@ -181,6 +181,50 @@ const nl = {
     escrowNote: "Je betaalt pas na acceptatie. Geld staat veilig in escrow.",
     hoursUnit: "uur",
   },
+  pay: {
+    chooseMethod: "Kies je betaalmethode",
+    idealDesc: "Betaal via je eigen bank",
+    cardTitle: "Creditcard",
+    cardDesc: "Visa, Mastercard",
+    chooseBank: "Kies je bank",
+    selectBank: "Selecteer je bank…",
+    cardNote:
+      "Na bevestiging ga je naar de beveiligde betaalpagina om je kaartgegevens in te voeren. Voer je kaartnummer nooit ergens anders in.",
+    paying: "Bezig met betalen…",
+    payButton: "Betaal {total}",
+    secureNote:
+      "Beveiligde betaling · geen contant · je gegevens worden niet gedeeld met de DJ.",
+    back: "← Terug naar mijn boekingen",
+    title: "Betaling afronden",
+    subtitle:
+      "Je betaalt veilig en volledig digitaal. Het bedrag blijft bij MyGigs staan en gaat pas ná het optreden naar de DJ.",
+    whySafe: "Waarom dit veilig is",
+    trust1Title: "Geld staat vast in escrow",
+    trust1Body:
+      "Je betaling wordt bij MyGigs bewaard en pas ná het optreden aan de DJ uitbetaald.",
+    trust2Title: "Niet-verschijn-garantie",
+    trust2Body:
+      "Komt de DJ niet opdagen? Dan krijg je je volledige bedrag terug.",
+    trust3Title: "100% digitaal, geen contant",
+    trust3Body:
+      "Alles loopt via een beveiligde betaalomgeving — je hoeft nooit contant te betalen.",
+    trust4Title: "Je privacy blijft beschermd",
+    trust4Body:
+      "De DJ krijgt alleen je naam te zien voor de afstemming; je contactgegevens deel je niet.",
+    demoNote:
+      "Demo: de betaling wordt nu nog gesimuleerd. Zodra de betaalprovider live staat, wordt hier echt via iDEAL of creditcard afgerekend.",
+    yourBooking: "Jouw boeking",
+    verified: "Geverifieerd",
+    rowType: "Type",
+    rowOccasion: "Gelegenheid",
+    rowDate: "Datum",
+    rowCity: "Stad",
+    rowVenue: "Locatie",
+    private: "Privé",
+    business: "Zakelijk",
+    ofWhichVat: "waarvan btw",
+    toPay: "Te betalen",
+  },
 }
 
 const en: typeof nl = {
@@ -361,6 +405,49 @@ const en: typeof nl = {
     submit: "Send request",
     escrowNote: "You only pay after acceptance. Money is safely held in escrow.",
     hoursUnit: "hr",
+  },
+  pay: {
+    chooseMethod: "Choose your payment method",
+    idealDesc: "Pay via your own bank",
+    cardTitle: "Credit card",
+    cardDesc: "Visa, Mastercard",
+    chooseBank: "Choose your bank",
+    selectBank: "Select your bank…",
+    cardNote:
+      "After confirming you'll go to the secure payment page to enter your card details. Never enter your card number anywhere else.",
+    paying: "Processing payment…",
+    payButton: "Pay {total}",
+    secureNote:
+      "Secure payment · no cash · your details are not shared with the DJ.",
+    back: "← Back to my bookings",
+    title: "Complete payment",
+    subtitle:
+      "You pay securely and fully digitally. The amount stays with MyGigs and only goes to the DJ after the gig.",
+    whySafe: "Why this is safe",
+    trust1Title: "Money held in escrow",
+    trust1Body:
+      "Your payment is held by MyGigs and only paid out to the DJ after the gig.",
+    trust2Title: "No-show guarantee",
+    trust2Body: "If the DJ doesn't show up, you get your full amount back.",
+    trust3Title: "100% digital, no cash",
+    trust3Body:
+      "Everything goes through a secure payment environment — you never have to pay cash.",
+    trust4Title: "Your privacy stays protected",
+    trust4Body:
+      "The DJ only sees your name for coordination; you don't share your contact details.",
+    demoNote:
+      "Demo: the payment is still simulated for now. Once the payment provider is live, this will charge via iDEAL or credit card for real.",
+    yourBooking: "Your booking",
+    verified: "Verified",
+    rowType: "Type",
+    rowOccasion: "Occasion",
+    rowDate: "Date",
+    rowCity: "City",
+    rowVenue: "Location",
+    private: "Private",
+    business: "Business",
+    ofWhichVat: "of which VAT",
+    toPay: "To pay",
   },
 }
 

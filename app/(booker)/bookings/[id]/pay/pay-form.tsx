@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useFormStatus } from "react-dom"
 import { payBooking } from "../../actions"
+import { useT } from "@/components/i18n-provider"
 import { formatEuro } from "@/lib/utils/pricing"
 
 type Method = "ideal" | "card"
@@ -30,6 +31,8 @@ export function PayForm({
   bookingId: string
   total: number
 }) {
+  const { t } = useT()
+  const p = t.pay
   const [method, setMethod] = useState<Method>("ideal")
 
   return (
@@ -40,22 +43,20 @@ export function PayForm({
       <input type="hidden" name="booking_id" value={bookingId} />
       <input type="hidden" name="payment_method" value={method} />
 
-      <h2 className="text-lg font-semibold tracking-tight">
-        Kies je betaalmethode
-      </h2>
+      <h2 className="text-lg font-semibold tracking-tight">{p.chooseMethod}</h2>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <MethodOption
           value="ideal"
           title="iDEAL"
-          desc="Betaal via je eigen bank"
+          desc={p.idealDesc}
           active={method === "ideal"}
           onSelect={setMethod}
         />
         <MethodOption
           value="card"
-          title="Creditcard"
-          desc="Visa, Mastercard"
+          title={p.cardTitle}
+          desc={p.cardDesc}
           active={method === "card"}
           onSelect={setMethod}
         />
@@ -63,14 +64,14 @@ export function PayForm({
 
       {method === "ideal" && (
         <label className="mt-4 flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Kies je bank</span>
+          <span className="text-sm font-medium">{p.chooseBank}</span>
           <select name="ideal_bank" defaultValue="" className="input">
             <option value="" disabled>
-              Selecteer je bank…
+              {p.selectBank}
             </option>
-            {IDEAL_BANKS.map((b) => (
-              <option key={b} value={b}>
-                {b}
+            {IDEAL_BANKS.map((bank) => (
+              <option key={bank} value={bank}>
+                {bank}
               </option>
             ))}
           </select>
@@ -79,17 +80,13 @@ export function PayForm({
 
       {method === "card" && (
         <div className="mt-4 rounded-xl border border-dashed border-border bg-surface-2 p-4 text-sm text-muted">
-          Na bevestiging ga je naar de beveiligde betaalpagina om je
-          kaartgegevens in te voeren. Voer je kaartnummer nooit ergens anders in.
+          {p.cardNote}
         </div>
       )}
 
       <SubmitButton total={total} />
 
-      <p className="mt-3 text-center text-xs text-muted">
-        Beveiligde betaling · geen contant · je gegevens worden niet gedeeld met
-        de DJ.
-      </p>
+      <p className="mt-3 text-center text-xs text-muted">{p.secureNote}</p>
     </form>
   )
 }
@@ -125,13 +122,16 @@ function MethodOption({
 
 function SubmitButton({ total }: { total: number }) {
   const { pending } = useFormStatus()
+  const { t } = useT()
   return (
     <button
       type="submit"
       disabled={pending}
       className="mt-6 w-full rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {pending ? "Bezig met betalen…" : `Betaal ${formatEuro(total)}`}
+      {pending
+        ? t.pay.paying
+        : t.pay.payButton.replace("{total}", formatEuro(total))}
     </button>
   )
 }
