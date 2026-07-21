@@ -3,24 +3,9 @@
 import { useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { toggleAvailability } from "./actions"
+import { useT } from "@/components/i18n-provider"
 
 type Slot = { date: string; status: string }
-
-const WEEKDAYS = ["ma", "di", "wo", "do", "vr", "za", "zo"]
-const MONTHS = [
-  "januari",
-  "februari",
-  "maart",
-  "april",
-  "mei",
-  "juni",
-  "juli",
-  "augustus",
-  "september",
-  "oktober",
-  "november",
-  "december",
-]
 
 function pad(n: number) {
   return String(n).padStart(2, "0")
@@ -34,6 +19,8 @@ export function AvailabilityCalendar({
   today: string
 }) {
   const router = useRouter()
+  const { t } = useT()
+  const a = t.agenda
 
   // Geboekte dagen zijn niet te wijzigen; beschikbare dagen wél (optimistisch).
   const booked = useMemo(
@@ -108,7 +95,7 @@ export function AvailabilityCalendar({
           ←
         </button>
         <span className="text-sm font-semibold">
-          {MONTHS[view.m]} {view.y}
+          {a.months[view.m]} {view.y}
         </span>
         <button
           type="button"
@@ -121,7 +108,7 @@ export function AvailabilityCalendar({
       </div>
 
       <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs text-muted">
-        {WEEKDAYS.map((w) => (
+        {a.weekdays.map((w) => (
           <div key={w} className="py-1">
             {w}
           </div>
@@ -165,17 +152,16 @@ export function AvailabilityCalendar({
 
       <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-brand" /> Beschikbaar
+          <span className="h-2.5 w-2.5 rounded-full bg-brand" /> {a.available}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-400" /> Geboekt
+          <span className="h-2.5 w-2.5 rounded-full bg-red-400" /> {a.booked}
         </span>
-        <span className="ml-auto">{availableCount} dagen beschikbaar</span>
+        <span className="ml-auto">
+          {availableCount} {a.daysAvailable}
+        </span>
       </div>
-      <p className="mt-3 text-xs text-muted">
-        Tik op een dag om je beschikbaarheid aan of uit te zetten. Geboekte dagen
-        kun je niet wijzigen.
-      </p>
+      <p className="mt-3 text-xs text-muted">{a.calendarHint}</p>
     </div>
   )
 }

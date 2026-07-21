@@ -250,6 +250,39 @@ const nl = {
     cancel: "Annuleren",
     paidNote: "Betaald — geld staat bij MyGigs, uitbetaling binnen 5 werkdagen.",
   },
+  agenda: {
+    title: "Agenda",
+    intro:
+      "Tik in de kalender de dagen aan waarop je beschikbaar bent voor boekingen.",
+    bookedDays: "Geboekte dagen",
+    booked: "Geboekt",
+    available: "Beschikbaar",
+    daysAvailable: "dagen beschikbaar",
+    calendarHint:
+      "Tik op een dag om je beschikbaarheid aan of uit te zetten. Geboekte dagen kun je niet wijzigen.",
+    noProfile: "Je hebt nog geen DJ-profiel. Maak er eerst een aan.",
+    toProfile: "Naar profiel",
+    timesTitle: "Beschikbare tijden",
+    timesIntro:
+      "Geef per dag aan van hoe laat tot hoe laat je kunt. Laat leeg voor de hele dag. Wijzigingen worden meteen opgeslagen.",
+    from: "van",
+    to: "tot",
+    weekdays: ["ma", "di", "wo", "do", "vr", "za", "zo"],
+    months: [
+      "januari",
+      "februari",
+      "maart",
+      "april",
+      "mei",
+      "juni",
+      "juli",
+      "augustus",
+      "september",
+      "oktober",
+      "november",
+      "december",
+    ],
+  },
 }
 
 const en: typeof nl = {
@@ -498,6 +531,38 @@ const en: typeof nl = {
     pay: "Pay",
     cancel: "Cancel",
     paidNote: "Paid — money is held by MyGigs, payout within 5 business days.",
+  },
+  agenda: {
+    title: "Calendar",
+    intro: "Tap the days in the calendar when you're available for bookings.",
+    bookedDays: "Booked days",
+    booked: "Booked",
+    available: "Available",
+    daysAvailable: "days available",
+    calendarHint:
+      "Tap a day to turn your availability on or off. Booked days can't be changed.",
+    noProfile: "You don't have a DJ profile yet. Create one first.",
+    toProfile: "To profile",
+    timesTitle: "Available times",
+    timesIntro:
+      "Set from and until what time you're available per day. Leave empty for the whole day. Changes are saved instantly.",
+    from: "from",
+    to: "until",
+    weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    months: [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ],
   },
 }
 

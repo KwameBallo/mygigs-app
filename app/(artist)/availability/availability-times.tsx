@@ -1,11 +1,12 @@
 "use client"
 
 import { saveAvailabilityTime } from "./actions"
+import { useT } from "@/components/i18n-provider"
 
 type Day = { date: string; start: string | null; end: string | null }
 
-function label(date: string) {
-  return new Date(date).toLocaleDateString("nl-NL", {
+function label(date: string, dateLocale: string) {
+  return new Date(date).toLocaleDateString(dateLocale, {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -18,15 +19,15 @@ function hhmm(t: string | null) {
 }
 
 export function AvailabilityTimes({ days }: { days: Day[] }) {
+  const { locale, t } = useT()
+  const a = t.agenda
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
   if (days.length === 0) return null
 
   return (
     <div className="mt-6 rounded-2xl border border-border bg-surface p-5">
-      <h2 className="text-sm font-semibold">Beschikbare tijden</h2>
-      <p className="mt-1 text-xs text-muted">
-        Geef per dag aan van hoe laat tot hoe laat je kunt. Laat leeg voor de
-        hele dag. Wijzigingen worden meteen opgeslagen.
-      </p>
+      <h2 className="text-sm font-semibold">{a.timesTitle}</h2>
+      <p className="mt-1 text-xs text-muted">{a.timesIntro}</p>
 
       <div className="mt-3 flex flex-col gap-2">
         {days.map((d) => (
@@ -37,10 +38,10 @@ export function AvailabilityTimes({ days }: { days: Day[] }) {
           >
             <input type="hidden" name="date" value={d.date} />
             <span className="w-24 flex-none text-sm font-medium">
-              {label(d.date)}
+              {label(d.date, dateLocale)}
             </span>
             <label className="flex items-center gap-1.5 text-xs text-muted">
-              van
+              {a.from}
               <input
                 type="time"
                 name="start"
@@ -50,7 +51,7 @@ export function AvailabilityTimes({ days }: { days: Day[] }) {
               />
             </label>
             <label className="flex items-center gap-1.5 text-xs text-muted">
-              tot
+              {a.to}
               <input
                 type="time"
                 name="end"
