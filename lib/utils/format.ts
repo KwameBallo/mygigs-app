@@ -8,17 +8,24 @@ export function formatFollowers(n: number): string {
   return compact.format(n)
 }
 
-// "2026-08-01" -> "za 1 aug"
-const dayFmt = new Intl.DateTimeFormat("nl-NL", {
-  weekday: "short",
-  day: "numeric",
-  month: "short",
-})
+// "2026-08-01" -> "za 1 aug" (nl) / "Sat 1 Aug" (en)
+const dayFmt: Record<string, Intl.DateTimeFormat> = {
+  nl: new Intl.DateTimeFormat("nl-NL", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }),
+  en: new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }),
+}
 
-export function formatEventDate(date: string): string {
+export function formatEventDate(date: string, locale: "nl" | "en" = "nl"): string {
   const d = new Date(`${date}T00:00:00`)
   if (Number.isNaN(d.getTime())) return date
-  return dayFmt.format(d)
+  return (dayFmt[locale] ?? dayFmt.nl).format(d)
 }
 
 // "23:00:00" -> "23:00"

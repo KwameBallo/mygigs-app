@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { getI18n } from "@/lib/i18n"
 import {
   PLANS,
   TRIAL_DAYS,
@@ -11,6 +12,7 @@ import {
   addMonths,
   isPlanId,
 } from "@/lib/subscriptions"
+import { dict } from "./i18n"
 
 export async function startSubscription(formData: FormData) {
   const planRaw = String(formData.get("plan") ?? "")
@@ -48,8 +50,9 @@ export async function startSubscription(formData: FormData) {
 
   if (error) {
     console.error("startSubscription failed:", error.message)
+    const { locale } = await getI18n()
     redirect(
-      `/subscribe?error=${encodeURIComponent("Er ging iets mis. Probeer het opnieuw.")}`,
+      `/subscribe?error=${encodeURIComponent(dict[locale].genericError)}`,
     )
   }
 

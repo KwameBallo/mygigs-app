@@ -2,14 +2,20 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
-
-const PAYOUT_LABEL: Record<string, string> = {
-  scheduled: "Gepland",
-  paid: "Uitbetaald",
-  failed: "Mislukt",
-}
+import { getI18n } from "@/lib/i18n"
+import { dict } from "./i18n"
 
 export default async function EarningsPage() {
+  const { locale } = await getI18n()
+  const d = dict[locale]
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+
+  const PAYOUT_LABEL: Record<string, string> = {
+    scheduled: d.statusScheduled,
+    paid: d.statusPaid,
+    failed: d.statusFailed,
+  }
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -26,15 +32,13 @@ export default async function EarningsPage() {
   if (!artist) {
     return (
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Verdiensten</h1>
-        <p className="mt-3 text-muted">
-          Je hebt nog geen DJ-profiel. Maak er eerst een aan.
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight">{d.title}</h1>
+        <p className="mt-3 text-muted">{d.noProfile}</p>
         <Link
           href="/profile"
           className="mt-6 inline-block rounded-full bg-brand px-6 py-2.5 font-medium text-black"
         >
-          Naar profiel
+          {d.toProfile}
         </Link>
       </main>
     )
@@ -56,27 +60,26 @@ export default async function EarningsPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Verdiensten</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{d.title}</h1>
 
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div className="rounded-2xl border border-border bg-surface p-5">
-          <p className="text-sm text-muted">Uitbetaald</p>
+          <p className="text-sm text-muted">{d.paidOut}</p>
           <p className="mt-1 text-2xl font-semibold text-brand">
             {formatEuro(paid)}
           </p>
         </div>
         <div className="rounded-2xl border border-border bg-surface p-5">
-          <p className="text-sm text-muted">Onderweg</p>
+          <p className="text-sm text-muted">{d.onTheWay}</p>
           <p className="mt-1 text-2xl font-semibold">{formatEuro(scheduled)}</p>
         </div>
       </div>
 
       <section className="mt-10">
-        <h2 className="text-xl font-semibold tracking-tight">Uitbetalingen</h2>
+        <h2 className="text-xl font-semibold tracking-tight">{d.payouts}</h2>
         {list.length === 0 ? (
           <p className="mt-4 rounded-2xl border border-dashed border-border bg-surface p-10 text-center text-sm text-muted">
-            Nog geen uitbetalingen. Zodra een boeking is afgerond en betaald,
-            verschijnt je uitbetaling hier.
+            {d.emptyPayouts}
           </p>
         ) : (
           <div className="mt-4 flex flex-col gap-2">
@@ -88,7 +91,7 @@ export default async function EarningsPage() {
                 <div>
                   <p className="font-semibold">{formatEuro(p.amount)}</p>
                   <p className="text-xs text-muted">
-                    {new Date(p.created_at).toLocaleDateString("nl-NL", {
+                    {new Date(p.created_at).toLocaleDateString(dateLocale, {
                       day: "numeric",
                       month: "long",
                       year: "numeric",

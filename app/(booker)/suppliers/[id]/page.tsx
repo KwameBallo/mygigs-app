@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { getI18n } from "@/lib/i18n"
 import { formatEuro } from "@/lib/utils/pricing"
 import { getSupplier, categoryLabel } from "@/lib/data/suppliers"
+import { dict } from "../i18n"
 
 export default async function SupplierPage({
   params,
@@ -9,6 +11,8 @@ export default async function SupplierPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const { locale } = await getI18n()
+  const d = dict[locale]
   const supplier = await getSupplier(id)
   if (!supplier) notFound()
 
@@ -25,7 +29,7 @@ export default async function SupplierPage({
         href="/suppliers"
         className="text-sm text-muted hover:text-foreground"
       >
-        ← Terug naar apparatuur
+        {d.backToEquipment}
       </Link>
 
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1.6fr_1fr]">
@@ -50,14 +54,14 @@ export default async function SupplierPage({
                 {supplier.name}
               </h1>
               <span className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-black">
-                {categoryLabel(supplier.category)}
+                {categoryLabel(supplier.category, locale)}
               </span>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted">
               {supplier.reviews_count > 0 && (
                 <span>
                   ★ {supplier.rating.toFixed(1)} ({supplier.reviews_count}{" "}
-                  reviews)
+                  {d.reviews})
                 </span>
               )}
               {supplier.city && <span>{supplier.city}</span>}
@@ -77,20 +81,20 @@ export default async function SupplierPage({
                 <span className="text-3xl font-semibold tracking-tight">
                   {formatEuro(supplier.day_rate)}
                 </span>
-                <span className="text-sm text-muted">/ dag</span>
+                <span className="text-sm text-muted">{d.perDaySpaced}</span>
               </div>
             )}
 
-            <h2 className="mt-4 text-sm font-semibold">Contact</h2>
+            <h2 className="mt-4 text-sm font-semibold">{d.contact}</h2>
             <div className="mt-2 flex flex-col gap-2">
               {supplier.contact_email && (
                 <a
                   href={`mailto:${supplier.contact_email}?subject=${encodeURIComponent(
-                    `Aanvraag via MyGigs: ${supplier.name}`,
+                    d.requestSubject.replace("{name}", supplier.name),
                   )}`}
                   className="rounded-full bg-brand px-6 py-2.5 text-center font-medium text-black transition hover:bg-brand-strong"
                 >
-                  Stuur een aanvraag
+                  {d.sendRequest}
                 </a>
               )}
               {supplier.contact_phone && (
@@ -108,15 +112,13 @@ export default async function SupplierPage({
                   rel="noopener noreferrer"
                   className="rounded-full border border-border px-6 py-2.5 text-center text-sm transition hover:border-brand/50"
                 >
-                  Website ↗
+                  {d.website}
                 </a>
               )}
               {!supplier.contact_email &&
                 !supplier.contact_phone &&
                 !supplier.website_url && (
-                  <p className="text-sm text-muted">
-                    Geen contactgegevens beschikbaar.
-                  </p>
+                  <p className="text-sm text-muted">{d.noContactDetails}</p>
                 )}
             </div>
           </div>

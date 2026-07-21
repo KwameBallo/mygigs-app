@@ -4,6 +4,8 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { createShortlist } from "./actions"
 import { formatEuro } from "@/lib/utils/pricing"
+import { useT } from "@/components/i18n-provider"
+import { dict } from "./i18n"
 import type { Artist } from "@/lib/data/artists"
 
 type BookingType = "prive" | "zakelijk"
@@ -17,6 +19,8 @@ export function ShortlistClient({
   preselected: string[]
   company?: { name: string | null; vat: string | null; email: string | null }
 }) {
+  const { locale } = useT()
+  const d = dict[locale]
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set(preselected),
   )
@@ -49,15 +53,15 @@ export function ShortlistClient({
       {/* Acts kiezen */}
       <section>
         <h2 className="text-lg font-semibold tracking-tight">
-          1. Kies je DJ&apos;s
+          {d.step1Title}
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Selecteer meerdere DJ&apos;s. Iedereen krijgt dezelfde aanvraag.
+          {d.step1Intro}
         </p>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Zoek op naam of stad..."
+          placeholder={d.searchPlaceholder}
           className="input mt-4 h-11 w-full"
         />
         <ul className="mt-4 flex max-h-[28rem] flex-col gap-2 overflow-y-auto pr-1">
@@ -96,7 +100,7 @@ export function ShortlistClient({
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{a.stage_name}</p>
                     <p className="truncate text-xs text-muted">
-                      {a.home_city ?? "DJ"}
+                      {a.home_city ?? d.djFallback}
                     </p>
                   </div>
                   <span className="flex-none text-sm font-semibold text-brand">
@@ -108,7 +112,7 @@ export function ShortlistClient({
           })}
           {filtered.length === 0 && (
             <li className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
-              Geen DJ&apos;s gevonden.
+              {d.noResults}
             </li>
           )}
         </ul>
@@ -120,7 +124,7 @@ export function ShortlistClient({
         className="flex flex-col gap-4 self-start rounded-2xl border border-border bg-surface p-6 lg:sticky lg:top-24"
       >
         <h2 className="text-lg font-semibold tracking-tight">
-          2. Vul je aanvraag in
+          {d.step2Title}
         </h2>
 
         {[...selected].map((id) => (
@@ -129,33 +133,36 @@ export function ShortlistClient({
 
         <div className="rounded-xl border border-border bg-surface-2 p-3 text-sm">
           {selectedArtists.length === 0 ? (
-            <p className="text-muted">Nog geen acts geselecteerd.</p>
+            <p className="text-muted">{d.noActs}</p>
           ) : (
             <>
               <p className="font-medium">
-                {selectedArtists.length} DJ
-                {selectedArtists.length === 1 ? "" : "'s"} geselecteerd
+                {d.selectedCount
+                  .replace("{n}", String(selectedArtists.length))
+                  .replace(
+                    "{s}",
+                    selectedArtists.length === 1 ? "" : d.djPlural,
+                  )}
               </p>
               <p className="mt-1 text-xs text-muted">
-                Totale gage als iedereen accepteert: {formatEuro(totalGage)}. Je
-                betaalt alleen de DJ&apos;s die je daadwerkelijk boekt.
+                {d.totalNote.replace("{total}", formatEuro(totalGage))}
               </p>
             </>
           )}
         </div>
 
         <div>
-          <span className="text-sm font-medium">Type boeking</span>
+          <span className="text-sm font-medium">{d.bookingType}</span>
           <div className="mt-1.5 grid grid-cols-2 gap-2">
             <TypeOption
               value="prive"
-              title="Privé"
+              title={d.private}
               active={type === "prive"}
               onSelect={setType}
             />
             <TypeOption
               value="zakelijk"
-              title="Zakelijk"
+              title={d.business}
               active={type === "zakelijk"}
               onSelect={setType}
             />
@@ -164,55 +171,55 @@ export function ShortlistClient({
         <input type="hidden" name="booking_type" value={type} />
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Gelegenheid</span>
-          <input name="occasion" type="text" placeholder="Bijv. bedrijfsfeest" className="input h-10" />
+          <span className="text-sm font-medium">{d.occasion}</span>
+          <input name="occasion" type="text" placeholder={d.occasionPlaceholder} className="input h-10" />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Datum</span>
+          <span className="text-sm font-medium">{d.date}</span>
           <input name="event_date" type="date" required className="input h-10" />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Stad</span>
-          <input name="city" type="text" placeholder="Amsterdam" className="input h-10" />
+          <span className="text-sm font-medium">{d.city}</span>
+          <input name="city" type="text" placeholder={d.cityPlaceholder} className="input h-10" />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Locatie / venue</span>
-          <input name="venue_name" type="text" placeholder="Naam van de zaal" className="input h-10" />
+          <span className="text-sm font-medium">{d.venue}</span>
+          <input name="venue_name" type="text" placeholder={d.venuePlaceholder} className="input h-10" />
         </label>
 
         {type === "zakelijk" && (
           <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-2 p-4">
-            <p className="text-sm font-medium">Factuurgegevens</p>
+            <p className="text-sm font-medium">{d.invoiceDetails}</p>
             <input
               name="company_name"
               type="text"
               defaultValue={company?.name ?? ""}
-              placeholder="Bedrijfsnaam"
+              placeholder={d.companyPlaceholder}
               className="input h-10"
             />
             <input
               name="vat_number"
               type="text"
               defaultValue={company?.vat ?? ""}
-              placeholder="BTW-nummer"
+              placeholder={d.vatPlaceholder}
               className="input h-10"
             />
             <input
               name="invoice_email"
               type="email"
               defaultValue={company?.email ?? ""}
-              placeholder="Factuur-e-mail"
+              placeholder={d.invoiceEmailPlaceholder}
               className="input h-10"
             />
           </div>
         )}
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Bericht (optioneel)</span>
+          <span className="text-sm font-medium">{d.message}</span>
           <textarea
             name="message"
             rows={3}
-            placeholder="Vertel over je event..."
+            placeholder={d.messagePlaceholder}
             className="input resize-none"
           />
         </label>
@@ -222,14 +229,14 @@ export function ShortlistClient({
           disabled={selected.size === 0}
           className="rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Stuur naar {selected.size || ""} DJ
-          {selected.size === 1 ? "" : "'s"}
+          {d.sendTo
+            .replace("{n}", String(selected.size || ""))
+            .replace("{s}", selected.size === 1 ? "" : d.djPlural)}
         </button>
         <p className="text-center text-xs text-muted">
-          Elke DJ ontvangt een losse aanvraag. Je kiest later wie je definitief
-          boekt.{" "}
+          {d.footerNote}{" "}
           <Link href="/discover" className="text-brand hover:underline">
-            Of zoek verder
+            {d.searchMore}
           </Link>
           .
         </p>

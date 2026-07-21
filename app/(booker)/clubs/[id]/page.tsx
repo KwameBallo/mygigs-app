@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getClub, getClubEvents } from "@/lib/data/events"
+import { getI18n } from "@/lib/i18n"
 import { EventCard } from "../../events/event-card"
+import { dict } from "./i18n"
 
 export default async function ClubDetailPage({
   params,
@@ -9,8 +11,12 @@ export default async function ClubDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [club, events] = await Promise.all([getClub(id), getClubEvents(id)])
+  const [{ locale }, [club, events]] = await Promise.all([
+    getI18n(),
+    Promise.all([getClub(id), getClubEvents(id)]),
+  ])
   if (!club) notFound()
+  const d = dict[locale]
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-6">
@@ -18,7 +24,7 @@ export default async function ClubDetailPage({
         href="/events"
         className="text-sm text-muted transition hover:text-foreground"
       >
-        ← Terug naar agenda
+        {d.backToAgenda}
       </Link>
 
       <div className="mt-4 overflow-hidden rounded-3xl border border-border bg-surface">
@@ -36,8 +42,10 @@ export default async function ClubDetailPage({
           <h1 className="text-2xl font-semibold tracking-tight">{club.name}</h1>
           <p className="mt-1 text-sm text-muted">
             {[club.address, club.city].filter(Boolean).join(", ") ||
-              "Locatie onbekend"}
-            {club.capacity ? ` · capaciteit ${club.capacity}` : ""}
+              d.locationUnknown}
+            {club.capacity
+              ? d.capacity.replace("{n}", String(club.capacity))
+              : ""}
           </p>
           {club.description && (
             <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-foreground/90">
@@ -52,7 +60,7 @@ export default async function ClubDetailPage({
                 rel="noopener noreferrer"
                 className="text-brand hover:underline"
               >
-                Website
+                {d.website}
               </a>
             )}
             {club.contact_email && (
@@ -60,7 +68,7 @@ export default async function ClubDetailPage({
                 href={`mailto:${club.contact_email}`}
                 className="text-brand hover:underline"
               >
-                E-mail
+                {d.email}
               </a>
             )}
             {club.contact_phone && (
@@ -75,11 +83,9 @@ export default async function ClubDetailPage({
         </div>
       </div>
 
-      <h2 className="mt-8 text-lg font-semibold">Aankomende events</h2>
+      <h2 className="mt-8 text-lg font-semibold">{d.upcomingEvents}</h2>
       {events.length === 0 ? (
-        <p className="mt-3 text-sm text-muted">
-          Deze locatie heeft nog geen aankomende events.
-        </p>
+        <p className="mt-3 text-sm text-muted">{d.noUpcomingEvents}</p>
       ) : (
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((e) => (

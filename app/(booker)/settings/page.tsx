@@ -1,22 +1,33 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getProfile } from "@/lib/auth"
-import { PLANS, hasActiveSubscription } from "@/lib/subscriptions"
+import { getI18n } from "@/lib/i18n"
+import {
+  PLANS,
+  planLabel,
+  planPeriod,
+  hasActiveSubscription,
+} from "@/lib/subscriptions"
 import { roleLabel } from "@/lib/roles"
 import { updateAccount, updateCompanyDetails } from "./actions"
 import { DeleteAccountButton } from "./delete-account-button"
-
-const SUB_STATUS_LABEL: Record<string, string> = {
-  inactive: "Geen abonnement",
-  trialing: "Proefperiode",
-  active: "Actief",
-  past_due: "Betaling mislukt",
-  canceled: "Opgezegd",
-}
+import { dict } from "./i18n"
 
 export default async function SettingsPage() {
   const profile = await getProfile()
   if (!profile) redirect("/login?next=/settings")
+
+  const { locale } = await getI18n()
+  const d = dict[locale]
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+
+  const subStatusLabel: Record<string, string> = {
+    inactive: d.statusInactive,
+    trialing: d.statusTrialing,
+    active: d.statusActive,
+    past_due: d.statusPastDue,
+    canceled: d.statusCanceled,
+  }
 
   const subActive = hasActiveSubscription(profile.subscription_status)
   const subPlan = profile.subscription_plan
@@ -24,12 +35,12 @@ export default async function SettingsPage() {
     : null
   const periodEnd = profile.subscription_current_period_end
     ? new Date(profile.subscription_current_period_end).toLocaleDateString(
-        "nl-NL",
+        dateLocale,
         { day: "numeric", month: "long", year: "numeric" },
       )
     : null
   const trialEnd = profile.subscription_trial_end
-    ? new Date(profile.subscription_trial_end).toLocaleDateString("nl-NL", {
+    ? new Date(profile.subscription_trial_end).toLocaleDateString(dateLocale, {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -38,119 +49,113 @@ export default async function SettingsPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Instellingen</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{d.pageTitle}</h1>
 
       <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
-        <h2 className="text-lg font-semibold">Account</h2>
-        <p className="mt-1 text-sm text-muted">Je persoonlijke gegevens.</p>
+        <h2 className="text-lg font-semibold">{d.accountTitle}</h2>
+        <p className="mt-1 text-sm text-muted">{d.accountSubtitle}</p>
         <form action={updateAccount} className="mt-4 flex flex-col gap-4">
           <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium">Volledige naam</span>
+            <span className="text-sm font-medium">{d.fullName}</span>
             <input
               name="full_name"
               defaultValue={profile.full_name ?? ""}
-              placeholder="Voor- en achternaam"
+              placeholder={d.fullNamePlaceholder}
               className="input h-11"
             />
           </label>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Gender</span>
+              <span className="text-sm font-medium">{d.gender}</span>
               <select
                 name="gender"
                 defaultValue={profile.gender ?? ""}
                 className="input h-11"
               >
-                <option value="">Kies…</option>
-                <option value="man">Man</option>
-                <option value="vrouw">Vrouw</option>
-                <option value="anders">Anders</option>
+                <option value="">{d.genderChoose}</option>
+                <option value="man">{d.genderMan}</option>
+                <option value="vrouw">{d.genderWoman}</option>
+                <option value="anders">{d.genderOther}</option>
               </select>
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Telefoonnummer</span>
+              <span className="text-sm font-medium">{d.phone}</span>
               <input
                 name="phone"
                 type="tel"
                 defaultValue={profile.phone ?? ""}
-                placeholder="06 12345678"
+                placeholder={d.phonePlaceholder}
                 className="input h-11"
               />
             </label>
           </div>
           <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium">E-mail</span>
+            <span className="text-sm font-medium">{d.email}</span>
             <input
               value={profile.email ?? ""}
               disabled
               className="input h-11 opacity-60"
             />
           </label>
-          <p className="text-xs text-muted">
-            Je telefoonnummer en e-mailadres delen we nooit met de DJ — die ziet
-            na acceptatie alleen je naam.
-          </p>
+          <p className="text-xs text-muted">{d.contactPrivacyNote}</p>
           <div className="flex items-center gap-2 text-sm text-muted">
-            <span>Rol:</span>
+            <span>{d.role}</span>
             <span className="rounded-full bg-surface-2 px-3 py-1 text-xs">
-              {roleLabel(profile.role)}
+              {roleLabel(profile.role, locale)}
             </span>
           </div>
           <button
             type="submit"
             className="mt-1 h-11 self-start rounded-full bg-brand px-6 font-medium text-black transition hover:bg-brand-strong"
           >
-            Opslaan
+            {d.save}
           </button>
         </form>
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
-        <h2 className="text-lg font-semibold">Bedrijfsgegevens</h2>
-        <p className="mt-1 text-sm text-muted">
-          Sla je factuurgegevens eenmalig op. Bij een zakelijke boeking vullen we
-          ze automatisch voor je in.
-        </p>
+        <h2 className="text-lg font-semibold">{d.companyTitle}</h2>
+        <p className="mt-1 text-sm text-muted">{d.companySubtitle}</p>
         <form
           action={updateCompanyDetails}
           className="mt-4 flex flex-col gap-4"
         >
           <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium">Bedrijfsnaam</span>
+            <span className="text-sm font-medium">{d.companyName}</span>
             <input
               name="company_name"
               defaultValue={profile.company_name ?? ""}
-              placeholder="Bedrijf B.V."
+              placeholder={d.companyNamePlaceholder}
               className="input h-11"
             />
           </label>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">BTW-nummer</span>
+              <span className="text-sm font-medium">{d.vatNumber}</span>
               <input
                 name="vat_number"
                 defaultValue={profile.vat_number ?? ""}
-                placeholder="NL000000000B00"
+                placeholder={d.vatNumberPlaceholder}
                 className="input h-11"
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Factuur-e-mail</span>
+              <span className="text-sm font-medium">{d.invoiceEmail}</span>
               <input
                 name="invoice_email"
                 type="email"
                 defaultValue={profile.invoice_email ?? ""}
-                placeholder="factuur@bedrijf.nl"
+                placeholder={d.invoiceEmailPlaceholder}
                 className="input h-11"
               />
             </label>
           </div>
           <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium">Factuuradres</span>
+            <span className="text-sm font-medium">{d.invoiceAddress}</span>
             <input
               name="invoice_address"
               defaultValue={profile.invoice_address ?? ""}
-              placeholder="Straat 1, 1234 AB Amsterdam"
+              placeholder={d.invoiceAddressPlaceholder}
               className="input h-11"
             />
           </label>
@@ -158,15 +163,15 @@ export default async function SettingsPage() {
             type="submit"
             className="mt-1 h-11 self-start rounded-full bg-brand px-6 font-medium text-black transition hover:bg-brand-strong"
           >
-            Opslaan
+            {d.save}
           </button>
         </form>
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
-        <h2 className="text-lg font-semibold">Organisatorenabonnement</h2>
+        <h2 className="text-lg font-semibold">{d.subscriptionTitle}</h2>
         <div className="mt-4 flex items-center gap-2 text-sm text-muted">
-          <span>Status:</span>
+          <span>{d.status}</span>
           <span
             className={`rounded-full px-3 py-1 text-xs ${
               subActive
@@ -174,57 +179,51 @@ export default async function SettingsPage() {
                 : "bg-surface-2 text-foreground"
             }`}
           >
-            {SUB_STATUS_LABEL[profile.subscription_status] ??
+            {subStatusLabel[profile.subscription_status] ??
               profile.subscription_status}
           </span>
         </div>
         {subActive ? (
           <p className="mt-3 text-sm text-muted">
-            {subPlan ? `${subPlan.label} (${subPlan.period}).` : ""}{" "}
+            {subPlan
+              ? d.planLine
+                  .replace("{label}", planLabel(subPlan.id, locale))
+                  .replace("{period}", planPeriod(subPlan.id, locale))
+              : ""}{" "}
             {profile.subscription_status === "trialing" && trialEnd
-              ? `Proefperiode tot ${trialEnd}.`
+              ? d.trialUntil.replace("{date}", trialEnd)
               : periodEnd
-                ? `Verlengt op ${periodEnd}.`
+                ? d.renewsOn.replace("{date}", periodEnd)
                 : ""}
           </p>
         ) : (
-          <p className="mt-3 text-sm text-muted">
-            Sluit een abonnement af om als club of organisator events te
-            plaatsen. Start met een gratis proefperiode.
-          </p>
+          <p className="mt-3 text-sm text-muted">{d.subscribePrompt}</p>
         )}
         <Link
           href="/subscribe"
           className="mt-4 inline-block rounded-full border border-border px-6 py-2.5 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
         >
-          {subActive ? "Abonnement beheren" : "Bekijk abonnementen"}
+          {subActive ? d.manageSubscription : d.viewSubscriptions}
         </Link>
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
-        <h2 className="text-lg font-semibold">Privacy en gegevens</h2>
-        <p className="mt-1 text-sm text-muted">
-          Jij houdt de controle over je gegevens. Hier lees je wat we opslaan en
-          wat je rechten zijn.
-        </p>
+        <h2 className="text-lg font-semibold">{d.privacyTitle}</h2>
+        <p className="mt-1 text-sm text-muted">{d.privacySubtitle}</p>
 
         <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4">
-          <p className="text-sm font-medium">Wat de DJ van jou ziet</p>
-          <p className="mt-1 text-sm text-muted">
-            Alleen je naam, en pas nadat de DJ je aanvraag heeft geaccepteerd.
-            Je telefoonnummer en e-mailadres blijven privé; alle afstemming loopt
-            via de beveiligde chat op MyGigs.
-          </p>
+          <p className="text-sm font-medium">{d.whatDjSeesTitle}</p>
+          <p className="mt-1 text-sm text-muted">{d.whatDjSeesBody}</p>
         </div>
 
         <div className="mt-4">
-          <p className="text-sm font-medium">Jouw rechten (AVG)</p>
+          <p className="text-sm font-medium">{d.rightsTitle}</p>
           <ul className="mt-2 flex flex-col gap-1.5 text-sm text-muted">
-            <RightItem>Inzage in de gegevens die we van je hebben</RightItem>
-            <RightItem>Correctie van onjuiste gegevens</RightItem>
-            <RightItem>Verwijdering van je account en gegevens</RightItem>
-            <RightItem>Bezwaar tegen bepaalde verwerkingen</RightItem>
-            <RightItem>Een kopie van je gegevens (dataportabiliteit)</RightItem>
+            <RightItem>{d.rightAccess}</RightItem>
+            <RightItem>{d.rightCorrection}</RightItem>
+            <RightItem>{d.rightDeletion}</RightItem>
+            <RightItem>{d.rightObjection}</RightItem>
+            <RightItem>{d.rightPortability}</RightItem>
           </ul>
         </div>
 
@@ -233,39 +232,38 @@ export default async function SettingsPage() {
             href="/privacy"
             className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
           >
-            Privacybeleid
+            {d.privacyPolicy}
           </Link>
           <Link
             href="/voorwaarden"
             className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
           >
-            Algemene voorwaarden
+            {d.terms}
           </Link>
           <Link
             href="/reset-password"
             className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
           >
-            Wachtwoord wijzigen
+            {d.changePassword}
           </Link>
         </div>
 
         <p className="mt-4 text-xs text-muted">
-          Wil je je gegevens inzien, laten corrigeren of downloaden? Mail{" "}
+          {d.dataRequestPrefix}{" "}
           <a
             href="mailto:privacy@mygigs.nl"
             className="font-medium text-brand hover:underline"
           >
             privacy@mygigs.nl
           </a>{" "}
-          en we regelen het binnen 30 dagen.
+          {d.dataRequestSuffix}
         </p>
 
         <div className="mt-5 border-t border-border pt-4">
-          <p className="text-sm font-medium text-red-400">Account verwijderen</p>
-          <p className="mt-1 text-xs text-muted">
-            Verwijdert je account en je gegevens permanent. Dit kan niet ongedaan
-            worden gemaakt.
+          <p className="text-sm font-medium text-red-400">
+            {d.deleteAccountTitle}
           </p>
+          <p className="mt-1 text-xs text-muted">{d.deleteAccountBody}</p>
           <div className="mt-3">
             <DeleteAccountButton />
           </div>
@@ -273,16 +271,14 @@ export default async function SettingsPage() {
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
-        <h2 className="text-lg font-semibold">Sessie</h2>
-        <p className="mt-1 text-sm text-muted">
-          Log uit op dit apparaat.
-        </p>
+        <h2 className="text-lg font-semibold">{d.sessionTitle}</h2>
+        <p className="mt-1 text-sm text-muted">{d.sessionSubtitle}</p>
         <form action="/auth/signout" method="post" className="mt-4">
           <button
             type="submit"
             className="h-11 rounded-full border border-border px-6 font-medium transition hover:border-red-500/50 hover:text-red-400"
           >
-            Uitloggen
+            {d.signOut}
           </button>
         </form>
       </section>

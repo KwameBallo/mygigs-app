@@ -4,8 +4,12 @@ import { Stars } from "@/components/stars"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
 import { getFavorites } from "@/lib/data/favorites"
+import { getI18n } from "@/lib/i18n"
+import { dict } from "./i18n"
 
 export default async function FavoritesPage() {
+  const { locale } = await getI18n()
+  const d = dict[locale]
   const supabase = await createClient()
   const {
     data: { user },
@@ -17,22 +21,22 @@ export default async function FavoritesPage() {
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Favorieten</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{d.title}</h1>
       <p className="mt-2 text-sm text-muted">
-        DJ&apos;s die je hebt opgeslagen.
+        {d.intro}
       </p>
 
       {artists.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
-          <p className="text-lg font-medium">Nog geen favorieten</p>
+          <p className="text-lg font-medium">{d.emptyTitle}</p>
           <p className="mt-2 text-sm text-muted">
-            Tik op het hartje bij een DJ om die hier te bewaren.
+            {d.emptyBody}
           </p>
           <Link
             href="/discover"
             className="mt-6 inline-block rounded-full bg-brand px-6 py-2.5 font-medium text-black transition hover:bg-brand-strong"
           >
-            Ontdek DJ&apos;s
+            {d.discover}
           </Link>
         </div>
       ) : (

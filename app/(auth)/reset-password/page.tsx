@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import type { EmailOtpType } from "@supabase/supabase-js"
 import { Logo } from "@/components/logo"
 import { createClient } from "@/lib/supabase/client"
+import { useT } from "@/components/i18n-provider"
+import { dict } from "./i18n"
 
 type Phase = "checking" | "ready" | "invalid" | "saving" | "done"
 
@@ -12,6 +14,8 @@ function ResetPasswordForm() {
   const supabase = createClient()
   const router = useRouter()
   const params = useSearchParams()
+  const { locale } = useT()
+  const d = dict[locale]
 
   const [phase, setPhase] = useState<Phase>("checking")
   const [password, setPassword] = useState("")
@@ -49,7 +53,7 @@ function ResetPasswordForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    if (password.length < 6) return setError("Minimaal 6 tekens.")
+    if (password.length < 6) return setError(d.minChars)
     setPhase("saving")
     const { error } = await supabase.auth.updateUser({ password })
     if (error) {
@@ -68,26 +72,24 @@ function ResetPasswordForm() {
         <div className="mb-8 text-center">
           <Logo />
           <h1 className="mt-6 text-3xl font-semibold tracking-tight">
-            Nieuw wachtwoord
+            {d.heading}
           </h1>
         </div>
 
         {phase === "checking" && (
-          <p className="text-center text-sm text-muted">Resetlink controleren…</p>
+          <p className="text-center text-sm text-muted">{d.checking}</p>
         )}
 
         {phase === "invalid" && (
           <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-6 text-center text-sm text-red-300">
-            <p>Deze resetlink is ongeldig of verlopen.</p>
-            <p className="mt-2 text-muted">
-              Vraag een nieuwe aan via de inlogpagina.
-            </p>
+            <p>{d.invalidTitle}</p>
+            <p className="mt-2 text-muted">{d.invalidHint}</p>
           </div>
         )}
 
         {phase === "done" && (
           <div className="rounded-2xl border border-brand/40 bg-brand/10 p-6 text-center text-sm">
-            Je wachtwoord is bijgewerkt. Je wordt doorgestuurd naar inloggen…
+            {d.done}
           </div>
         )}
 
@@ -97,7 +99,7 @@ function ResetPasswordForm() {
             className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6"
           >
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Kies een nieuw wachtwoord</span>
+              <span className="text-sm font-medium">{d.chooseLabel}</span>
               <input
                 type="password"
                 required
@@ -115,7 +117,7 @@ function ResetPasswordForm() {
               disabled={phase === "saving"}
               className="mt-2 rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong disabled:opacity-60"
             >
-              {phase === "saving" ? "Opslaan…" : "Wachtwoord opslaan"}
+              {phase === "saving" ? d.saving : d.save}
             </button>
           </form>
         )}

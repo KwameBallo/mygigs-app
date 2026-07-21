@@ -8,26 +8,26 @@ import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
 import { getSuppliers, type Supplier } from "@/lib/data/suppliers"
 import { getViewer } from "@/lib/auth"
 import { formatFollowers } from "@/lib/utils/format"
+import { getI18n } from "@/lib/i18n"
+import { dict } from "./i18n"
 
-const MONTHS = [
-  "jan", "feb", "mrt", "apr", "mei", "jun",
-  "jul", "aug", "sep", "okt", "nov", "dec",
-]
+type Dict = (typeof dict)["nl"]
 
-function formatShowDate(date: string) {
+function formatShowDate(date: string, months: string[]) {
   const d = new Date(date)
-  return { day: d.getDate(), month: MONTHS[d.getMonth()] }
+  return { day: d.getDate(), month: months[d.getMonth()] }
 }
 
 // Responstijd menselijk leesbaar: "binnen 30 min", "binnen 2 uur", "binnen 1 dag".
-function formatResponse(minutes: number) {
-  if (minutes < 60) return `binnen ${minutes} min`
+function formatResponse(minutes: number, d: Dict) {
+  if (minutes < 60) return d.respWithinMin.replace("{n}", String(minutes))
   if (minutes < 60 * 24) {
     const h = Math.round(minutes / 60)
-    return `binnen ${h} uur`
+    return d.respWithinHours.replace("{n}", String(h))
   }
   const days = Math.round(minutes / (60 * 24))
-  return `binnen ${days} ${days === 1 ? "dag" : "dagen"}`
+  const tmpl = days === 1 ? d.respWithinDay : d.respWithinDays
+  return tmpl.replace("{n}", String(days))
 }
 
 export default async function ArtistPage({
@@ -36,6 +36,8 @@ export default async function ArtistPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const { locale } = await getI18n()
+  const d = dict[locale]
   const [artist, reviews, shows, viewer] = await Promise.all([
     getArtist(id),
     getArtistReviews(id),
@@ -86,7 +88,7 @@ export default async function ArtistPage({
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
         <Link href="/discover" className="text-sm text-muted hover:text-foreground">
-          ← Terug naar ontdekken
+          {d.backToDiscover}
         </Link>
 
         <EquipmentSelectionProvider prices={equipmentPrices}>
@@ -130,7 +132,7 @@ export default async function ArtistPage({
                         <path d="m12 1 2.4 1.8 3 .1 1 2.8 2.4 1.7-.8 2.9.8 2.9-2.4 1.7-1 2.8-3 .1L12 23l-2.4-1.8-3-.1-1-2.8L3.2 16l.8-2.9-.8-2.9 2.4-1.7 1-2.8 3-.1L12 1Z" />
                         <path d="m8.5 12 2.3 2.3 4.7-4.7" fill="none" stroke="#facc15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      Geverifieerd
+                      {d.verified}
                     </span>
                   )}
                   {artist.genres && (
@@ -141,7 +143,7 @@ export default async function ArtistPage({
                   {artist.online && (
                     <span className="inline-flex items-center gap-1.5 text-xs text-muted">
                       <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
-                      Online
+                      {d.online}
                     </span>
                   )}
                 </div>
@@ -150,20 +152,31 @@ export default async function ArtistPage({
                   {artist.home_city && <span>{artist.home_city}</span>}
                   {artist.total_bookings > 0 && (
                     <span className="font-medium text-foreground">
-                      {artist.total_bookings}× geboekt via MyGigs
+                      {d.bookedViaMyGigs.replace("{n}", String(artist.total_bookings))}
                     </span>
                   )}
                   {artist.response_minutes != null && (
-                    <span>Reageert {formatResponse(artist.response_minutes)}</span>
+                    <span>
+                      {d.responds.replace(
+                        "{r}",
+                        formatResponse(artist.response_minutes, d),
+                      )}
+                    </span>
                   )}
                   {artist.instagram_followers > 0 && (
                     <span>
-                      {formatFollowers(artist.instagram_followers)} op Instagram
+                      {d.followersInstagram.replace(
+                        "{n}",
+                        formatFollowers(artist.instagram_followers),
+                      )}
                     </span>
                   )}
                   {artist.tiktok_followers > 0 && (
                     <span>
-                      {formatFollowers(artist.tiktok_followers)} op TikTok
+                      {d.followersTiktok.replace(
+                        "{n}",
+                        formatFollowers(artist.tiktok_followers),
+                      )}
                     </span>
                   )}
                 </div>
@@ -199,7 +212,7 @@ export default async function ArtistPage({
 
             {reviews.length > 0 && (
               <section className="mt-8">
-                <h2 className="text-xl font-semibold tracking-tight">Reviews</h2>
+                <h2 className="text-xl font-semibold tracking-tight">{d.reviews}</h2>
                 <div className="mt-4 flex flex-col gap-3">
                   {reviews.map((r) => (
                     <div
@@ -208,7 +221,7 @@ export default async function ArtistPage({
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium">
-                          {r.reviewer_name ?? "Anoniem"}
+                          {r.reviewer_name ?? d.anonymous}
                         </span>
                         <Stars rating={r.rating} />
                       </div>
@@ -241,16 +254,16 @@ export default async function ArtistPage({
 
             <section className="mt-6 rounded-3xl border border-border bg-surface p-6">
               <h2 className="text-lg font-semibold tracking-tight">
-                Aankomende shows
+                {d.upcomingShows}
               </h2>
               {shows.length === 0 ? (
                 <p className="mt-3 text-sm text-muted">
-                  Geen openbare optredens gepland.
+                  {d.noPublicShows}
                 </p>
               ) : (
                 <ul className="mt-4 flex flex-col gap-3">
                   {shows.map((show) => {
-                    const { day, month } = formatShowDate(show.event_date)
+                    const { day, month } = formatShowDate(show.event_date, d.months)
                     return (
                       <li
                         key={show.id}
@@ -266,7 +279,7 @@ export default async function ArtistPage({
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
-                            {show.venue_name ?? "Locatie volgt"}
+                            {show.venue_name ?? d.venueTbd}
                           </p>
                           <p className="truncate text-xs text-muted">
                             {[show.city, show.start_time?.slice(0, 5)]

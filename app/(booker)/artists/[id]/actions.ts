@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { priceBreakdown, VAT_RATE } from "@/lib/utils/pricing"
+import { getI18n } from "@/lib/i18n"
+import { dict } from "./i18n"
 
 export async function createBooking(formData: FormData) {
   const artistId = String(formData.get("artist_id") ?? "")
@@ -109,8 +111,9 @@ export async function createBooking(formData: FormData) {
 
   if (error) {
     console.error("createBooking failed:", error.message)
+    const { locale } = await getI18n()
     redirect(
-      `/artists/${artistId}?error=${encodeURIComponent("Je aanvraag kon niet worden verstuurd. Probeer het opnieuw.")}`,
+      `/artists/${artistId}?error=${encodeURIComponent(dict[locale].bookingFailed)}`,
     )
   }
 

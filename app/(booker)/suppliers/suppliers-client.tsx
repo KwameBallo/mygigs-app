@@ -3,21 +3,29 @@
 import { useState } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
+import { useT } from "@/components/i18n-provider"
 import { formatEuro } from "@/lib/utils/pricing"
-import { SUPPLIER_CATEGORIES, categoryLabel } from "@/lib/data/suppliers-meta"
+import { supplierCategories, categoryLabel } from "@/lib/data/suppliers-meta"
 import type { Supplier } from "@/lib/data/suppliers"
+import { dict } from "./i18n"
 
 const SuppliersMap = dynamic(
   () => import("./suppliers-map").then((m) => m.SuppliersMap),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex h-full w-full items-center justify-center bg-surface-2 text-sm text-muted">
-        Kaart laden…
-      </div>
-    ),
+    loading: () => <MapLoading />,
   },
 )
+
+function MapLoading() {
+  const { locale } = useT()
+  const d = dict[locale]
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-surface-2 text-sm text-muted">
+      {d.mapLoading}
+    </div>
+  )
+}
 
 export function SuppliersClient({
   suppliers,
@@ -28,6 +36,8 @@ export function SuppliersClient({
   filters: { q?: string; category?: string; city?: string }
   ad?: React.ReactNode
 }) {
+  const { locale } = useT()
+  const d = dict[locale]
   const [activeId, setActiveId] = useState<string | null>(null)
   const [view, setView] = useState<"list" | "map">("list")
 
@@ -36,19 +46,17 @@ export function SuppliersClient({
       {/* Header + filter bar */}
       <div className="border-b border-border bg-surface px-4 py-4">
         <div className="mx-auto max-w-6xl">
-          <h1 className="text-xl font-semibold tracking-tight">Apparatuur</h1>
-          <p className="mt-1 text-sm text-muted">
-            Geen eigen geluid of licht? Vind leveranciers en filter op type.
-          </p>
+          <h1 className="text-xl font-semibold tracking-tight">{d.title}</h1>
+          <p className="mt-1 text-sm text-muted">{d.intro}</p>
 
           {/* Type chips */}
           <div className="mt-3 flex flex-wrap gap-2">
             <CategoryChip
-              label="Alles"
+              label={d.all}
               href="/suppliers"
               active={!filters.category}
             />
-            {SUPPLIER_CATEGORIES.map((c) => {
+            {supplierCategories(locale).map((c) => {
               const params = new URLSearchParams()
               params.set("category", c.value)
               if (filters.q) params.set("q", filters.q)
@@ -75,20 +83,20 @@ export function SuppliersClient({
             <input
               name="q"
               defaultValue={filters.q}
-              placeholder="Zoek op naam..."
+              placeholder={d.searchNamePlaceholder}
               className="input h-10 flex-1 sm:max-w-xs"
             />
             <input
               name="city"
               defaultValue={filters.city}
-              placeholder="Stad"
+              placeholder={d.cityPlaceholder}
               className="input h-10 sm:max-w-[10rem]"
             />
             <button
               type="submit"
               className="h-10 rounded-full bg-brand px-5 font-medium text-black transition hover:bg-brand-strong"
             >
-              Zoek
+              {d.search}
             </button>
           </form>
 
@@ -106,16 +114,16 @@ export function SuppliersClient({
         >
           <div className="px-4 py-3 text-sm text-muted">
             {suppliers.length}{" "}
-            {suppliers.length === 1 ? "leverancier" : "leveranciers"}
+            {suppliers.length === 1 ? d.supplierSingular : d.supplierPlural}
           </div>
           {suppliers.length === 0 ? (
             <div className="m-4 rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
-              <p className="font-medium">Geen leveranciers gevonden</p>
+              <p className="font-medium">{d.noSuppliers}</p>
               <Link
                 href="/suppliers"
                 className="mt-2 inline-block text-sm text-brand"
               >
-                Wis filters
+                {d.clearFilters}
               </Link>
             </div>
           ) : (
@@ -148,7 +156,7 @@ export function SuppliersClient({
           onClick={() => setView(view === "list" ? "map" : "list")}
           className="absolute bottom-5 left-1/2 z-[1000] -translate-x-1/2 rounded-full bg-brand px-6 py-3 font-medium text-black shadow-lg transition hover:bg-brand-strong lg:hidden"
         >
-          {view === "list" ? "Kaart" : "Lijst"}
+          {view === "list" ? d.map : d.list}
         </button>
       </div>
     </div>
@@ -187,6 +195,8 @@ function ListCard({
   active: boolean
   onHover: () => void
 }) {
+  const { locale } = useT()
+  const d = dict[locale]
   const initials = supplier.name
     .split(" ")
     .map((w) => w[0])
@@ -226,7 +236,7 @@ function ListCard({
           )}
           <div className="mt-1">
             <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">
-              {categoryLabel(supplier.category)}
+              {categoryLabel(supplier.category, locale)}
             </span>
           </div>
           <div className="mt-auto flex items-center justify-between pt-1">
@@ -235,12 +245,15 @@ function ListCard({
                 ★ {supplier.rating.toFixed(1)} ({supplier.reviews_count})
               </span>
             ) : (
-              <span className="text-xs text-muted">Nieuw</span>
+              <span className="text-xs text-muted">{d.new}</span>
             )}
             {supplier.day_rate != null && (
               <span className="font-semibold text-brand">
                 {formatEuro(supplier.day_rate)}
-                <span className="text-xs font-normal text-muted"> /dag</span>
+                <span className="text-xs font-normal text-muted">
+                  {" "}
+                  {d.perDay}
+                </span>
               </span>
             )}
           </div>

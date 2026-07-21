@@ -2,7 +2,9 @@ import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { formatEuro, vatBreakdown, VAT_RATE, formatPercent } from "@/lib/utils/pricing"
+import { getI18n } from "@/lib/i18n"
 import { PrintButton } from "./print-button"
+import { dict } from "./i18n"
 
 // Factuurnummer: jaar + eerste 8 tekens van de boeking-id (hoofdletters).
 function invoiceNumber(id: string, createdAt: string) {
@@ -37,16 +39,20 @@ export default async function InvoicePage({
     redirect("/bookings")
   }
 
+  const { locale } = await getI18n()
+  const d = dict[locale]
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+
   const artist = booking.artists as { stage_name: string } | null
   const { net, vat, gross } = vatBreakdown(booking.total)
   const number = invoiceNumber(booking.id, booking.created_at)
 
-  const issued = new Date(booking.created_at).toLocaleDateString("nl-NL", {
+  const issued = new Date(booking.created_at).toLocaleDateString(dateLocale, {
     day: "numeric",
     month: "long",
     year: "numeric",
   })
-  const eventDate = new Date(booking.event_date).toLocaleDateString("nl-NL", {
+  const eventDate = new Date(booking.event_date).toLocaleDateString(dateLocale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -60,7 +66,7 @@ export default async function InvoicePage({
           href="/bookings"
           className="text-sm text-muted hover:text-foreground"
         >
-          ← Terug naar boekingen
+          {d.backToBookings}
         </Link>
         <PrintButton />
       </div>
@@ -72,34 +78,34 @@ export default async function InvoicePage({
             <p className="text-2xl font-semibold tracking-tight text-brand print:text-black">
               MyGigs
             </p>
-            <p className="mt-1 text-muted">
-              Het boekingsplatform voor DJ&apos;s en events.
-            </p>
+            <p className="mt-1 text-muted">{d.tagline}</p>
           </div>
           <div className="text-right">
-            <h1 className="text-xl font-semibold tracking-tight">Factuur</h1>
+            <h1 className="text-xl font-semibold tracking-tight">{d.invoice}</h1>
             <p className="mt-1 text-muted">{number}</p>
-            <p className="text-muted">Datum: {issued}</p>
+            <p className="text-muted">{d.date.replace("{date}", issued)}</p>
           </div>
         </div>
 
         {/* Adressen */}
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted">Van</p>
-            <p className="mt-2 font-medium">MyGigs B.V.</p>
-            <p className="text-muted">Amsterdam, Nederland</p>
-            <p className="text-muted">BTW: NL000000000B00</p>
+            <p className="text-xs uppercase tracking-wider text-muted">{d.from}</p>
+            <p className="mt-2 font-medium">{d.fromName}</p>
+            <p className="text-muted">{d.fromCity}</p>
+            <p className="text-muted">{d.fromVat}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider text-muted">
-              Factuur aan
+              {d.billTo}
             </p>
             <p className="mt-2 font-medium">
-              {booking.company_name ?? "Bedrijfsnaam onbekend"}
+              {booking.company_name ?? d.companyUnknown}
             </p>
             {booking.vat_number && (
-              <p className="text-muted">BTW: {booking.vat_number}</p>
+              <p className="text-muted">
+                {d.vatLabel.replace("{vat}", booking.vat_number)}
+              </p>
             )}
             {booking.invoice_email && (
               <p className="text-muted">{booking.invoice_email}</p>
@@ -111,15 +117,15 @@ export default async function InvoicePage({
         <table className="mt-8 w-full border-collapse">
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted print:border-black/20">
-              <th className="py-2 font-medium">Omschrijving</th>
-              <th className="py-2 text-right font-medium">Bedrag (excl. BTW)</th>
+              <th className="py-2 font-medium">{d.description}</th>
+              <th className="py-2 text-right font-medium">{d.amountExclVat}</th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-b border-border print:border-black/10">
               <td className="py-3">
                 <p className="font-medium">
-                  Optreden {artist?.stage_name ?? "DJ"}
+                  {d.performance.replace("{name}", artist?.stage_name ?? d.defaultDj)}
                 </p>
                 <p className="text-muted">
                   {booking.occasion ? `${booking.occasion} · ` : ""}
@@ -136,21 +142,17 @@ export default async function InvoicePage({
         {/* Totalen */}
         <div className="mt-4 flex justify-end">
           <div className="w-full max-w-xs">
-            <Row label="Subtotaal" value={formatEuro(net)} />
+            <Row label={d.subtotal} value={formatEuro(net)} />
             <Row
-              label={`BTW (${formatPercent(VAT_RATE)})`}
+              label={d.vat.replace("{rate}", formatPercent(VAT_RATE))}
               value={formatEuro(vat)}
             />
             <div className="my-2 border-t border-border print:border-black/20" />
-            <Row label="Totaal" value={formatEuro(gross)} strong />
+            <Row label={d.total} value={formatEuro(gross)} strong />
           </div>
         </div>
 
-        <p className="mt-10 text-xs text-muted">
-          Betaling verloopt via MyGigs. Het bedrag staat veilig in escrow tot na
-          het optreden. Deze factuur is automatisch gegenereerd en geldig zonder
-          handtekening.
-        </p>
+        <p className="mt-10 text-xs text-muted">{d.footer}</p>
       </div>
     </main>
   )

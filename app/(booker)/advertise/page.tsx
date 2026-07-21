@@ -1,11 +1,24 @@
 import { redirect } from "next/navigation"
 import { getProfile } from "@/lib/auth"
-import { getMyAds, AD_PLACEMENTS, placementLabel } from "@/lib/data/ads"
+import { getMyAds, AD_PLACEMENTS } from "@/lib/data/ads"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
+import { getI18n } from "@/lib/i18n"
 import { createAd, toggleAd, deleteAd } from "./actions"
+import { dict } from "./i18n"
 
 export default async function AdvertisePage() {
+  const { locale } = await getI18n()
+  const d = dict[locale]
+
+  const placementText: Record<string, string> = {
+    events_top: d.placementEventsTop,
+    event_detail: d.placementEventDetail,
+    discover: d.placementDiscover,
+    sidebar: d.placementSidebar,
+  }
+  const labelFor = (value: string) => placementText[value] ?? value
+
   const profile = await getProfile()
   if (!profile) redirect("/login?next=/advertise")
 
@@ -27,33 +40,29 @@ export default async function AdvertisePage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6">
-      <h1 className="text-xl font-semibold tracking-tight">Adverteren</h1>
+      <h1 className="text-xl font-semibold tracking-tight">{d.heading}</h1>
       {isArtist ? (
-        <p className="mt-1 text-sm text-muted">
-          Promoot jezelf als DJ. Plaats een banner op de ontdek-pagina en
-          de agenda zodat boekers jou als eerste zien. Je betaalt per week, los
-          van je boekingen.
-        </p>
+        <p className="mt-1 text-sm text-muted">{d.introArtist}</p>
       ) : (
-        <p className="mt-1 text-sm text-muted">
-          Plaats als merk een banner op de agenda en eventpagina&apos;s. Bereik
-          bezoekers die op zoek zijn naar feesten en DJ&apos;s.
-        </p>
+        <p className="mt-1 text-sm text-muted">{d.introBrand}</p>
       )}
 
       {/* Tarieven */}
       <div className="mt-5 rounded-2xl border border-border bg-surface p-4">
-        <p className="text-sm font-semibold">Tarieven</p>
+        <p className="text-sm font-semibold">{d.rates}</p>
         <ul className="mt-2 grid gap-2 sm:grid-cols-2">
           {AD_PLACEMENTS.map((p) => (
             <li
               key={p.value}
               className="flex items-center justify-between rounded-xl bg-surface-2 px-4 py-2.5 text-sm"
             >
-              <span className="text-muted">{p.label}</span>
+              <span className="text-muted">{labelFor(p.value)}</span>
               <span className="font-medium">
                 {formatEuro(p.price)}
-                <span className="text-xs font-normal text-muted"> /week</span>
+                <span className="text-xs font-normal text-muted">
+                  {" "}
+                  {d.perWeek}
+                </span>
               </span>
             </li>
           ))}
@@ -62,12 +71,12 @@ export default async function AdvertisePage() {
 
       {/* Nieuwe advertentie */}
       <section className="mt-6">
-        <h2 className="text-sm font-semibold text-muted">Nieuwe advertentie</h2>
+        <h2 className="text-sm font-semibold text-muted">{d.newAd}</h2>
         <form
           action={createAd}
           className="mt-3 grid gap-3 rounded-2xl border border-border bg-surface p-4 sm:grid-cols-2"
         >
-          <Field label={isArtist ? "Naam *" : "Merknaam *"}>
+          <Field label={isArtist ? d.labelNameArtist : d.labelNameBrand}>
             <input
               name="brand_name"
               required
@@ -75,7 +84,7 @@ export default async function AdvertisePage() {
               className="input h-10 w-full"
             />
           </Field>
-          <Field label="Plek">
+          <Field label={d.labelPlacement}>
             <select
               name="placement"
               defaultValue={isArtist ? "discover" : "events_top"}
@@ -83,25 +92,24 @@ export default async function AdvertisePage() {
             >
               {AD_PLACEMENTS.map((p) => (
                 <option key={p.value} value={p.value}>
-                  {p.label} — {formatEuro(p.price)}/week
+                  {labelFor(p.value)} — {formatEuro(p.price)}
+                  {d.perWeek}
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="Slogan / tekst" className="sm:col-span-2">
+          <Field label={d.labelSlogan} className="sm:col-span-2">
             <input
               name="title"
-              defaultValue={
-                isArtist && artist ? "Boek mij voor je volgende event" : ""
-              }
+              defaultValue={isArtist && artist ? d.defaultTitle : ""}
               className="input h-10 w-full"
             />
           </Field>
-          <Field label="Afbeelding-URL (banner)" className="sm:col-span-2">
+          <Field label={d.labelImage} className="sm:col-span-2">
             <input name="image_url" className="input h-10 w-full" />
           </Field>
           <Field
-            label={isArtist ? "Doel-URL (jouw profiel)" : "Doel-URL (klik)"}
+            label={isArtist ? d.labelTargetArtist : d.labelTargetBrand}
             className="sm:col-span-2"
           >
             <input
@@ -110,10 +118,10 @@ export default async function AdvertisePage() {
               className="input h-10 w-full"
             />
           </Field>
-          <Field label="Start (optioneel)">
+          <Field label={d.labelStart}>
             <input name="starts_at" type="date" className="input h-10 w-full" />
           </Field>
-          <Field label="Einde (optioneel)">
+          <Field label={d.labelEnd}>
             <input name="ends_at" type="date" className="input h-10 w-full" />
           </Field>
           <div className="sm:col-span-2">
@@ -121,7 +129,7 @@ export default async function AdvertisePage() {
               type="submit"
               className="h-10 rounded-full bg-brand px-5 font-medium text-black transition hover:bg-brand-strong"
             >
-              Advertentie plaatsen
+              {d.submit}
             </button>
           </div>
         </form>
@@ -129,11 +137,9 @@ export default async function AdvertisePage() {
 
       {/* Mijn advertenties */}
       <section className="mt-8">
-        <h2 className="text-sm font-semibold text-muted">Mijn advertenties</h2>
+        <h2 className="text-sm font-semibold text-muted">{d.myAds}</h2>
         {ads.length === 0 ? (
-          <p className="mt-2 text-sm text-muted">
-            Nog geen advertenties geplaatst.
-          </p>
+          <p className="mt-2 text-sm text-muted">{d.emptyAds}</p>
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
             {ads.map((ad) => (
@@ -152,11 +158,11 @@ export default async function AdvertisePage() {
                     ) : null}
                   </p>
                   <p className="truncate text-xs text-muted">
-                    {placementLabel(ad.placement)} ·{" "}
+                    {labelFor(ad.placement)} ·{" "}
                     {ad.active ? (
-                      <span className="text-brand">actief</span>
+                      <span className="text-brand">{d.active}</span>
                     ) : (
-                      "gepauzeerd"
+                      d.paused
                     )}
                   </p>
                 </div>
@@ -172,7 +178,7 @@ export default async function AdvertisePage() {
                       type="submit"
                       className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:text-foreground"
                     >
-                      {ad.active ? "Pauzeer" : "Activeer"}
+                      {ad.active ? d.pause : d.activate}
                     </button>
                   </form>
                   <form action={deleteAd}>
@@ -181,7 +187,7 @@ export default async function AdvertisePage() {
                       type="submit"
                       className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:border-red-500/50 hover:text-red-400"
                     >
-                      Verwijder
+                      {d.delete}
                     </button>
                   </form>
                 </div>

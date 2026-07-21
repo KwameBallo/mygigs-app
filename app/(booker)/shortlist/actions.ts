@@ -4,6 +4,8 @@ import { randomUUID } from "crypto"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { priceBreakdown } from "@/lib/utils/pricing"
+import { getI18n } from "@/lib/i18n"
+import { dict } from "./i18n"
 
 export async function createShortlist(formData: FormData) {
   const artistIds = formData.getAll("artist_ids").map(String).filter(Boolean)
@@ -77,8 +79,9 @@ export async function createShortlist(formData: FormData) {
 
   if (error) {
     console.error("createShortlist failed:", error.message)
+    const { locale } = await getI18n()
     redirect(
-      `/shortlist?error=${encodeURIComponent("Je aanvraag kon niet worden verstuurd. Probeer het opnieuw.")}`,
+      `/shortlist?error=${encodeURIComponent(dict[locale].sendFailed)}`,
     )
   }
 

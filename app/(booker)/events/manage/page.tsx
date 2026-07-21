@@ -7,14 +7,19 @@ import {
   getArtistOptions,
 } from "@/lib/data/events"
 import { getGenres } from "@/lib/data/artists"
+import { getI18n } from "@/lib/i18n"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatEventDate, formatTime } from "@/lib/utils/format"
 import { hasActiveSubscription } from "@/lib/subscriptions"
 import { createClub, createEvent, deleteEvent } from "./actions"
+import { dict } from "../i18n"
 
 export default async function ManageEventsPage() {
   const profile = await getProfile()
   if (!profile) redirect("/login?next=/events/manage")
+
+  const { locale } = await getI18n()
+  const d = dict[locale]
 
   const subActive = hasActiveSubscription(profile.subscription_status)
 
@@ -28,36 +33,35 @@ export default async function ManageEventsPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6">
       <h1 className="text-xl font-semibold tracking-tight">
-        Mijn events &amp; locaties
+        {d.myEventsAndVenues}
       </h1>
       <p className="mt-1 text-sm text-muted">
-        Maak een locatie aan en upload je eigen events met line-up.
+        {d.manageIntro}
       </p>
 
       {!subActive && (
         <div className="mt-5 rounded-2xl border border-brand/40 bg-brand/5 p-5">
           <p className="text-sm font-medium text-brand">
-            Abonnement vereist
+            {d.subRequired}
           </p>
           <p className="mt-1 text-sm text-muted">
-            Om locaties en events te plaatsen heb je een organisatoren-abonnement
-            nodig. Start met een gratis proefperiode.
+            {d.subRequiredBody}
           </p>
           <Link
             href="/subscribe"
             className="mt-3 inline-block rounded-full bg-brand px-5 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
           >
-            Bekijk abonnementen
+            {d.viewSubscriptions}
           </Link>
         </div>
       )}
 
       {/* ---- Locaties ---- */}
       <section className="mt-6">
-        <h2 className="text-sm font-semibold text-muted">Mijn locaties</h2>
+        <h2 className="text-sm font-semibold text-muted">{d.myVenues}</h2>
         {clubs.length === 0 ? (
           <p className="mt-2 text-sm text-muted">
-            Je hebt nog geen locatie. Maak er hieronder een aan.
+            {d.noVenuesYet}
           </p>
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
@@ -76,7 +80,7 @@ export default async function ManageEventsPage() {
                   href={`/clubs/${c.id}`}
                   className="text-sm text-brand hover:underline"
                 >
-                  Bekijk
+                  {d.view}
                 </Link>
               </li>
             ))}
@@ -85,19 +89,19 @@ export default async function ManageEventsPage() {
 
         <details className="mt-3 rounded-2xl border border-border bg-surface p-4">
           <summary className="cursor-pointer text-sm font-medium">
-            + Nieuwe locatie
+            {d.newVenue}
           </summary>
           <form action={createClub} className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Field label="Naam *" className="sm:col-span-2">
+            <Field label={d.labelName} className="sm:col-span-2">
               <input name="name" required className="input h-10 w-full" />
             </Field>
-            <Field label="Stad">
+            <Field label={d.labelCity}>
               <input name="city" className="input h-10 w-full" />
             </Field>
-            <Field label="Adres">
+            <Field label={d.labelAddress}>
               <input name="address" className="input h-10 w-full" />
             </Field>
-            <Field label="Capaciteit">
+            <Field label={d.labelCapacity}>
               <input
                 name="capacity"
                 type="number"
@@ -105,19 +109,19 @@ export default async function ManageEventsPage() {
                 className="input h-10 w-full"
               />
             </Field>
-            <Field label="Website">
+            <Field label={d.labelWebsite}>
               <input name="website_url" className="input h-10 w-full" />
             </Field>
-            <Field label="E-mail">
+            <Field label={d.labelEmail}>
               <input name="contact_email" className="input h-10 w-full" />
             </Field>
-            <Field label="Telefoon">
+            <Field label={d.labelPhone}>
               <input name="contact_phone" className="input h-10 w-full" />
             </Field>
-            <Field label="Afbeelding-URL" className="sm:col-span-2">
+            <Field label={d.labelImageUrl} className="sm:col-span-2">
               <input name="image_url" className="input h-10 w-full" />
             </Field>
-            <Field label="Beschrijving" className="sm:col-span-2">
+            <Field label={d.labelDescription} className="sm:col-span-2">
               <textarea
                 name="description"
                 rows={3}
@@ -129,7 +133,7 @@ export default async function ManageEventsPage() {
                 type="submit"
                 className="h-10 rounded-full bg-brand px-5 font-medium text-black transition hover:bg-brand-strong"
               >
-                Locatie opslaan
+                {d.saveVenue}
               </button>
             </div>
           </form>
@@ -138,17 +142,17 @@ export default async function ManageEventsPage() {
 
       {/* ---- Nieuw event ---- */}
       <section className="mt-8">
-        <h2 className="text-sm font-semibold text-muted">Nieuw event</h2>
+        <h2 className="text-sm font-semibold text-muted">{d.newEvent}</h2>
         {clubs.length === 0 ? (
           <p className="mt-2 text-sm text-muted">
-            Maak eerst een locatie aan voordat je een event uploadt.
+            {d.createVenueFirst}
           </p>
         ) : (
           <form
             action={createEvent}
             className="mt-3 grid gap-3 rounded-2xl border border-border bg-surface p-4 sm:grid-cols-2"
           >
-            <Field label="Locatie *" className="sm:col-span-2">
+            <Field label={d.labelVenue} className="sm:col-span-2">
               <select name="club_id" required className="input h-10 w-full">
                 {clubs.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -158,10 +162,10 @@ export default async function ManageEventsPage() {
                 ))}
               </select>
             </Field>
-            <Field label="Titel *" className="sm:col-span-2">
+            <Field label={d.labelTitle} className="sm:col-span-2">
               <input name="title" required className="input h-10 w-full" />
             </Field>
-            <Field label="Datum *">
+            <Field label={d.labelDate}>
               <input
                 name="event_date"
                 type="date"
@@ -169,7 +173,7 @@ export default async function ManageEventsPage() {
                 className="input h-10 w-full"
               />
             </Field>
-            <Field label="Genre">
+            <Field label={d.labelGenre}>
               <select name="genre_id" className="input h-10 w-full">
                 <option value="">—</option>
                 {genres.map((g) => (
@@ -179,16 +183,16 @@ export default async function ManageEventsPage() {
                 ))}
               </select>
             </Field>
-            <Field label="Aanvang">
+            <Field label={d.labelStart}>
               <input name="start_time" type="time" className="input h-10 w-full" />
             </Field>
-            <Field label="Einde">
+            <Field label={d.labelEnd}>
               <input name="end_time" type="time" className="input h-10 w-full" />
             </Field>
-            <Field label="Stad">
+            <Field label={d.labelCity}>
               <input name="city" className="input h-10 w-full" />
             </Field>
-            <Field label="Min. leeftijd">
+            <Field label={d.labelMinAge}>
               <input
                 name="min_age"
                 type="number"
@@ -196,7 +200,7 @@ export default async function ManageEventsPage() {
                 className="input h-10 w-full"
               />
             </Field>
-            <Field label="Ticketprijs (€)">
+            <Field label={d.labelTicketPrice}>
               <input
                 name="ticket_price"
                 type="number"
@@ -204,13 +208,13 @@ export default async function ManageEventsPage() {
                 className="input h-10 w-full"
               />
             </Field>
-            <Field label="Ticket-URL">
+            <Field label={d.labelTicketUrl}>
               <input name="ticket_url" className="input h-10 w-full" />
             </Field>
-            <Field label="Flyer-URL" className="sm:col-span-2">
+            <Field label={d.labelFlyerUrl} className="sm:col-span-2">
               <input name="flyer_url" className="input h-10 w-full" />
             </Field>
-            <Field label="Beschrijving" className="sm:col-span-2">
+            <Field label={d.labelDescription} className="sm:col-span-2">
               <textarea
                 name="description"
                 rows={3}
@@ -218,12 +222,12 @@ export default async function ManageEventsPage() {
               />
             </Field>
             <Field
-              label="Line-up (meerdere selecteren met Cmd/Ctrl)"
+              label={d.labelLineup}
               className="sm:col-span-2"
             >
               {artists.length === 0 ? (
                 <p className="text-sm text-muted">
-                  Nog geen DJ&apos;s beschikbaar.
+                  {d.noDjsAvailable}
                 </p>
               ) : (
                 <select
@@ -245,7 +249,7 @@ export default async function ManageEventsPage() {
                 type="submit"
                 className="h-10 rounded-full bg-brand px-5 font-medium text-black transition hover:bg-brand-strong"
               >
-                Event publiceren
+                {d.publishEvent}
               </button>
             </div>
           </form>
@@ -254,9 +258,9 @@ export default async function ManageEventsPage() {
 
       {/* ---- Mijn events ---- */}
       <section className="mt-8">
-        <h2 className="text-sm font-semibold text-muted">Mijn events</h2>
+        <h2 className="text-sm font-semibold text-muted">{d.myEvents}</h2>
         {events.length === 0 ? (
-          <p className="mt-2 text-sm text-muted">Nog geen events geüpload.</p>
+          <p className="mt-2 text-sm text-muted">{d.noEventsUploaded}</p>
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
             {events.map((e) => {
@@ -277,7 +281,7 @@ export default async function ManageEventsPage() {
                       {e.title}
                     </Link>
                     <p className="truncate text-xs text-muted">
-                      {formatEventDate(e.event_date)}
+                      {formatEventDate(e.event_date, locale)}
                       {time ? ` · ${time}` : ""}
                       {e.clubs?.name ? ` · ${e.clubs.name}` : ""}
                       {e.ticket_price != null
@@ -292,7 +296,7 @@ export default async function ManageEventsPage() {
                       type="submit"
                       className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:border-red-500/50 hover:text-red-400"
                     >
-                      Verwijder
+                      {d.delete}
                     </button>
                   </form>
                 </li>

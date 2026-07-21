@@ -1,9 +1,11 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getEvent } from "@/lib/data/events"
+import { getI18n } from "@/lib/i18n"
 import { AdSlot } from "@/components/ad-slot"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatEventDate, formatTime } from "@/lib/utils/format"
+import { dict } from "../i18n"
 
 export default async function EventDetailPage({
   params,
@@ -13,6 +15,9 @@ export default async function EventDetailPage({
   const { id } = await params
   const event = await getEvent(id)
   if (!event) notFound()
+
+  const { locale } = await getI18n()
+  const d = dict[locale]
 
   const lineup = event.event_artists
     .map((ea) => ea.artists)
@@ -27,7 +32,7 @@ export default async function EventDetailPage({
         href="/events"
         className="text-sm text-muted transition hover:text-foreground"
       >
-        ← Terug naar agenda
+        {d.backToAgenda}
       </Link>
 
       <div className="mt-4 overflow-hidden rounded-3xl border border-border bg-surface">
@@ -41,7 +46,7 @@ export default async function EventDetailPage({
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm text-muted">
-              Geen flyer
+              {d.noFlyer}
             </div>
           )}
         </div>
@@ -50,7 +55,7 @@ export default async function EventDetailPage({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-black">
-                {formatEventDate(event.event_date)}
+                {formatEventDate(event.event_date, locale)}
               </span>
               {start && (
                 <span className="rounded-full bg-surface-2 px-3 py-1 text-xs text-muted">
@@ -93,7 +98,7 @@ export default async function EventDetailPage({
 
             {lineup.length > 0 && (
               <div className="mt-6">
-                <h2 className="text-sm font-semibold text-muted">Line-up</h2>
+                <h2 className="text-sm font-semibold text-muted">{d.lineup}</h2>
                 <div className="mt-3 flex flex-wrap gap-3">
                   {lineup.map((a) => (
                     <Link
@@ -127,11 +132,11 @@ export default async function EventDetailPage({
 
           {/* Ticket-aside */}
           <aside className="h-fit rounded-2xl border border-border bg-surface-2 p-5">
-            <p className="text-xs text-muted">Toegang</p>
+            <p className="text-xs text-muted">{d.access}</p>
             <p className="mt-1 text-2xl font-semibold">
               {event.ticket_price != null
                 ? formatEuro(event.ticket_price)
-                : "n.t.b."}
+                : d.tbd}
             </p>
             {event.ticket_url ? (
               <a
@@ -140,11 +145,11 @@ export default async function EventDetailPage({
                 rel="noopener noreferrer"
                 className="mt-4 block rounded-xl bg-brand px-4 py-2.5 text-center text-sm font-medium text-black transition hover:bg-brand-strong"
               >
-                Tickets
+                {d.tickets}
               </a>
             ) : (
               <p className="mt-4 text-xs text-muted">
-                Nog geen ticketlink beschikbaar.
+                {d.noTicketLink}
               </p>
             )}
           </aside>

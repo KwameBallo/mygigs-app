@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation"
 import { getProfile } from "@/lib/auth"
 import { getArtists } from "@/lib/data/artists"
+import { getI18n } from "@/lib/i18n"
 import { ShortlistClient } from "./shortlist-client"
+import { dict } from "./i18n"
 
 type SearchParams = Promise<{ acts?: string; error?: string }>
 
@@ -11,6 +13,8 @@ export default async function ShortlistPage({
   searchParams: SearchParams
 }) {
   const { acts, error } = await searchParams
+  const { locale } = await getI18n()
+  const d = dict[locale]
   const profile = await getProfile()
   if (!profile) redirect("/login?next=/shortlist")
 
@@ -20,20 +24,19 @@ export default async function ShortlistPage({
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">
-        Vraag meerdere DJ&apos;s tegelijk aan
+        {d.title}
       </h1>
       <p className="mt-2 text-sm text-muted">
-        Stel een shortlist samen en stuur in één keer dezelfde aanvraag naar
-        alle geselecteerde DJ&apos;s.
+        {d.intro}
       </p>
 
       {error && (
         <div className="mt-6 rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-300">
           {error === "missing"
-            ? "Selecteer minstens één DJ en kies een datum."
+            ? d.errorMissing
             : error === "notfound"
-              ? "De geselecteerde DJ's zijn niet gevonden."
-              : "Er ging iets mis. Probeer het opnieuw."}
+              ? d.errorNotfound
+              : d.errorGeneric}
         </div>
       )}
 

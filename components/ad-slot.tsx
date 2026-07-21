@@ -1,4 +1,5 @@
 import { getAd, type AdPlacement, type Ad } from "@/lib/data/ads"
+import { getI18n } from "@/lib/i18n"
 
 // Voorbeeld-advertenties zodat je ook zonder data in de database ziet waar en
 // hoe advertenties verschijnen. Worden alleen getoond als er geen echte
@@ -46,6 +47,10 @@ export async function AdSlot({
   const real = await getAd(placement)
   const ad = real ?? DEMO_ADS[placement]
   const isDemo = !real
+  const { locale } = await getI18n()
+  const adLabel = locale === "en" ? "Advertisement" : "Advertentie"
+  const demoLabel = locale === "en" ? " · example" : " · voorbeeld"
+  const moreLabel = locale === "en" ? "More" : "Meer"
 
   const inner = (
     <div className="relative flex min-h-[88px] items-center gap-4 overflow-hidden rounded-2xl border border-border bg-surface-2 p-4 transition hover:border-brand/40">
@@ -59,7 +64,8 @@ export async function AdSlot({
       )}
       <div className="min-w-0 flex-1">
         <span className="text-[10px] font-medium uppercase tracking-wide text-muted">
-          Advertentie{isDemo ? " · voorbeeld" : ""} · {ad.brand_name}
+          {adLabel}
+          {isDemo ? demoLabel : ""} · {ad.brand_name}
         </span>
         {ad.title && (
           <p className="mt-0.5 truncate text-sm font-semibold">{ad.title}</p>
@@ -67,7 +73,7 @@ export async function AdSlot({
       </div>
       {ad.target_url && (
         <span className="hidden flex-none rounded-full bg-brand px-4 py-2 text-sm font-medium text-black sm:inline-block">
-          Meer
+          {moreLabel}
         </span>
       )}
     </div>

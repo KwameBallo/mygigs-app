@@ -5,17 +5,20 @@ import Link from "next/link"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import { useT } from "@/components/i18n-provider"
 import { formatEuro } from "@/lib/utils/pricing"
 import { categoryLabel } from "@/lib/data/suppliers-meta"
 import type { Supplier } from "@/lib/data/suppliers"
+import { dict } from "./i18n"
+import type { Locale } from "@/lib/i18n/config"
 
 type Located = Supplier & { lat: number; lng: number }
 
-function pinIcon(supplier: Located, active: boolean) {
+function pinIcon(supplier: Located, active: boolean, locale: Locale) {
   const label =
     supplier.day_rate != null
       ? `€${Math.round(supplier.day_rate)}`
-      : categoryLabel(supplier.category)
+      : categoryLabel(supplier.category, locale)
   return L.divIcon({
     className: "mg-pin-wrap",
     html: `<div class="mg-pin${active ? " mg-pin--active" : ""}">${label}</div>`,
@@ -59,6 +62,8 @@ export function SuppliersMap({
   activeId: string | null
   onActivate: (id: string | null) => void
 }) {
+  const { locale } = useT()
+  const d = dict[locale]
   const located = suppliers.filter(
     (s): s is Located => s.lat != null && s.lng != null,
   )
@@ -82,21 +87,23 @@ export function SuppliersMap({
         <Marker
           key={s.id}
           position={[s.lat, s.lng]}
-          icon={pinIcon(s, s.id === activeId)}
+          icon={pinIcon(s, s.id === activeId, locale)}
           eventHandlers={{ click: () => onActivate(s.id) }}
         >
           <Popup>
             <div className="mg-popup">
               <strong>{s.name}</strong>
               <span className="mg-popup__genre">
-                {categoryLabel(s.category)}
+                {categoryLabel(s.category, locale)}
               </span>
               <span className="mg-popup__meta">
-                {s.city ?? "Onbekend"}
-                {s.day_rate != null ? ` · ${formatEuro(s.day_rate)}/dag` : ""}
+                {s.city ?? d.unknownCity}
+                {s.day_rate != null
+                  ? ` · ${formatEuro(s.day_rate)}${d.perDay}`
+                  : ""}
               </span>
               <Link href={`/suppliers/${s.id}`} className="mg-popup__link">
-                Bekijk leverancier →
+                {d.viewSupplier}
               </Link>
             </div>
           </Popup>

@@ -6,13 +6,24 @@ import { Logo } from "@/components/logo"
 import { LogoutIcon } from "@/components/icons"
 import { formatEuro } from "@/lib/utils/pricing"
 import { roleLabel } from "@/lib/roles"
+import { getI18n } from "@/lib/i18n"
 import { approveDjApplication, rejectDjApplication } from "./actions"
+import { dict } from "./i18n"
 
 export const dynamic = "force-dynamic"
 
 export default async function AdminPage() {
   const profile = await getProfile()
   if (!profile || profile.role !== "admin") redirect("/")
+
+  const { locale } = await getI18n()
+  const d = dict[locale]
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+  const rating1 = (n: number) =>
+    n.toLocaleString(dateLocale, {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    })
 
   const admin = createAdminClient()
   const [uRes, aRes, bRes, fRes, logRes, appRes] = await Promise.all([
@@ -75,7 +86,7 @@ export default async function AdminPage() {
         <div className="flex items-center gap-2">
           <Logo />
           <span className="rounded-full border border-brand/40 bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
-            Beheer
+            {d.badge}
           </span>
         </div>
         <div className="flex items-center gap-2 text-sm">
@@ -83,12 +94,12 @@ export default async function AdminPage() {
             href="/discover"
             className="rounded-full border border-border px-3 py-1.5 transition hover:border-brand/50"
           >
-            Naar de app
+            {d.toApp}
           </Link>
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              aria-label="Uitloggen"
+              aria-label={d.logout}
               className="rounded-full border border-border p-2 text-muted transition hover:text-foreground"
             >
               <LogoutIcon className="h-5 w-5" />
@@ -98,36 +109,36 @@ export default async function AdminPage() {
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-4 py-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{d.dashboard}</h1>
         <p className="mt-1 text-sm text-muted">
-          Overzicht van het hele platform.
+          {d.subtitle}
         </p>
 
         {/* Metric-kaarten */}
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          <Metric label="Gebruikers" value={String(users.length)} />
-          <Metric label="DJ's" value={String(artists.length)} />
-          <Metric label="Boekingen" value={String(bookings.length)} />
-          <Metric label="Omzet" value={formatEuro(omzet)} />
-          <Metric label="Fee (7%)" value={formatEuro(fee)} />
-          <Metric label="Chat-flags" value={String(flags.length)} />
+          <Metric label={d.metricUsers} value={String(users.length)} />
+          <Metric label={d.metricDjs} value={String(artists.length)} />
+          <Metric label={d.metricBookings} value={String(bookings.length)} />
+          <Metric label={d.metricRevenue} value={formatEuro(omzet)} />
+          <Metric label={d.metricFee} value={formatEuro(fee)} />
+          <Metric label={d.metricFlags} value={String(flags.length)} />
         </div>
 
         {/* Rollen + boekingstatus */}
         <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
-          <Panel title="Gebruikers per rol">
+          <Panel title={d.usersByRole}>
             <div className="flex flex-wrap gap-2 text-sm">
               {(["booker", "artist", "both", "admin"] as const).map((r) => (
                 <span
                   key={r}
                   className="rounded-full bg-surface-2 px-3 py-1 text-muted"
                 >
-                  {roleLabel(r)}: <b className="text-foreground">{byRole(r)}</b>
+                  {roleLabel(r, locale)}: <b className="text-foreground">{byRole(r)}</b>
                 </span>
               ))}
             </div>
           </Panel>
-          <Panel title="Boekingen per status">
+          <Panel title={d.bookingsByStatus}>
             <div className="flex flex-wrap gap-2 text-sm">
               {statuses.map((st) => (
                 <span
@@ -142,24 +153,27 @@ export default async function AdminPage() {
         </div>
 
         {/* DJ's */}
-        <Panel title={`DJ's · gem. rating ${avgRating.toFixed(1)}`} className="mt-4">
+        <Panel
+          title={d.djsTitle.replace("{rating}", rating1(avgRating))}
+          className="mt-4"
+        >
           <Table
-            head={["DJ", "Stad", "Rating", "Gage", "Geverifieerd"]}
+            head={[d.colDj, d.colCity, d.colRating, d.colGage, d.colVerified]}
             rows={artists.map((a) => [
               a.stage_name,
               a.home_city ?? "—",
-              `${(a.rating ?? 0).toFixed(1)} (${a.reviews_count ?? 0})`,
+              `${rating1(a.rating ?? 0)} (${a.reviews_count ?? 0})`,
               formatEuro(a.base_gage ?? 0),
-              a.verified ? "Ja" : "—",
+              a.verified ? d.yes : "—",
             ])}
-            empty="Nog geen DJ's."
+            empty={d.emptyDjs}
           />
         </Panel>
 
         {/* Recente boekingen */}
-        <Panel title="Recente boekingen" className="mt-4">
+        <Panel title={d.recentBookings} className="mt-4">
           <Table
-            head={["Datum", "Stad", "Status", "Totaal", "Fee"]}
+            head={[d.colDate, d.colCity, d.colStatus, d.colTotal, d.colFee]}
             rows={bookings
               .slice(0, 15)
               .map((b) => [
@@ -169,28 +183,28 @@ export default async function AdminPage() {
                 formatEuro(b.total ?? 0),
                 formatEuro(b.service_fee ?? 0),
               ])}
-            empty="Nog geen boekingen."
+            empty={d.emptyBookings}
           />
         </Panel>
 
         {/* Gebruikers */}
-        <Panel title="Gebruikers" className="mt-4">
+        <Panel title={d.usersTitle} className="mt-4">
           <Table
-            head={["Naam", "E-mail", "Rol"]}
+            head={[d.colName, d.colEmail, d.colRole]}
             rows={users
               .slice(0, 20)
-              .map((u) => [u.full_name ?? "—", u.email ?? "—", roleLabel(u.role)])}
-            empty="Nog geen gebruikers."
+              .map((u) => [u.full_name ?? "—", u.email ?? "—", roleLabel(u.role, locale)])}
+            empty={d.emptyUsers}
           />
         </Panel>
 
         {/* Chat-flags */}
         <Panel
-          title={`DJ-aanvragen${pendingApps.length ? ` (${pendingApps.length})` : ""}`}
+          title={`${d.djApplications}${pendingApps.length ? ` (${pendingApps.length})` : ""}`}
           className="mt-4"
         >
           {pendingApps.length === 0 ? (
-            <p className="text-sm text-muted">Geen openstaande aanvragen.</p>
+            <p className="text-sm text-muted">{d.noPendingApps}</p>
           ) : (
             <div className="flex flex-col gap-2">
               {pendingApps.map((app) => {
@@ -217,7 +231,7 @@ export default async function AdminPage() {
                           type="submit"
                           className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-black transition hover:bg-brand-strong"
                         >
-                          Goedkeuren
+                          {d.approve}
                         </button>
                       </form>
                       <form action={rejectDjApplication}>
@@ -226,7 +240,7 @@ export default async function AdminPage() {
                           type="submit"
                           className="rounded-full border border-border px-3 py-1 text-xs text-muted transition hover:border-red-400/50 hover:text-red-400"
                         >
-                          Afwijzen
+                          {d.reject}
                         </button>
                       </form>
                     </div>
@@ -237,29 +251,29 @@ export default async function AdminPage() {
           )}
         </Panel>
 
-        <Panel title="Recente chat-flags" className="mt-4">
+        <Panel title={d.recentFlags} className="mt-4">
           <Table
-            head={["Reden", "Wanneer"]}
+            head={[d.colReason, d.colWhen]}
             rows={flags.map((f) => [
               f.reason ?? "—",
-              f.created_at ? new Date(f.created_at).toLocaleString("nl-NL") : "—",
+              f.created_at ? new Date(f.created_at).toLocaleString(dateLocale) : "—",
             ])}
-            empty="Geen gemarkeerde berichten."
+            empty={d.emptyFlags}
           />
         </Panel>
 
-        <Panel title="Audit-log" className="mt-4">
+        <Panel title={d.auditLog} className="mt-4">
           <Table
-            head={["Actie", "Doel", "Actor", "Wanneer"]}
+            head={[d.colAction, d.colTarget, d.colActor, d.colWhen]}
             rows={auditLogs.map((l) => [
               l.action,
               [l.target_type, l.target_id].filter(Boolean).join(" · ") || "—",
-              l.actor_id ? `${l.actor_id.slice(0, 8)}…` : "systeem",
+              l.actor_id ? `${l.actor_id.slice(0, 8)}…` : d.system,
               l.created_at
-                ? new Date(l.created_at).toLocaleString("nl-NL")
+                ? new Date(l.created_at).toLocaleString(dateLocale)
                 : "—",
             ])}
-            empty="Nog geen audit-gebeurtenissen."
+            empty={d.emptyAudit}
           />
         </Panel>
       </main>
