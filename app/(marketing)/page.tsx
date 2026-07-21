@@ -3,9 +3,15 @@ import { SiteHeader } from "@/components/site-header"
 import { ArtistCard } from "@/components/artist-card"
 import { getArtists } from "@/lib/data/artists"
 import { getProfile } from "@/lib/auth"
+import { getI18n } from "@/lib/i18n"
 
 export default async function Home() {
-  const [artists, profile] = await Promise.all([getArtists(), getProfile()])
+  const [artists, profile, { t }] = await Promise.all([
+    getArtists(),
+    getProfile(),
+    getI18n(),
+  ])
+  const h = t.home
   const featured = artists.slice(0, 4)
   // DJ-werving (Word DJ / Word geboekt) tonen we alleen aan uitgelogde
   // bezoekers; ingelogde klanten regelen DJ-worden via de aanvraag.
@@ -26,7 +32,7 @@ export default async function Home() {
             Be the <span className="text-brand">star</span> you want to be.
           </h1>
           <p className="mt-6 max-w-xl text-balance text-lg font-medium text-muted">
-            Het nummer 1 boekingsplatform.
+            {h.brandTagline}
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             {isArtist ? (
@@ -34,14 +40,14 @@ export default async function Home() {
                 href="/dashboard"
                 className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
               >
-                Naar dashboard
+                {h.toDashboard}
               </Link>
             ) : (
               <Link
                 href="/discover"
                 className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
               >
-                Boek een DJ
+                {h.bookDj}
               </Link>
             )}
             {showDjRecruitment && (
@@ -49,7 +55,7 @@ export default async function Home() {
                 href="/login?mode=signup&type=dj"
                 className="rounded-full border border-border bg-surface px-7 py-3.5 font-medium transition hover:border-brand/50"
               >
-                Word DJ
+                {h.becomeDj}
               </Link>
             )}
           </div>
@@ -58,27 +64,27 @@ export default async function Home() {
         <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-12">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <SideCard
-              tag="Voor organisatoren"
-              title="Ontdek & boek"
-              body="Blader door de agenda met feesten en DJ's bij jou in de buurt. Boek een DJ voor je eigen event. Filter op genre, stad, datum en budget."
-              cta="Ontdek feesten"
+              tag={h.card1Tag}
+              title={h.card1Title}
+              body={h.card1Body}
+              cta={h.card1Cta}
               href="/discover"
               primary
             />
             {showDjRecruitment && (
               <SideCard
-                tag="Voor DJ's"
-                title="Word geboekt"
-                body="Maak een DJ-profiel aan, toon je demo's en volgers, en ontvang boekingsaanvragen. Aanmelden is gratis: MyGigs verdient 7% per boeking."
-                cta="Word DJ"
+                tag={h.card2Tag}
+                title={h.card2Title}
+                body={h.card2Body}
+                cta={h.card2Cta}
                 href="/login?mode=signup&type=dj"
               />
             )}
             <SideCard
-              tag="Voor bedrijven"
-              title="Zakelijk boeken"
-              body="Boek DJ's voor je bedrijfsevent met factuur op naam, BTW-aftrek en één aanspreekpunt. Sla je factuurgegevens eenmalig op."
-              cta="Naar zakelijk"
+              tag={h.card3Tag}
+              title={h.card3Title}
+              body={h.card3Body}
+              cta={h.card3Cta}
               href="/zakelijk"
             />
           </div>
@@ -88,13 +94,13 @@ export default async function Home() {
           <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-12">
             <div className="mb-6 flex items-end justify-between">
               <h2 className="text-2xl font-semibold tracking-tight">
-                Uitgelichte DJ&apos;s
+                {h.featuredTitle}
               </h2>
               <Link
                 href="/discover"
                 className="text-sm font-medium text-brand hover:underline"
               >
-                Bekijk alles
+                {h.viewAll}
               </Link>
             </div>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -107,21 +113,9 @@ export default async function Home() {
 
         <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-16">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-            <Feature
-              step="01"
-              title="Vind je match"
-              body="Zoek op genre, stad, datum en budget. Zie rating, reviews en demo's voordat je boekt."
-            />
-            <Feature
-              step="02"
-              title="Boek direct"
-              body="Stuur een aanvraag met datum en locatie. De DJ accepteert, jij betaalt veilig."
-            />
-            <Feature
-              step="03"
-              title="Veilige uitbetaling"
-              body="Je geld staat in escrow tot na het optreden. 7% servicekosten, verder geen verrassingen."
-            />
+            <Feature step="01" title={h.step1Title} body={h.step1Body} />
+            <Feature step="02" title={h.step2Title} body={h.step2Body} />
+            <Feature step="03" title={h.step3Title} body={h.step3Body} />
           </div>
         </section>
 
@@ -130,24 +124,21 @@ export default async function Home() {
             <div className="overflow-hidden rounded-3xl border border-border bg-surface p-10 text-center">
               <div className="brand-glow pointer-events-none absolute" />
               <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Klaar om te beginnen?
+                {h.ctaTitle}
               </h2>
-              <p className="mx-auto mt-3 max-w-md text-muted">
-                Maak een profiel aan en ontvang je eerste boekingsaanvraag.
-                Aanmelden is gratis.
-              </p>
+              <p className="mx-auto mt-3 max-w-md text-muted">{h.ctaBody}</p>
               <Link
                 href="/login?mode=signup&type=dj"
                 className="mt-8 inline-block rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
               >
-                Aan de slag
+                {h.ctaButton}
               </Link>
             </div>
           </section>
         )}
 
         <footer className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8 text-center text-xs text-muted">
-          MyGigs. Het boekingsplatform voor DJ&apos;s en events.
+          {h.footer}
         </footer>
       </main>
     </>

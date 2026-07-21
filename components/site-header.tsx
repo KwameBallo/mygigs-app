@@ -1,9 +1,11 @@
 import Link from "next/link"
 import { Logo } from "@/components/logo"
+import { LanguageSwitcher } from "@/components/language-switcher"
 import { getProfile } from "@/lib/auth"
+import { getI18n } from "@/lib/i18n"
 
 export async function SiteHeader() {
-  const profile = await getProfile()
+  const [profile, { locale, t }] = await Promise.all([getProfile(), getI18n()])
   const isArtist = profile?.role === "artist" || profile?.role === "both"
 
   return (
@@ -17,55 +19,49 @@ export async function SiteHeader() {
               href="/discover"
               className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
             >
-              Ontdek
+              {t.header.discover}
             </Link>
           )}
           <Link
             href="/zakelijk"
             className="hidden rounded-full px-3 py-2 text-muted transition hover:text-foreground sm:block"
           >
-            Zakelijk
+            {t.header.business}
           </Link>
           {profile ? (
             <>
               {isArtist && (
-                <>
-                  <Link
-                    href="/dashboard"
-                    className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/bookings"
-                    className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
-                  >
-                    Boekingen
-                  </Link>
-                </>
+                <Link
+                  href="/dashboard"
+                  className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
+                >
+                  {t.header.dashboard}
+                </Link>
               )}
+              <LanguageSwitcher locale={locale} />
               <form action="/auth/signout" method="post">
                 <button
                   type="submit"
                   className="rounded-full border border-border bg-surface px-4 py-2 font-medium transition hover:border-brand/50"
                 >
-                  Uitloggen
+                  {t.header.logout}
                 </button>
               </form>
             </>
           ) : (
             <>
+              <LanguageSwitcher locale={locale} />
               <Link
                 href="/login"
                 className="rounded-full px-3 py-2 text-muted transition hover:text-foreground"
               >
-                Inloggen
+                {t.header.login}
               </Link>
               <Link
                 href="/login?mode=signup"
                 className="rounded-full bg-brand px-4 py-2 font-medium text-black transition hover:bg-brand-strong"
               >
-                Aanmelden
+                {t.header.signup}
               </Link>
             </>
           )}
