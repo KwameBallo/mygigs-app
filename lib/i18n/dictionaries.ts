@@ -225,6 +225,31 @@ const nl = {
     ofWhichVat: "waarvan btw",
     toPay: "Te betalen",
   },
+  status: {
+    pending: "In afwachting",
+    accepted: "Geaccepteerd",
+    declined: "Afgewezen",
+    cancelled: "Geannuleerd",
+    completed: "Afgerond",
+    paid: "Betaald",
+  },
+  myBookings: {
+    title: "Mijn boekingen",
+    shortlistBanner:
+      "Je aanvraag is naar alle geselecteerde DJ's gestuurd. Je ziet hieronder per DJ de status.",
+    paidBanner:
+      "Betaling gelukt! Je bedrag staat veilig bij MyGigs en gaat pas ná het optreden naar de DJ. Je kunt nu via de chat de details afstemmen.",
+    emptyTitle: "Nog geen boekingen",
+    emptyBody: "Vind een DJ en stuur je eerste aanvraag.",
+    emptyCta: "Ontdek DJ's",
+    business: "Zakelijk",
+    private: "Privé",
+    invoice: "Factuur",
+    chat: "Chat",
+    pay: "Betalen",
+    cancel: "Annuleren",
+    paidNote: "Betaald — geld staat bij MyGigs, uitbetaling binnen 5 werkdagen.",
+  },
 }
 
 const en: typeof nl = {
@@ -448,6 +473,31 @@ const en: typeof nl = {
     business: "Business",
     ofWhichVat: "of which VAT",
     toPay: "To pay",
+  },
+  status: {
+    pending: "Pending",
+    accepted: "Accepted",
+    declined: "Declined",
+    cancelled: "Cancelled",
+    completed: "Completed",
+    paid: "Paid",
+  },
+  myBookings: {
+    title: "My bookings",
+    shortlistBanner:
+      "Your request has been sent to all selected DJs. You can see the status per DJ below.",
+    paidBanner:
+      "Payment successful! Your amount is safely held by MyGigs and only goes to the DJ after the gig. You can now coordinate the details via chat.",
+    emptyTitle: "No bookings yet",
+    emptyBody: "Find a DJ and send your first request.",
+    emptyCta: "Discover DJs",
+    business: "Business",
+    private: "Private",
+    invoice: "Invoice",
+    chat: "Chat",
+    pay: "Pay",
+    cancel: "Cancel",
+    paidNote: "Paid — money is held by MyGigs, payout within 5 business days.",
   },
 }
 

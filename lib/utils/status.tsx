@@ -1,15 +1,9 @@
+"use client"
+
 import type { Database } from "@/types/database"
+import { useT } from "@/components/i18n-provider"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
-
-export const STATUS_LABEL: Record<BookingStatus, string> = {
-  pending: "In afwachting",
-  accepted: "Geaccepteerd",
-  declined: "Afgewezen",
-  cancelled: "Geannuleerd",
-  completed: "Afgerond",
-  paid: "Betaald",
-}
 
 export const STATUS_CLASS: Record<BookingStatus, string> = {
   pending: "border-amber-500/40 bg-amber-500/10 text-amber-300",
@@ -21,11 +15,12 @@ export const STATUS_CLASS: Record<BookingStatus, string> = {
 }
 
 export function StatusBadge({ status }: { status: BookingStatus }) {
+  const { t } = useT()
   return (
     <span
       className={`rounded-full border px-2.5 py-1 text-xs font-medium ${STATUS_CLASS[status]}`}
     >
-      {STATUS_LABEL[status]}
+      {t.status[status]}
     </span>
   )
 }
