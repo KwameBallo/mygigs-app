@@ -9,25 +9,25 @@ import { formatFollowers } from "@/lib/utils/format"
 import { haversineKm } from "@/lib/utils/geo"
 import { PROVINCES, provinceCentroid } from "@/lib/utils/provinces"
 import { aiSearch } from "./ai-actions"
+import { useT } from "@/components/i18n-provider"
 import type { MapPoint } from "./discover-map"
 import type { Artist, Genre } from "@/lib/data/artists"
 import type { Club } from "@/lib/data/events"
 
-const AI_EXAMPLES = [
-  "DJ met 20.000 volgers in Utrecht",
-  "Techno DJ in Amsterdam",
-  "Online DJ in Rotterdam",
-]
+function MapLoading() {
+  const { t } = useT()
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-surface-2 text-sm text-muted">
+      {t.discover.mapLoading}
+    </div>
+  )
+}
 
 const DiscoverMap = dynamic(
   () => import("./discover-map").then((m) => m.DiscoverMap),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex h-full w-full items-center justify-center bg-surface-2 text-sm text-muted">
-        Kaart laden…
-      </div>
-    ),
+    loading: () => <MapLoading />,
   },
 )
 
@@ -44,11 +44,6 @@ type Filters = {
   date?: string
   ai?: string
   type?: string
-}
-
-const EQUIPMENT_LABELS: Record<string, string> = {
-  sound: "🔊 Brengt geluid mee",
-  light: "💡 Brengt licht mee",
 }
 
 // Prijs die de boeker betaalt: provinciebedrag indien gefilterd, anders basis.
@@ -75,6 +70,13 @@ export function DiscoverClient({
   genres: Genre[]
   filters: Filters
 }) {
+  const { t } = useT()
+  const d = t.discover
+  const EQUIPMENT_LABELS: Record<string, string> = {
+    sound: d.equipSoundChip,
+    light: d.equipLightChip,
+  }
+  const AI_EXAMPLES = [d.aiExample1, d.aiExample2, d.aiExample3]
   const [activeId, setActiveId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(true)
   const [panelOpen, setPanelOpen] = useState(true)
@@ -101,13 +103,13 @@ export function DiscoverClient({
     setGeoError(null)
     if (km != null && !userPos) {
       if (!navigator.geolocation) {
-        setGeoError("Locatie niet ondersteund")
+        setGeoError(d.geoNotSupported)
         return
       }
       navigator.geolocation.getCurrentPosition(
         (pos) =>
           setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setGeoError("Zet locatie aan om op afstand te filteren"),
+        () => setGeoError(d.geoDenied),
         { enableHighAccuracy: false, timeout: 8000 },
       )
     }
@@ -120,7 +122,10 @@ export function DiscoverClient({
     : undefined
   const chips = [
     filters.minFollowers && Number(filters.minFollowers) > 0
-      ? `≥ ${formatFollowers(Number(filters.minFollowers))} volgers`
+      ? d.followersChip.replace(
+          "{n}",
+          formatFollowers(Number(filters.minFollowers)),
+        )
       : null,
     filters.city ? `📍 ${filters.city}` : null,
     filters.province ? `🗺️ ${filters.province}` : null,
@@ -150,11 +155,11 @@ export function DiscoverClient({
           id: c.id,
           lat: c.lat as number,
           lng: c.lng as number,
-          pin: "Club",
+          pin: d.clubBadge,
           title: c.name,
-          meta: c.city ?? "Onbekend",
+          meta: c.city ?? d.unknownCity,
           href: `/clubs/${c.id}`,
-          linkLabel: "Bekijk club",
+          linkLabel: d.viewClub,
         }))
     : shownArtists
         .map((a) => ({ a, pos: artistPos(a) }))
@@ -169,27 +174,31 @@ export function DiscoverClient({
           pin: `€${Math.round(priceFor(a))}`,
           title: a.stage_name,
           genre: a.genres?.name,
-          meta: `${a.home_city ?? "Onbekend"} · ${formatEuro(priceFor(a))}`,
+          meta: `${a.home_city ?? d.unknownCity} · ${formatEuro(priceFor(a))}`,
           href: `/artists/${a.id}`,
-          linkLabel: "Bekijk profiel",
+          linkLabel: d.viewProfile,
         }))
 
   const count = isClubs ? clubs.length : shownArtists.length
-  const countLabel = `${count} ${
-    isClubs ? (count === 1 ? "club" : "clubs") : count === 1 ? "DJ" : "DJ's"
-  }`
+  const countLabel = (
+    isClubs
+      ? count === 1
+        ? d.countClub
+        : d.countClubs
+      : count === 1
+        ? d.countDj
+        : d.countDjs
+  ).replace("{n}", String(count))
 
   const results =
     count === 0 ? (
       <div className="m-3 rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
-        <p className="font-medium">
-          {isClubs ? "Geen clubs gevonden" : "Geen DJ's gevonden"}
-        </p>
+        <p className="font-medium">{isClubs ? d.noClubs : d.noDjs}</p>
         <Link
           href={isClubs ? "/discover?type=clubs" : "/discover"}
           className="mt-2 inline-block text-sm text-brand"
         >
-          Wis filters
+          {d.clearFilters}
         </Link>
       </div>
     ) : (
@@ -231,14 +240,14 @@ export function DiscoverClient({
           <form method="get" className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-1.5 rounded-3xl border border-border bg-surface/95 p-1.5 shadow-xl backdrop-blur">
               <div className="flex flex-none rounded-full bg-surface-2 p-0.5">
-                <Seg label="DJ's" active={!isClubs} filters={filters} clubs={false} />
-                <Seg label="Clubs" active={isClubs} filters={filters} clubs />
+                <Seg label={d.segDjs} active={!isClubs} filters={filters} clubs={false} />
+                <Seg label={d.segClubs} active={isClubs} filters={filters} clubs />
               </div>
               {isClubs && <input type="hidden" name="type" value="clubs" />}
               <input
                 name="q"
                 defaultValue={filters.q}
-                placeholder={isClubs ? "Zoek club of stad" : "Zoek DJ of stad"}
+                placeholder={isClubs ? d.searchClub : d.searchDj}
                 className="min-w-[7rem] flex-1 bg-transparent px-2 py-1.5 text-base outline-none placeholder:text-muted sm:text-sm"
               />
               {!isClubs && (
@@ -258,22 +267,22 @@ export function DiscoverClient({
                       : "border-border text-muted hover:border-brand/50 hover:text-brand"
                   }`}
                 >
-                  Filters
+                  {d.filters}
                 </button>
               )}
               <button
                 type="submit"
-                aria-label="Zoeken"
+                aria-label={d.searchAria}
                 className="flex-none rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
               >
-                Zoek
+                {d.search}
               </button>
               {!isClubs && (
                 <button
                   type="button"
                   onClick={() => setAiOpen((v) => !v)}
-                  aria-label="Zoek met AI"
-                  title="Zoek met AI"
+                  aria-label={d.aiToggleAria}
+                  title={d.aiToggleAria}
                   className={`flex-none rounded-full border px-3 py-2 text-sm transition ${
                     aiOpen
                       ? "border-brand bg-brand/10 text-brand"
@@ -293,7 +302,7 @@ export function DiscoverClient({
                   defaultValue={filters.genre ?? ""}
                   className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
                 >
-                  <option value="">Alle genres</option>
+                  <option value="">{d.allGenres}</option>
                   {genres.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.name}
@@ -305,7 +314,7 @@ export function DiscoverClient({
                   defaultValue={filters.province ?? ""}
                   className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
                 >
-                  <option value="">Elke provincie</option>
+                  <option value="">{d.anyProvince}</option>
                   {PROVINCES.map((p) => (
                     <option key={p.name} value={p.name}>
                       {p.name}
@@ -317,29 +326,29 @@ export function DiscoverClient({
                   defaultValue={filters.equipment ?? ""}
                   className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
                 >
-                  <option value="">Apparatuur: maakt niet uit</option>
-                  <option value="sound">Brengt geluid mee</option>
-                  <option value="light">Brengt licht mee</option>
+                  <option value="">{d.equipAny}</option>
+                  <option value="sound">{d.equipSoundOpt}</option>
+                  <option value="light">{d.equipLightOpt}</option>
                 </select>
                 <select
                   name="budget"
                   defaultValue={filters.budget ?? ""}
                   className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
                 >
-                  <option value="">Elk budget</option>
-                  <option value="250">tot €250</option>
-                  <option value="500">tot €500</option>
-                  <option value="750">tot €750</option>
-                  <option value="1000">tot €1.000</option>
-                  <option value="1500">tot €1.500</option>
-                  <option value="2500">tot €2.500</option>
+                  <option value="">{d.anyBudget}</option>
+                  <option value="250">{d.budget250}</option>
+                  <option value="500">{d.budget500}</option>
+                  <option value="750">{d.budget750}</option>
+                  <option value="1000">{d.budget1000}</option>
+                  <option value="1500">{d.budget1500}</option>
+                  <option value="2500">{d.budget2500}</option>
                 </select>
                 <select
                   value={maxKm ?? ""}
                   onChange={(e) => onDistance(e.target.value)}
                   className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
                 >
-                  <option value="">Afstand: overal</option>
+                  <option value="">{d.distanceAny}</option>
                   <option value="10">≤ 10 km</option>
                   <option value="25">≤ 25 km</option>
                   <option value="50">≤ 50 km</option>
@@ -350,23 +359,23 @@ export function DiscoverClient({
                   defaultValue={filters.rating ?? ""}
                   className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
                 >
-                  <option value="">Alle reviews</option>
-                  <option value="4">★ 4,0+</option>
-                  <option value="4.5">★ 4,5+</option>
-                  <option value="4.8">★ 4,8+</option>
+                  <option value="">{d.allReviews}</option>
+                  <option value="4">{d.rating4}</option>
+                  <option value="4.5">{d.rating45}</option>
+                  <option value="4.8">{d.rating48}</option>
                 </select>
                 <input
                   type="date"
                   name="date"
                   defaultValue={filters.date ?? ""}
-                  aria-label="Beschikbaar op datum"
+                  aria-label={d.dateAria}
                   className="w-full rounded-full bg-surface-2 px-3 py-2 text-base outline-none sm:w-auto sm:text-sm"
                 />
                 <button
                   type="submit"
                   className="col-span-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong sm:col-span-1 sm:w-auto"
                 >
-                  Toepassen
+                  {d.apply}
                 </button>
                 {geoError && (
                   <span className="col-span-2 text-xs text-red-400">
@@ -389,14 +398,14 @@ export function DiscoverClient({
                   <input
                     name="prompt"
                     defaultValue={filters.ai}
-                    placeholder="Beschrijf wie je zoekt…"
+                    placeholder={d.aiPromptPlaceholder}
                     className="min-w-0 flex-1 bg-transparent px-1 text-base outline-none placeholder:text-muted sm:text-sm"
                   />
                   <button
                     type="submit"
                     className="flex-none rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
                   >
-                    AI-zoeken
+                    {d.aiSearchBtn}
                   </button>
                 </form>
               )}
@@ -411,7 +420,7 @@ export function DiscoverClient({
                     </span>
                   ))}
                   <Link href="/discover" className="text-muted hover:text-foreground">
-                    wissen
+                    {d.clear}
                   </Link>
                 </div>
               )}
@@ -454,12 +463,12 @@ export function DiscoverClient({
                   href="/shortlist"
                   className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-medium transition hover:border-brand/50 hover:text-brand"
                 >
-                  Meerdere
+                  {d.multiple}
                 </Link>
               )}
               <button
                 onClick={() => setPanelOpen((v) => !v)}
-                aria-label="Lijst in- of uitklappen"
+                aria-label={d.listToggleAria}
                 className="rounded-full px-2 text-muted transition hover:text-foreground"
               >
                 {panelOpen ? "▾" : "▸"}
@@ -488,7 +497,7 @@ export function DiscoverClient({
             <span className="flex w-full items-center justify-between text-sm">
               <span className="font-medium">{countLabel}</span>
               <span className="text-xs text-muted">
-                {sheetOpen ? "verberg ▾" : "toon ▴"}
+                {sheetOpen ? d.hideList : d.showList}
               </span>
             </span>
           </button>
@@ -540,6 +549,8 @@ function ListCard({
   active: boolean
   onHover: () => void
 }) {
+  const { t } = useT()
+  const d = t.discover
   const initials = artist.stage_name
     .split(" ")
     .map((w) => w[0])
@@ -589,12 +600,15 @@ function ListCard({
             <Stars rating={artist.rating} count={artist.reviews_count} />
             {artist.total_bookings > 0 && (
               <span className="text-xs text-muted">
-                {artist.total_bookings}× geboekt
+                {d.bookedTimes.replace("{n}", String(artist.total_bookings))}
               </span>
             )}
             {artist.total_bookings === 0 && artist.instagram_followers > 0 && (
               <span className="text-xs text-muted">
-                {formatFollowers(artist.instagram_followers)} volgers
+                {d.followersCount.replace(
+                  "{n}",
+                  formatFollowers(artist.instagram_followers),
+                )}
               </span>
             )}
           </div>
@@ -609,9 +623,7 @@ function ListCard({
             <span
               className="flex-none font-semibold text-brand"
               title={
-                artist.province_gage != null
-                  ? "Totaalbedrag voor deze provincie, incl. reiskosten"
-                  : undefined
+                artist.province_gage != null ? d.provincePriceTitle : undefined
               }
             >
               {formatEuro(priceFor(artist))}
@@ -624,11 +636,12 @@ function ListCard({
 }
 
 function VerifiedBadge() {
+  const { t } = useT()
   return (
     <span
-      title="Geverifieerde DJ"
+      title={t.discover.verifiedTitle}
       className="inline-flex flex-none items-center text-brand"
-      aria-label="Geverifieerd"
+      aria-label={t.discover.verifiedAria}
     >
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
         <path d="m12 1 2.4 1.8 3 .1 1 2.8 2.4 1.7-.8 2.9.8 2.9-2.4 1.7-1 2.8-3 .1L12 23l-2.4-1.8-3-.1-1-2.8L3.2 16l.8-2.9-.8-2.9 2.4-1.7 1-2.8 3-.1L12 1Z" />
@@ -654,6 +667,8 @@ function ClubCard({
   active: boolean
   onHover: () => void
 }) {
+  const { t } = useT()
+  const d = t.discover
   const initials = club.name
     .split(" ")
     .map((w) => w[0])
@@ -698,10 +713,12 @@ function ClubCard({
           )}
           <div className="mt-auto flex items-center justify-between pt-1">
             <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">
-              Club
+              {d.clubBadge}
             </span>
             {club.capacity != null && (
-              <span className="text-xs text-muted">cap. {club.capacity}</span>
+              <span className="text-xs text-muted">
+                {d.capacity.replace("{n}", String(club.capacity))}
+              </span>
             )}
           </div>
         </div>
