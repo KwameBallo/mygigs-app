@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { RecoveryListener } from "@/components/recovery-listener";
+import { I18nProvider } from "@/components/i18n-provider";
+import { getI18n } from "@/lib/i18n";
 
 export const viewport: Viewport = {
   themeColor: "#0a0a0a",
@@ -32,19 +34,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { locale, t } = await getI18n();
   return (
     <html
-      lang="nl"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <RecoveryListener />
-        {children}
+        <I18nProvider locale={locale} dict={t}>
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

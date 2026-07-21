@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { createBooking } from "./actions"
 import { useEquipmentSelection } from "./equipment-selection"
+import { useT } from "@/components/i18n-provider"
 import {
   priceBreakdown,
   vatBreakdown,
@@ -17,9 +18,11 @@ type BookingType = "prive" | "zakelijk"
 // Boekingsduur in halve uren, van 1 tot 8 uur.
 const HOURS_OPTIONS = Array.from({ length: 15 }, (_, i) => 1 + i * 0.5)
 
-function formatHours(h: number) {
-  const label = Number.isInteger(h) ? String(h) : h.toString().replace(".", ",")
-  return `${label} uur`
+function formatHours(h: number, comma: boolean, unit: string) {
+  const s = Number.isInteger(h)
+    ? String(h)
+    : h.toString().replace(".", comma ? "," : ".")
+  return `${s} ${unit}`
 }
 
 export function BookForm({
@@ -39,6 +42,9 @@ export function BookForm({
     email: string | null
   }
 }) {
+  const { locale, t } = useT()
+  const b = t.booking
+  const fmtHours = (h: number) => formatHours(h, locale === "nl", b.hoursUnit)
   const [type, setType] = useState<BookingType>("prive")
   const [hours, setHours] = useState(2)
   const { selected, equipmentCost } = useEquipmentSelection()
@@ -57,12 +63,12 @@ export function BookForm({
   if (!isLoggedIn) {
     return (
       <div className="rounded-2xl border border-border bg-surface p-6">
-        <p className="text-sm text-muted">Log in om deze DJ te boeken.</p>
+        <p className="text-sm text-muted">{b.loginToBook}</p>
         <Link
           href={`/login?next=/artists/${artistId}`}
           className="mt-4 inline-block rounded-full bg-brand px-6 py-2.5 font-medium text-black transition hover:bg-brand-strong"
         >
-          Inloggen om te boeken
+          {b.loginButton}
         </Link>
       </div>
     )
@@ -74,17 +80,10 @@ export function BookForm({
     return (
       <div className="rounded-2xl border border-border bg-surface p-6">
         <h2 className="text-lg font-semibold tracking-tight">
-          Bevestig eerst je e-mailadres
+          {b.confirmEmailTitle}
         </h2>
-        <p className="mt-2 text-sm text-muted">
-          We hebben je een bevestigingsmail gestuurd. Klik op de link in die
-          mail om je account te activeren — daarna kun je deze DJ boeken. Zo
-          weet de DJ zeker dat elke aanvraag echt is.
-        </p>
-        <p className="mt-3 text-xs text-muted">
-          Geen mail ontvangen? Check je spam, of log opnieuw in om een nieuwe
-          bevestigingsmail te ontvangen.
-        </p>
+        <p className="mt-2 text-sm text-muted">{b.confirmEmailBody}</p>
+        <p className="mt-3 text-xs text-muted">{b.confirmEmailSpam}</p>
       </div>
     )
   }
@@ -99,23 +98,23 @@ export function BookForm({
       {[...selected].map((item) => (
         <input key={item} type="hidden" name="dj_equipment" value={item} />
       ))}
-      <h2 className="text-lg font-semibold tracking-tight">Boek deze DJ</h2>
+      <h2 className="text-lg font-semibold tracking-tight">{b.title}</h2>
 
       {/* Privé of zakelijk */}
       <div>
-        <span className="text-sm font-medium">Type boeking</span>
+        <span className="text-sm font-medium">{b.typeLabel}</span>
         <div className="mt-1.5 grid grid-cols-2 gap-2">
           <TypeOption
             value="prive"
-            title="Privé"
-            desc="Bruiloft, verjaardag, feest"
+            title={b.typePrivateTitle}
+            desc={b.typePrivateDesc}
             active={type === "prive"}
             onSelect={setType}
           />
           <TypeOption
             value="zakelijk"
-            title="Zakelijk"
-            desc="Bedrijfsfeest, congres, opening"
+            title={b.typeBusinessTitle}
+            desc={b.typeBusinessDesc}
             active={type === "zakelijk"}
             onSelect={setType}
           />
@@ -124,43 +123,45 @@ export function BookForm({
       <input type="hidden" name="booking_type" value={type} />
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Gelegenheid</span>
+        <span className="text-sm font-medium">{b.occasionLabel}</span>
         <input
           name="occasion"
           type="text"
           placeholder={
-            type === "zakelijk" ? "Bijv. bedrijfsfeest" : "Bijv. verjaardag"
+            type === "zakelijk"
+              ? b.occasionPlaceholderBusiness
+              : b.occasionPlaceholderPrivate
           }
           className="input"
         />
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Datum</span>
+        <span className="text-sm font-medium">{b.dateLabel}</span>
         <input name="event_date" type="date" required className="input" />
       </label>
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Stad</span>
+        <span className="text-sm font-medium">{b.cityLabel}</span>
         <input
           name="city"
           type="text"
-          placeholder="Amsterdam"
+          placeholder={b.cityPlaceholder}
           className="input"
         />
       </label>
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Locatie / venue</span>
+        <span className="text-sm font-medium">{b.venueLabel}</span>
         <input
           name="venue_name"
           type="text"
-          placeholder="Naam van de zaal"
+          placeholder={b.venuePlaceholder}
           className="input"
         />
       </label>
 
       {/* Duur — bepaalt de gage via het uurtarief. */}
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Hoe lang draait de DJ?</span>
+        <span className="text-sm font-medium">{b.durationLabel}</span>
         <select
           value={hours}
           onChange={(e) => setHours(Number(e.target.value))}
@@ -168,13 +169,12 @@ export function BookForm({
         >
           {HOURS_OPTIONS.map((h) => (
             <option key={h} value={h}>
-              {formatHours(h)}
+              {fmtHours(h)}
             </option>
           ))}
         </select>
         <span className="text-xs text-muted">
-          Tarief is per uur ({formatEuro(baseGage)}/uur). Langer draaien = hogere
-          gage.
+          {b.hourlyNote.replace("{rate}", formatEuro(baseGage))}
         </span>
       </label>
       <input type="hidden" name="hours" value={hours} />
@@ -182,20 +182,20 @@ export function BookForm({
       {/* Zakelijke factuurgegevens */}
       {type === "zakelijk" && (
         <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-2 p-4">
-          <p className="text-sm font-medium">Factuurgegevens</p>
+          <p className="text-sm font-medium">{b.invoiceTitle}</p>
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs text-muted">Bedrijfsnaam</span>
+            <span className="text-xs text-muted">{b.companyLabel}</span>
             <input
               name="company_name"
               type="text"
               defaultValue={company?.name ?? ""}
-              placeholder="Bedrijf B.V."
+              placeholder={b.companyPlaceholder}
               className="input h-10"
             />
           </label>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs text-muted">BTW-nummer</span>
+              <span className="text-xs text-muted">{b.vatLabel}</span>
               <input
                 name="vat_number"
                 type="text"
@@ -205,21 +205,21 @@ export function BookForm({
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs text-muted">Factuur-e-mail</span>
+              <span className="text-xs text-muted">{b.invoiceEmailLabel}</span>
               <input
                 name="invoice_email"
                 type="email"
                 defaultValue={company?.email ?? ""}
-                placeholder="factuur@bedrijf.nl"
+                placeholder={b.invoiceEmailPlaceholder}
                 className="input h-10"
               />
             </label>
           </div>
           {(company?.name || company?.vat || company?.email) && (
             <p className="text-xs text-muted">
-              Vooraf ingevuld vanuit je{" "}
+              {b.prefilledPre}
               <Link href="/settings" className="text-brand hover:underline">
-                bedrijfsgegevens
+                {b.prefilledLink}
               </Link>
               .
             </p>
@@ -228,11 +228,11 @@ export function BookForm({
       )}
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Bericht (optioneel)</span>
+        <span className="text-sm font-medium">{b.messageLabel}</span>
         <textarea
           name="message"
           rows={3}
-          placeholder="Vertel over je event..."
+          placeholder={b.messagePlaceholder}
           className="input resize-none"
         />
       </label>
@@ -241,72 +241,52 @@ export function BookForm({
         {type === "zakelijk" ? (
           <>
             <Row
-              label={`Gage · ${formatHours(hours)} (excl. btw)`}
+              label={`${b.gage} · ${fmtHours(hours)} ${b.gageExcl}`}
               value={formatEuro(gage)}
             />
             {equipment > 0 && (
-              <Row
-                label="Apparatuur (excl. btw)"
-                value={formatEuro(equipment)}
-              />
+              <Row label={b.equipmentExcl} value={formatEuro(equipment)} />
             )}
             <div className="my-2 border-t border-border" />
+            <Row label={b.subtotalExcl} value={formatEuro(netZak)} strong />
             <Row
-              label="Subtotaal (excl. btw)"
-              value={formatEuro(netZak)}
-              strong
-            />
-            <Row
-              label={`Btw (${formatPercent(VAT_RATE)})`}
+              label={`${b.vatRow} (${formatPercent(VAT_RATE)})`}
               value={formatEuro(vatZak)}
             />
-            <Row label="Totaal (incl. btw)" value={formatEuro(grossZak)} />
-            <p className="mt-2 text-xs text-muted">
-              Zakelijk: prijzen zijn exclusief btw; de btw staat apart op de
-              factuur en vorder je terug.
-            </p>
+            <Row label={b.totalIncl} value={formatEuro(grossZak)} />
+            <p className="mt-2 text-xs text-muted">{b.businessNote}</p>
           </>
         ) : (
           <>
-            <Row label={`Gage · ${formatHours(hours)}`} value={formatEuro(gage)} />
+            <Row
+              label={`${b.gage} · ${fmtHours(hours)}`}
+              value={formatEuro(gage)}
+            />
             {equipment > 0 && (
-              <Row
-                label="Apparatuur (huur van DJ)"
-                value={formatEuro(equipment)}
-              />
+              <Row label={b.equipmentRent} value={formatEuro(equipment)} />
             )}
             <div className="my-2 border-t border-border" />
+            <Row label={b.youPayIncl} value={formatEuro(grossIncl)} strong />
             <Row
-              label="Jij betaalt (incl. btw)"
-              value={formatEuro(grossIncl)}
-              strong
-            />
-            <Row
-              label={`waarvan btw (${formatPercent(VAT_RATE)})`}
+              label={`${b.ofWhichVat} (${formatPercent(VAT_RATE)})`}
               value={formatEuro(vatIncl)}
             />
-            <p className="mt-2 text-xs text-muted">
-              Particulier: dit is de totaalprijs, inclusief btw.
-            </p>
+            <p className="mt-2 text-xs text-muted">{b.privateNote}</p>
           </>
         )}
         {equipment > 0 && (
-          <p className="mt-2 text-xs text-muted">
-            De DJ neemt eigen geluid/licht mee — apparatuurkosten inbegrepen.
-          </p>
+          <p className="mt-2 text-xs text-muted">{b.equipmentNote}</p>
         )}
-        <p className="mt-2 text-xs text-muted">Je betaalt pas na acceptatie.</p>
+        <p className="mt-2 text-xs text-muted">{b.payAfterAccept}</p>
       </div>
 
       <button
         type="submit"
         className="rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong"
       >
-        Aanvraag versturen
+        {b.submit}
       </button>
-      <p className="text-center text-xs text-muted">
-        Je betaalt pas na acceptatie. Geld staat veilig in escrow.
-      </p>
+      <p className="text-center text-xs text-muted">{b.escrowNote}</p>
     </form>
   )
 }
