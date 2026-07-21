@@ -65,6 +65,27 @@ export async function toggleAvailability(date: string) {
   revalidatePath("/dashboard")
 }
 
+// Beschikbare tijden (van/tot) voor een dag opslaan. Leeg = hele dag.
+export async function saveAvailabilityTime(formData: FormData) {
+  const date = String(formData.get("date") ?? "")
+  const start = String(formData.get("start") ?? "").trim() || null
+  const end = String(formData.get("end") ?? "").trim() || null
+  if (!date) return
+
+  const artistId = await myArtistId()
+  if (!artistId) return
+
+  const supabase = await createClient()
+  await supabase
+    .from("artist_availability")
+    .update({ start_time: start, end_time: end })
+    .eq("artist_id", artistId)
+    .eq("date", date)
+    .eq("status", "available")
+
+  revalidatePath("/availability")
+}
+
 export async function removeAvailability(formData: FormData) {
   const id = String(formData.get("id") ?? "")
   if (!id) return

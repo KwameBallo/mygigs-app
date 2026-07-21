@@ -76,18 +76,24 @@ export type Database = {
           date: string
           id: string
           status: Database["public"]["Enums"]["availability_status"]
+          start_time: string | null
+          end_time: string | null
         }
         Insert: {
           artist_id: string
           date: string
           id?: string
           status?: Database["public"]["Enums"]["availability_status"]
+          start_time?: string | null
+          end_time?: string | null
         }
         Update: {
           artist_id?: string
           date?: string
           id?: string
           status?: Database["public"]["Enums"]["availability_status"]
+          start_time?: string | null
+          end_time?: string | null
         }
         Relationships: [
           {

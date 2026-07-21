@@ -1,6 +1,8 @@
+import { redirect } from "next/navigation"
 import { DiscoverClient } from "./discover-client"
 import { getArtists, getGenres } from "@/lib/data/artists"
 import { getClubs } from "@/lib/data/events"
+import { getProfile } from "@/lib/auth"
 
 type SearchParams = Promise<{
   q?: string
@@ -22,6 +24,12 @@ export default async function DiscoverPage({
 }: {
   searchParams: SearchParams
 }) {
+  // DJ's browsen niet op Ontdek — stuur ze naar hun dashboard.
+  const profile = await getProfile()
+  if (profile?.role === "artist" || profile?.role === "both") {
+    redirect("/dashboard")
+  }
+
   const {
     q,
     genre,
