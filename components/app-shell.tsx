@@ -108,12 +108,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       title: "Algemeen",
       items: [items.events, items.messages, items.suppliers],
     })
-    // "Als klant" — de DJ kan zelf ook DJ's boeken; strikt gescheiden van de
-    // binnenkomende aanvragen op het Dashboard.
-    sections.push({
-      title: "Als klant",
-      items: [items.bookings],
-    })
+    // Een DJ-account boekt zelf geen DJ's (geen "Als klant"-sectie).
     sections.push({
       title: "Organiseren",
       items: [items.manageEvents, items.advertise],

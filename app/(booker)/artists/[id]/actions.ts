@@ -49,6 +49,16 @@ export async function createBooking(formData: FormData) {
     redirect(`/artists/${artistId}?error=confirm-email`)
   }
 
+  // Een DJ-account boekt zelf geen DJ's.
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle()
+  if (me?.role === "artist" || me?.role === "both") {
+    redirect("/dashboard")
+  }
+
   const { data: artist } = await supabase
     .from("artists")
     .select("base_gage, equipment_prices")

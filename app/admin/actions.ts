@@ -36,8 +36,8 @@ export async function approveDjApplication(formData: FormData) {
       reviewed_at: new Date().toISOString(),
     })
     .eq("user_id", userId)
-  // Rol naar 'both': DJ + kan zelf blijven boeken.
-  await service.from("profiles").update({ role: "both" }).eq("id", userId)
+  // Rol naar 'artist': een DJ-account boekt zelf geen DJ's.
+  await service.from("profiles").update({ role: "artist" }).eq("id", userId)
 
   await logAudit({
     actorId: admin.id,
