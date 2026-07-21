@@ -3,14 +3,18 @@ import { redirect } from "next/navigation"
 import { Stars } from "@/components/stars"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
+import { getI18n } from "@/lib/i18n"
 import { BookingsBoard, type DashBooking } from "./bookings-board"
 
 // Responstijd menselijk leesbaar.
-function formatResponse(minutes: number) {
-  if (minutes < 60) return `${minutes} min`
-  if (minutes < 60 * 24) return `${Math.round(minutes / 60)} uur`
+function formatResponse(
+  minutes: number,
+  u: { min: string; hour: string; day: string; days: string },
+) {
+  if (minutes < 60) return `${minutes} ${u.min}`
+  if (minutes < 60 * 24) return `${Math.round(minutes / 60)} ${u.hour}`
   const d = Math.round(minutes / (60 * 24))
-  return `${d} ${d === 1 ? "dag" : "dagen"}`
+  return `${d} ${d === 1 ? u.day : u.days}`
 }
 
 export default async function DashboardPage() {
@@ -20,6 +24,9 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser()
 
   if (!user) redirect("/login?next=/dashboard")
+
+  const { t } = await getI18n()
+  const d = t.dashboard
 
   const { data: artist } = await supabase
     .from("artists")
@@ -31,17 +38,14 @@ export default async function DashboardPage() {
     return (
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">
-          Maak je DJ-profiel
+          {d.noProfileTitle}
         </h1>
-        <p className="mt-3 text-muted">
-          Je account heeft nog geen gekoppeld DJ-profiel. Zodra dit is
-          aangemaakt, zie je hier je aanvragen, agenda en verdiensten.
-        </p>
+        <p className="mt-3 text-muted">{d.noProfileBody}</p>
         <Link
           href="/profile"
           className="mt-8 inline-block rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong"
         >
-          Profiel aanmaken
+          {d.createProfile}
         </Link>
       </main>
     )
@@ -105,12 +109,12 @@ export default async function DashboardPage() {
     artist.mixcloud_url
   )
   const checks = [
-    { label: "Profielfoto", done: !!artist.avatar_url, href: "/profile" },
-    { label: "Bio", done: !!artist.bio, href: "/profile" },
-    { label: "Gage instellen", done: artist.base_gage > 0, href: "/profile" },
-    { label: "Genre", done: artist.genre_id != null, href: "/profile" },
-    { label: "Thuisstad", done: !!artist.home_city, href: "/profile" },
-    { label: "Social link", done: hasSocial, href: "/profile" },
+    { label: d.checkPhoto, done: !!artist.avatar_url, href: "/profile" },
+    { label: d.checkBio, done: !!artist.bio, href: "/profile" },
+    { label: d.checkGage, done: artist.base_gage > 0, href: "/profile" },
+    { label: d.checkGenre, done: artist.genre_id != null, href: "/profile" },
+    { label: d.checkCity, done: !!artist.home_city, href: "/profile" },
+    { label: d.checkSocial, done: hasSocial, href: "/profile" },
   ]
   const doneCount = checks.filter((c) => c.done).length
   const pct = Math.round((doneCount / checks.length) * 100)
@@ -131,7 +135,7 @@ export default async function DashboardPage() {
           href={`/artists/${artist.id}`}
           className="rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium transition hover:border-brand/50"
         >
-          Bekijk publiek profiel
+          {d.viewPublic}
         </Link>
       </div>
 
@@ -140,16 +144,16 @@ export default async function DashboardPage() {
         <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/5 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="font-semibold">Maak je profiel compleet</p>
+              <p className="font-semibold">{d.completeTitle}</p>
               <p className="mt-0.5 text-sm text-muted">
-                Complete profielen worden vaker geboekt. Je bent op {pct}%.
+                {d.completeBody.replace("{pct}", String(pct))}
               </p>
             </div>
             <Link
               href="/profile"
               className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
             >
-              Profiel afmaken
+              {d.finishProfile}
             </Link>
           </div>
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2">
@@ -175,18 +179,23 @@ export default async function DashboardPage() {
 
       {/* Kerncijfers */}
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Stat label="Verdiend" value={formatEuro(earnings)} />
+        <Stat label={d.statEarned} value={formatEuro(earnings)} />
         <Stat
-          label="Open aanvragen"
+          label={d.statOpen}
           value={String(pending.length)}
           accent={pending.length > 0}
         />
-        <Stat label="Boekingen (30d)" value={String(artist.bookings_30d)} />
+        <Stat label={d.statBookings30} value={String(artist.bookings_30d)} />
         <Stat
-          label="Reactietijd"
+          label={d.statResponse}
           value={
             artist.response_minutes != null
-              ? formatResponse(artist.response_minutes)
+              ? formatResponse(artist.response_minutes, {
+                  min: d.respMin,
+                  hour: d.respHour,
+                  day: d.respDay,
+                  days: d.respDays,
+                })
               : "—"
           }
         />
@@ -194,18 +203,20 @@ export default async function DashboardPage() {
 
       {/* Funnel: aanvragen → geaccepteerd → geboekt */}
       <div className="mt-4 rounded-2xl border border-border bg-surface p-5">
-        <p className="text-sm font-semibold text-muted">Jouw conversie</p>
+        <p className="text-sm font-semibold text-muted">{d.conversion}</p>
         <div className="mt-3 flex items-center justify-between gap-2 text-center">
-          <FunnelStep label="Aanvragen" value={list.length} />
+          <FunnelStep label={d.funnelRequests} value={list.length} />
           <Arrow />
-          <FunnelStep label="Geaccepteerd" value={accepted.length} />
+          <FunnelStep label={d.funnelAccepted} value={accepted.length} />
           <Arrow />
-          <FunnelStep label="Geboekt" value={booked.length} accent />
+          <FunnelStep label={d.funnelBooked} value={booked.length} accent />
         </div>
         {list.length > 0 && (
           <p className="mt-3 text-xs text-muted">
-            Je zet {Math.round((booked.length / list.length) * 100)}% van je
-            aanvragen om in een betaalde boeking.
+            {d.conversionText.replace(
+              "{pct}",
+              String(Math.round((booked.length / list.length) * 100)),
+            )}
           </p>
         )}
       </div>
@@ -214,24 +225,24 @@ export default async function DashboardPage() {
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         {(openDays ?? 0) === 0 ? (
           <NudgeCard
-            title="Zet je agenda open"
-            body="Je hebt geen beschikbare dagen gemarkeerd. Boekers vinden je makkelijker als je agenda gevuld is."
-            cta="Naar agenda"
+            title={d.nudgeAgendaEmptyTitle}
+            body={d.nudgeAgendaEmptyBody}
+            cta={d.nudgeAgendaCta}
             href="/availability"
           />
         ) : (
           <NudgeCard
-            title={`${openDays} dagen beschikbaar`}
-            body="Je agenda staat open. Houd hem actueel zodat boekers de juiste data zien."
-            cta="Beheer agenda"
+            title={d.nudgeAgendaFullTitle.replace("{n}", String(openDays))}
+            body={d.nudgeAgendaFullBody}
+            cta={d.nudgeAgendaManage}
             href="/availability"
             soft
           />
         )}
         <NudgeCard
-          title="Val extra op"
-          body="Promoot jezelf met een banner op de ontdek-pagina en de agenda. Je betaalt per week, los van je boekingen."
-          cta="Plaats advertentie"
+          title={d.nudgeAdTitle}
+          body={d.nudgeAdBody}
+          cta={d.nudgeAdCta}
           href="/advertise"
         />
       </div>

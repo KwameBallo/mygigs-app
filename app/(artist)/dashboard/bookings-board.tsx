@@ -6,6 +6,7 @@ import { formatEuro } from "@/lib/utils/pricing"
 import type { Database } from "@/types/database"
 import { updateBookingStatus, toggleBookingPublic } from "./actions"
 import { openBookingChat } from "@/lib/actions/chat"
+import { useT } from "@/components/i18n-provider"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
 
@@ -46,11 +47,14 @@ function daysAgo(iso: string) {
   return Math.floor(ms / (1000 * 60 * 60 * 24))
 }
 
-function urgencyLabel(iso: string) {
+function urgencyLabel(
+  iso: string,
+  labels: { new: string; one: string; days: string },
+) {
   const d = daysAgo(iso)
-  if (d <= 0) return { text: "Nieuw vandaag", urgent: false }
-  if (d === 1) return { text: "1 dag open", urgent: false }
-  return { text: `${d} dagen open`, urgent: d >= 3 }
+  if (d <= 0) return { text: labels.new, urgent: false }
+  if (d === 1) return { text: labels.one, urgent: false }
+  return { text: labels.days.replace("{d}", String(d)), urgent: d >= 3 }
 }
 
 // "20:00:00" → "20:00". Geeft null terug voor lege/ongeldige tijden.
@@ -69,6 +73,8 @@ function timeRange(start: string | null, end: string | null) {
 }
 
 export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
+  const { t } = useT()
+  const d = t.dashboard
   const open = bookings
     .filter((b) => OPEN.includes(b.status))
     .sort(
@@ -81,9 +87,9 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
   const [tab, setTab] = useState<Tab>(open.length > 0 ? "open" : "confirmed")
 
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: "open", label: "Open", count: open.length },
-    { key: "confirmed", label: "Bevestigd", count: confirmed.length },
-    { key: "done", label: "Afgerond", count: done.length },
+    { key: "open", label: d.tabOpen, count: open.length },
+    { key: "confirmed", label: d.tabConfirmed, count: confirmed.length },
+    { key: "done", label: d.tabDone, count: done.length },
   ]
 
   const list = tab === "open" ? open : tab === "confirmed" ? confirmed : done
@@ -117,10 +123,10 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
       {list.length === 0 ? (
         <p className="mt-4 rounded-2xl border border-dashed border-border bg-surface p-10 text-center text-sm text-muted">
           {tab === "open"
-            ? "Geen openstaande aanvragen. Zodra een boeker je boekt, verschijnt het hier."
+            ? d.emptyOpen
             : tab === "confirmed"
-              ? "Nog geen bevestigde boekingen."
-              : "Nog geen afgeronde boekingen."}
+              ? d.emptyConfirmed
+              : d.emptyDone}
         </p>
       ) : (
         <div className="mt-4 flex flex-col gap-3">
@@ -134,20 +140,33 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
 }
 
 function BookingCard({ booking: b }: { booking: DashBooking }) {
+  const { locale, t } = useT()
+  const d = t.dashboard
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
   const isPending = b.status === "pending"
   // AVG/dataminimalisatie: de naam van de klant komt pas vrij zodra er een
   // grondslag is — d.w.z. de aanvraag is geaccepteerd. Daarvóór blijft de
   // klant anoniem voor de DJ.
   const contactUnlocked = ["accepted", "paid", "completed"].includes(b.status)
-  const u = isPending ? urgencyLabel(b.created_at) : null
+  const u = isPending
+    ? urgencyLabel(b.created_at, {
+        new: d.urgencyNew,
+        one: d.urgency1,
+        days: d.urgencyDays,
+      })
+    : null
   const [open, setOpen] = useState(false)
-  const eventDate = new Date(b.event_date).toLocaleDateString("nl-NL", {
+  const eventDate = new Date(b.event_date).toLocaleDateString(dateLocale, {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   })
-  const typeLabel = b.booking_type === "zakelijk" ? "Zakelijk" : "Privé"
+  const typeLabel = b.booking_type === "zakelijk" ? d.business : d.private
+  const durationVal = `${String(b.hours).replace(
+    ".",
+    locale === "nl" ? "," : ".",
+  )} ${d.hoursUnit}`
 
   return (
     <div
@@ -194,7 +213,7 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
             {formatEuro(b.gage)}
           </span>
           <span className="flex items-center gap-1 text-xs text-muted">
-            {open ? "Minder" : "Details"}
+            {open ? d.less : d.details}
             <svg
               viewBox="0 0 12 12"
               className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
@@ -213,29 +232,29 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
       {open && (
         <div className="border-t border-border px-5 pb-5 pt-4">
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-            <DetailRow label="Type" value={typeLabel} />
-            <DetailRow label="Gelegenheid" value={b.occasion} />
-            <DetailRow label="Datum" value={eventDate} />
+            <DetailRow label={d.rowType} value={typeLabel} />
+            <DetailRow label={d.rowOccasion} value={b.occasion} />
+            <DetailRow label={d.rowDate} value={eventDate} />
+            <DetailRow label={d.rowDuration} value={durationVal} />
             <DetailRow
-              label="Duur"
-              value={`${String(b.hours).replace(".", ",")} uur`}
+              label={d.rowTime}
+              value={timeRange(b.start_time, b.end_time)}
             />
-            <DetailRow label="Tijd" value={timeRange(b.start_time, b.end_time)} />
-            <DetailRow label="Stad" value={b.city} />
-            <DetailRow label="Locatie" value={b.venue_name} />
-            <DetailRow label="Adres" value={b.address} />
+            <DetailRow label={d.rowCity} value={b.city} />
+            <DetailRow label={d.rowVenue} value={b.venue_name} />
+            <DetailRow label={d.rowAddress} value={b.address} />
             {contactUnlocked ? (
               <DetailRow
-                label={b.booking_type === "zakelijk" ? "Bedrijf" : "Klant"}
+                label={b.booking_type === "zakelijk" ? d.rowCompany : d.rowClient}
                 value={b.company_name ?? b.booker_name}
               />
             ) : (
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted">
-                  Klant
+                  {d.rowClient}
                 </dt>
                 <dd className="mt-0.5 text-sm text-muted">
-                  Naam zichtbaar na acceptatie
+                  {d.nameAfterAccept}
                 </dd>
               </div>
             )}
@@ -244,7 +263,7 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
           {b.message && (
             <div className="mt-4">
               <p className="text-xs font-medium uppercase tracking-wide text-muted">
-                Bericht van de klant
+                {d.clientMessage}
               </p>
               <p className="mt-1 rounded-xl border border-border bg-surface-2 p-3 text-sm">
                 “{b.message}”
@@ -255,13 +274,13 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
           {/* Uitbetaling: wat de DJ overhoudt (gage) vs. wat de klant betaalt. */}
           <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4 text-sm">
             <div className="flex items-center justify-between py-0.5">
-              <span className="font-medium">Jouw gage</span>
+              <span className="font-medium">{d.yourGage}</span>
               <span className="font-semibold text-brand">
                 {formatEuro(b.gage)}
               </span>
             </div>
             <div className="flex items-center justify-between py-0.5 text-muted">
-              <span>Klant betaalt (incl. servicekosten &amp; btw)</span>
+              <span>{d.clientPays}</span>
               <span>{formatEuro(b.total)}</span>
             </div>
           </div>
@@ -280,8 +299,7 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
                 <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
                 <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" strokeLinecap="round" />
               </svg>
-              Om privacyredenen (AVG) zie je de naam van de klant pas nadat je
-              accepteert. Verdere afstemming loopt daarna veilig via de chat.
+              {d.avgHint}
             </p>
           )}
         </div>
@@ -302,7 +320,7 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
                 type="submit"
                 className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
               >
-                Accepteer
+                {d.accept}
               </button>
             </form>
             <form action={updateBookingStatus}>
@@ -312,7 +330,7 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
                 type="submit"
                 className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-red-500/50"
               >
-                Weiger
+                {d.decline}
               </button>
             </form>
           </>
@@ -325,7 +343,7 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
               type="submit"
               className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
             >
-              Chat met klant
+              {d.chatClient}
             </button>
           </form>
         )}
@@ -347,7 +365,7 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
                   b.is_public ? "bg-brand" : "bg-muted"
                 }`}
               />
-              {b.is_public ? "Zichtbaar voor fans" : "Toon op publiek profiel"}
+              {b.is_public ? d.visibleFans : d.showPublic}
             </button>
           </form>
         )}
