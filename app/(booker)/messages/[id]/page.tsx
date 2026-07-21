@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { getI18n } from "@/lib/i18n"
 import { sendMessage } from "./actions"
 import { MarkRead } from "./mark-read"
 
@@ -19,6 +20,9 @@ export default async function ThreadPage({
   } = await supabase.auth.getUser()
 
   if (!user) redirect(`/login?next=/messages/${id}`)
+
+  const { t } = await getI18n()
+  const mt = t.messages
 
   const { data: conv } = await supabase
     .from("conversations")
@@ -42,8 +46,8 @@ export default async function ThreadPage({
   if (!allowed) notFound()
 
   const otherName = iAmArtist
-    ? (booker?.full_name ?? "Boeker")
-    : (artist?.stage_name ?? "DJ")
+    ? (booker?.full_name ?? mt.fallbackBooker)
+    : (artist?.stage_name ?? mt.fallbackDj)
 
   const { data: messages } = await supabase
     .from("messages")
@@ -68,23 +72,18 @@ export default async function ThreadPage({
 
       {warn === "contact" && (
         <div className="mt-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-          Je bericht is niet verstuurd. Het delen van telefoonnummers, e-mail of
-          andere contactgegevens is niet toegestaan. Boekingen en betalingen
-          verlopen via MyGigs. Dit gesprek is gemarkeerd voor controle.
+          {mt.warnContact}
         </div>
       )}
       {conv.flagged && warn !== "contact" && (
         <div className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
-          Dit gesprek is gemarkeerd: er is geprobeerd contactgegevens te delen.
-          Houd communicatie en betaling binnen MyGigs.
+          {mt.flaggedNotice}
         </div>
       )}
 
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto py-5">
         {list.length === 0 ? (
-          <p className="m-auto text-sm text-muted">
-            Begin het gesprek. Stuur je eerste bericht.
-          </p>
+          <p className="m-auto text-sm text-muted">{mt.startConversation}</p>
         ) : (
           list.map((m) => {
             const mine = m.sender_id === user.id
@@ -113,20 +112,17 @@ export default async function ThreadPage({
           name="body"
           required
           autoComplete="off"
-          placeholder="Typ een bericht..."
+          placeholder={mt.inputPlaceholder}
           className="input h-11 flex-1"
         />
         <button
           type="submit"
           className="h-11 rounded-full bg-brand px-5 font-medium text-black transition hover:bg-brand-strong"
         >
-          Stuur
+          {mt.send}
         </button>
       </form>
-      <p className="pb-3 text-center text-[11px] text-muted">
-        Houd het netjes en binnen MyGigs. Telefoonnummers, e-mail of andere
-        contactgegevens delen is niet toegestaan.
-      </p>
+      <p className="pb-3 text-center text-[11px] text-muted">{mt.footerNote}</p>
     </div>
   )
 }

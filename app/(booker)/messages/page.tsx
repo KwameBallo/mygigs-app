@@ -1,15 +1,16 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { getI18n } from "@/lib/i18n"
 import { getConversations } from "@/lib/data/messages"
 
-function timeAgo(iso: string) {
+function timeAgo(iso: string, now: string, hourUnit: string) {
   const diff = Date.now() - new Date(iso).getTime()
   const min = Math.round(diff / 60000)
-  if (min < 1) return "nu"
+  if (min < 1) return now
   if (min < 60) return `${min}m`
   const hr = Math.round(min / 60)
-  if (hr < 24) return `${hr}u`
+  if (hr < 24) return `${hr}${hourUnit}`
   const d = Math.round(hr / 24)
   return `${d}d`
 }
@@ -22,27 +23,26 @@ export default async function MessagesPage() {
 
   if (!user) redirect("/login?next=/messages")
 
+  const { t } = await getI18n()
+  const m = t.messages
   const conversations = await getConversations(user.id)
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Berichten</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{m.title}</h1>
 
       {conversations.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
-          <p className="text-lg font-medium">Nog geen gesprekken</p>
-          <p className="mt-2 text-sm text-muted">
-            Zodra je een DJ boekt of berichten ontvangt, verschijnen ze
-            hier.
-          </p>
+          <p className="text-lg font-medium">{m.emptyTitle}</p>
+          <p className="mt-2 text-sm text-muted">{m.emptyBody}</p>
         </div>
       ) : (
         <div className="mt-8 flex flex-col gap-2">
           {conversations.map((c) => {
             const iAmArtist = c.booker_id !== user.id
             const name = iAmArtist
-              ? (c.booker?.full_name ?? "Boeker")
-              : (c.artist?.stage_name ?? "DJ")
+              ? (c.booker?.full_name ?? m.fallbackBooker)
+              : (c.artist?.stage_name ?? m.fallbackDj)
             const initials = name
               .split(" ")
               .map((w) => w[0])
@@ -72,12 +72,12 @@ export default async function MessagesPage() {
                     <h3 className="truncate font-semibold">{name}</h3>
                     {c.lastMessage && (
                       <span className="flex-none text-xs text-muted">
-                        {timeAgo(c.lastMessage.created_at)}
+                        {timeAgo(c.lastMessage.created_at, m.timeNow, m.timeHour)}
                       </span>
                     )}
                   </div>
                   <p className="truncate text-sm text-muted">
-                    {c.lastMessage?.body ?? "Nog geen berichten"}
+                    {c.lastMessage?.body ?? m.noMessages}
                   </p>
                 </div>
                 {c.unread > 0 && (

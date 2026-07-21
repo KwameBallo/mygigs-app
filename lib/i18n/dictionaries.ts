@@ -463,6 +463,26 @@ const nl = {
     syncSkippedTail: " Overgeslagen: {list}.",
     syncDoneMsg: "Gesynchroniseerd: {list}.{tail}",
   },
+  messages: {
+    title: "Berichten",
+    emptyTitle: "Nog geen gesprekken",
+    emptyBody:
+      "Zodra je een DJ boekt of berichten ontvangt, verschijnen ze hier.",
+    fallbackBooker: "Boeker",
+    fallbackDj: "DJ",
+    noMessages: "Nog geen berichten",
+    timeNow: "nu",
+    timeHour: "u",
+    warnContact:
+      "Je bericht is niet verstuurd. Het delen van telefoonnummers, e-mail of andere contactgegevens is niet toegestaan. Boekingen en betalingen verlopen via MyGigs. Dit gesprek is gemarkeerd voor controle.",
+    flaggedNotice:
+      "Dit gesprek is gemarkeerd: er is geprobeerd contactgegevens te delen. Houd communicatie en betaling binnen MyGigs.",
+    startConversation: "Begin het gesprek. Stuur je eerste bericht.",
+    inputPlaceholder: "Typ een bericht...",
+    send: "Stuur",
+    footerNote:
+      "Houd het netjes en binnen MyGigs. Telefoonnummers, e-mail of andere contactgegevens delen is niet toegestaan.",
+  },
 }
 
 const en: typeof nl = {
@@ -922,6 +942,26 @@ const en: typeof nl = {
     syncNothingNoLinks: "Enter your Spotify or Instagram link first.",
     syncSkippedTail: " Skipped: {list}.",
     syncDoneMsg: "Synced: {list}.{tail}",
+  },
+  messages: {
+    title: "Messages",
+    emptyTitle: "No conversations yet",
+    emptyBody:
+      "As soon as you book a DJ or receive messages, they'll appear here.",
+    fallbackBooker: "Booker",
+    fallbackDj: "DJ",
+    noMessages: "No messages yet",
+    timeNow: "now",
+    timeHour: "h",
+    warnContact:
+      "Your message was not sent. Sharing phone numbers, email or other contact details is not allowed. Bookings and payments go through MyGigs. This conversation has been flagged for review.",
+    flaggedNotice:
+      "This conversation is flagged: an attempt was made to share contact details. Keep communication and payment within MyGigs.",
+    startConversation: "Start the conversation. Send your first message.",
+    inputPlaceholder: "Type a message...",
+    send: "Send",
+    footerNote:
+      "Keep it clean and within MyGigs. Sharing phone numbers, email or other contact details is not allowed.",
   },
 }
 
