@@ -22,11 +22,7 @@ export async function signIn(formData: FormData) {
     // Ruwe fout alleen server-side loggen; gebruiker krijgt een generieke
     // melding (voorkomt user-enumeratie en info-disclosure).
     console.error("signIn failed:", error.message)
-    redirect(
-      `/login?error=${encodeURIComponent(
-        "Inloggen mislukt. Controleer je e-mailadres en wachtwoord.",
-      )}`,
-    )
+    redirect("/login?error=signin")
   }
 
   const profile = await supabase.auth
@@ -72,15 +68,12 @@ export async function signUp(formData: FormData) {
 
   // Beide wachtwoorden moeten gelijk zijn (voorkomt typefouten).
   if (password !== passwordConfirm) {
-    signupError("De wachtwoorden komen niet overeen.", isDj)
+    signupError("password-mismatch", isDj)
   }
 
   // AVG-grondslag: zonder akkoord op voorwaarden + privacybeleid geen account.
   if (!acceptedTerms) {
-    signupError(
-      "Je moet akkoord gaan met de voorwaarden en het privacybeleid.",
-      isDj,
-    )
+    signupError("terms", isDj)
   }
 
   const supabase = await createClient()
@@ -101,10 +94,7 @@ export async function signUp(formData: FormData) {
 
   if (error) {
     console.error("signUp failed:", error.message)
-    signupError(
-      "Aanmelden mislukt. Controleer je gegevens of probeer een ander e-mailadres.",
-      isDj,
-    )
+    signupError("signup", isDj)
   }
 
   // Profiel aanvullen met naam/rol/gender/telefoon. Via de service-role zodat

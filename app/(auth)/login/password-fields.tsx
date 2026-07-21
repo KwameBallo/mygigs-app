@@ -5,7 +5,21 @@ import { useEffect, useRef, useState } from "react"
 // Wachtwoordvelden met een toon/verberg-oogje. Bij aanmelden ook een
 // bevestigingsveld dat live controleert of beide wachtwoorden gelijk zijn
 // (blokkeert het verzenden via native form-validatie bij verschil).
-export function PasswordFields({ isSignup }: { isSignup: boolean }) {
+type Labels = {
+  password: string
+  repeat: string
+  mismatch: string
+  show: string
+  hide: string
+}
+
+export function PasswordFields({
+  isSignup,
+  labels,
+}: {
+  isSignup: boolean
+  labels: Labels
+}) {
   const [pw, setPw] = useState("")
   const [confirm, setConfirm] = useState("")
   const [showPw, setShowPw] = useState(false)
@@ -17,13 +31,13 @@ export function PasswordFields({ isSignup }: { isSignup: boolean }) {
   useEffect(() => {
     const el = confirmRef.current
     if (!el) return
-    el.setCustomValidity(mismatch ? "Wachtwoorden komen niet overeen" : "")
-  }, [mismatch])
+    el.setCustomValidity(mismatch ? labels.mismatch : "")
+  }, [mismatch, labels.mismatch])
 
   return (
     <>
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Wachtwoord</span>
+        <span className="text-sm font-medium">{labels.password}</span>
         <div className="relative">
           <input
             name="password"
@@ -36,13 +50,17 @@ export function PasswordFields({ isSignup }: { isSignup: boolean }) {
             onChange={(e) => setPw(e.target.value)}
             className="input pr-11"
           />
-          <ToggleButton shown={showPw} onClick={() => setShowPw((s) => !s)} />
+          <ToggleButton
+            shown={showPw}
+            onClick={() => setShowPw((s) => !s)}
+            labels={labels}
+          />
         </div>
       </label>
 
       {isSignup && (
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Herhaal wachtwoord</span>
+          <span className="text-sm font-medium">{labels.repeat}</span>
           <div className="relative">
             <input
               ref={confirmRef}
@@ -60,12 +78,11 @@ export function PasswordFields({ isSignup }: { isSignup: boolean }) {
             <ToggleButton
               shown={showConfirm}
               onClick={() => setShowConfirm((s) => !s)}
+              labels={labels}
             />
           </div>
           {mismatch && (
-            <span className="text-xs text-red-400">
-              Wachtwoorden komen niet overeen.
-            </span>
+            <span className="text-xs text-red-400">{labels.mismatch}</span>
           )}
         </label>
       )}
@@ -76,15 +93,17 @@ export function PasswordFields({ isSignup }: { isSignup: boolean }) {
 function ToggleButton({
   shown,
   onClick,
+  labels,
 }: {
   shown: boolean
   onClick: () => void
+  labels: Labels
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={shown ? "Verberg wachtwoord" : "Toon wachtwoord"}
+      aria-label={shown ? labels.hide : labels.show}
       className="absolute inset-y-0 right-0 flex items-center px-3 text-muted transition hover:text-foreground"
     >
       {shown ? (

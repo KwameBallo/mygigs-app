@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Logo } from "@/components/logo"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { getI18n } from "@/lib/i18n"
 import { signIn, signUp } from "./actions"
 import { PasswordFields } from "./password-fields"
 
@@ -28,23 +30,37 @@ export default async function LoginPage({
   const isDj = type === "dj"
   const role = isDj ? "artist" : "booker"
 
+  const { locale, t } = await getI18n()
+  const a = t.auth
+
   const title = isSignup
     ? isDj
-      ? "Word DJ op MyGigs"
-      : "Maak je account"
-    : "Welkom terug"
+      ? a.signupDjTitle
+      : a.signupTitle
+    : a.loginTitle
   const subtitle = isSignup
     ? isDj
-      ? "Maak een DJ-profiel aan, toon je demo's en word geboekt."
-      : "Ontdek feesten en boek DJ's voor je eigen event."
+      ? a.signupDjSubtitle
+      : a.signupSubtitle
     : isDj
-      ? "Log in op je DJ-account."
-      : "Log in om DJ's te ontdekken en te boeken."
+      ? a.loginDjSubtitle
+      : a.loginSubtitle
+
+  const errorMap: Record<string, string> = {
+    signin: a.errSignin,
+    signup: a.errSignup,
+    "password-mismatch": a.errPasswordMismatch,
+    terms: a.errTerms,
+  }
+  const errorMsg = error ? (errorMap[error] ?? a.errGeneric) : null
 
   return (
     <main className="relative flex flex-1 flex-col">
       <div className="brand-glow pointer-events-none absolute inset-x-0 top-0 h-[420px]" />
       <div className="relative z-10 mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-16">
+        <div className="mb-4 flex justify-center">
+          <LanguageSwitcher locale={locale} />
+        </div>
         <div className="mb-8 text-center">
           <Logo />
           <h1 className="mt-6 text-3xl font-semibold tracking-tight">
@@ -63,7 +79,7 @@ export default async function LoginPage({
                 : "text-muted hover:text-foreground"
             }`}
           >
-            Organisator
+            {a.tabOrganiser}
           </Link>
           <Link
             href={loginHref(isSignup, true)}
@@ -71,18 +87,18 @@ export default async function LoginPage({
               isDj ? "bg-brand text-black" : "text-muted hover:text-foreground"
             }`}
           >
-            DJ
+            {a.tabDj}
           </Link>
         </div>
 
         {message === "check-email" && (
           <div className="mb-4 rounded-xl border border-brand/40 bg-brand/10 px-4 py-3 text-sm">
-            Check je mail om je account te bevestigen, daarna kun je inloggen.
+            {a.checkEmail}
           </div>
         )}
-        {error && (
+        {errorMsg && (
           <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-            {error}
+            {errorMsg}
           </div>
         )}
 
@@ -94,27 +110,27 @@ export default async function LoginPage({
           <input type="hidden" name="role" value={role} />
           {isSignup && (
             <>
-              <Field label={isDj ? "Naam" : "Volledige naam"}>
+              <Field label={isDj ? a.nameLabelDj : a.nameLabel}>
                 <input
                   name="full_name"
                   type="text"
                   required
                   autoComplete="name"
-                  placeholder={isDj ? "Jouw DJ-naam" : "Voor- en achternaam"}
+                  placeholder={isDj ? a.namePlaceholderDj : a.namePlaceholder}
                   className="input"
                 />
               </Field>
               {!isDj && (
                 <>
-                  <Field label="Gender (optioneel)">
+                  <Field label={a.genderLabel}>
                     <select name="gender" defaultValue="" className="input">
-                      <option value="">Kies…</option>
-                      <option value="man">Man</option>
-                      <option value="vrouw">Vrouw</option>
-                      <option value="anders">Anders</option>
+                      <option value="">{a.genderChoose}</option>
+                      <option value="man">{a.genderMan}</option>
+                      <option value="vrouw">{a.genderVrouw}</option>
+                      <option value="anders">{a.genderAnders}</option>
                     </select>
                   </Field>
-                  <Field label="Telefoonnummer (optioneel)">
+                  <Field label={a.phoneLabel}>
                     <input
                       name="phone"
                       type="tel"
@@ -123,25 +139,31 @@ export default async function LoginPage({
                       className="input"
                     />
                   </Field>
-                  <p className="-mt-1 text-xs text-muted">
-                    Je telefoonnummer delen we nooit met de DJ. Wil je later DJ
-                    worden? Dat kan via een aanvraag die we goedkeuren.
-                  </p>
+                  <p className="-mt-1 text-xs text-muted">{a.phoneNote}</p>
                 </>
               )}
             </>
           )}
-          <Field label="E-mail">
+          <Field label={a.emailLabel}>
             <input
               name="email"
               type="email"
               required
               autoComplete="email"
-              placeholder="jij@voorbeeld.nl"
+              placeholder={a.emailPlaceholder}
               className="input"
             />
           </Field>
-          <PasswordFields isSignup={isSignup} />
+          <PasswordFields
+            isSignup={isSignup}
+            labels={{
+              password: a.passwordLabel,
+              repeat: a.passwordRepeatLabel,
+              mismatch: a.passwordMismatch,
+              show: a.showPassword,
+              hide: a.hidePassword,
+            }}
+          />
           {isSignup && (
             <label className="flex items-start gap-2.5 text-sm text-muted">
               <input
@@ -152,21 +174,21 @@ export default async function LoginPage({
                 className="mt-0.5 h-4 w-4 flex-none accent-brand"
               />
               <span>
-                Ik ga akkoord met de{" "}
+                {a.termsPre}
                 <Link
                   href="/voorwaarden"
                   target="_blank"
                   className="font-medium text-brand hover:underline"
                 >
-                  algemene voorwaarden
-                </Link>{" "}
-                en het{" "}
+                  {a.termsLink}
+                </Link>
+                {a.termsMid}
                 <Link
                   href="/privacy"
                   target="_blank"
                   className="font-medium text-brand hover:underline"
                 >
-                  privacybeleid
+                  {a.privacyLink}
                 </Link>
                 .
               </span>
@@ -176,29 +198,29 @@ export default async function LoginPage({
             type="submit"
             className="mt-2 rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong"
           >
-            {isSignup ? "Account maken" : "Inloggen"}
+            {isSignup ? a.submitSignup : a.submitLogin}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted">
           {isSignup ? (
             <>
-              Heb je al een account?{" "}
+              {a.haveAccount}
               <Link
                 href={loginHref(false, isDj)}
                 className="font-medium text-brand"
               >
-                Inloggen
+                {a.loginLink}
               </Link>
             </>
           ) : (
             <>
-              Nog geen account?{" "}
+              {a.noAccount}
               <Link
                 href={loginHref(true, isDj)}
                 className="font-medium text-brand"
               >
-                Aanmelden
+                {a.signupLink}
               </Link>
             </>
           )}
