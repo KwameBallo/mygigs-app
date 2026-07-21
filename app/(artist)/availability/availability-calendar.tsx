@@ -89,7 +89,7 @@ export function AvailabilityCalendar({
           type="button"
           onClick={() => canGoPrev && shift(-1)}
           disabled={!canGoPrev}
-          aria-label="Vorige maand"
+          aria-label={a.prevMonth}
           className="rounded-lg px-3 py-1.5 text-lg text-muted transition hover:text-foreground disabled:opacity-30"
         >
           ←
@@ -100,7 +100,7 @@ export function AvailabilityCalendar({
         <button
           type="button"
           onClick={() => shift(1)}
-          aria-label="Volgende maand"
+          aria-label={a.nextMonth}
           className="rounded-lg px-3 py-1.5 text-lg text-muted transition hover:text-foreground"
         >
           →

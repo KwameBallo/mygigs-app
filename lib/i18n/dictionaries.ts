@@ -258,6 +258,8 @@ const nl = {
     booked: "Geboekt",
     available: "Beschikbaar",
     daysAvailable: "dagen beschikbaar",
+    prevMonth: "Vorige maand",
+    nextMonth: "Volgende maand",
     calendarHint:
       "Tik op een dag om je beschikbaarheid aan of uit te zetten. Geboekte dagen kun je niet wijzigen.",
     noProfile: "Je hebt nog geen DJ-profiel. Maak er eerst een aan.",
@@ -801,6 +803,8 @@ const en: typeof nl = {
     booked: "Booked",
     available: "Available",
     daysAvailable: "days available",
+    prevMonth: "Previous month",
+    nextMonth: "Next month",
     calendarHint:
       "Tap a day to turn your availability on or off. Booked days can't be changed.",
     noProfile: "You don't have a DJ profile yet. Create one first.",
