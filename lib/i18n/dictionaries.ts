@@ -283,6 +283,21 @@ const nl = {
       "december",
     ],
   },
+  map: {
+    title: "Boekingen op de kaart",
+    legendPending: "In afwachting",
+    legendAccepted: "Geaccepteerd (wacht op betaling)",
+    legendPaid: "Betaald & bevestigd",
+    statusPending: "In afwachting",
+    statusAccepted: "Geaccepteerd — wacht op betaling",
+    statusPaid: "Betaald & bevestigd",
+    statusCompleted: "Afgerond",
+    empty: "Nog geen boekingen om op de kaart te tonen.",
+    noLocation: "Zonder kaartlocatie (onbekende stad): ",
+    loading: "Kaart laden…",
+    noProfile: "Je hebt nog geen DJ-profiel. Maak er eerst een aan.",
+    toProfile: "Naar profiel",
+  },
 }
 
 const en: typeof nl = {
@@ -563,6 +578,21 @@ const en: typeof nl = {
       "November",
       "December",
     ],
+  },
+  map: {
+    title: "Bookings on the map",
+    legendPending: "Pending",
+    legendAccepted: "Accepted (awaiting payment)",
+    legendPaid: "Paid & confirmed",
+    statusPending: "Pending",
+    statusAccepted: "Accepted — awaiting payment",
+    statusPaid: "Paid & confirmed",
+    statusCompleted: "Completed",
+    empty: "No bookings to show on the map yet.",
+    noLocation: "Without map location (unknown city): ",
+    loading: "Loading map…",
+    noProfile: "You don't have a DJ profile yet. Create one first.",
+    toProfile: "To profile",
   },
 }
 

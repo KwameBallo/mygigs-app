@@ -1,16 +1,17 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { getI18n } from "@/lib/i18n"
 import { cityToCoords } from "@/lib/utils/nl-cities"
 import { KaartClient } from "./kaart-client"
 import type { BookingPoint } from "./booking-map"
 
 // Kleur per fase (funnel): in afwachting → geaccepteerd → betaald/bevestigd.
-const STATUS_STYLE: Record<string, { color: string; label: string }> = {
-  pending: { color: "#3b82f6", label: "In afwachting" },
-  accepted: { color: "#f59e0b", label: "Geaccepteerd — wacht op betaling" },
-  paid: { color: "#22c55e", label: "Betaald & bevestigd" },
-  completed: { color: "#22c55e", label: "Afgerond" },
+const STATUS_COLOR: Record<string, string> = {
+  pending: "#3b82f6",
+  accepted: "#f59e0b",
+  paid: "#22c55e",
+  completed: "#22c55e",
 }
 
 export default async function KaartPage() {
@@ -19,6 +20,18 @@ export default async function KaartPage() {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect("/login?next=/kaart")
+
+  const { locale, t } = await getI18n()
+  const mp = t.map
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+  const statusLabel = (s: string) =>
+    s === "pending"
+      ? mp.statusPending
+      : s === "accepted"
+        ? mp.statusAccepted
+        : s === "completed"
+          ? mp.statusCompleted
+          : mp.statusPaid
 
   const { data: artist } = await supabase
     .from("artists")
@@ -29,17 +42,13 @@ export default async function KaartPage() {
   if (!artist) {
     return (
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Boekingen op de kaart
-        </h1>
-        <p className="mt-3 text-muted">
-          Je hebt nog geen DJ-profiel. Maak er eerst een aan.
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight">{mp.title}</h1>
+        <p className="mt-3 text-muted">{mp.noProfile}</p>
         <Link
           href="/profile"
           className="mt-6 inline-block rounded-full bg-brand px-6 py-2.5 font-medium text-black"
         >
-          Naar profiel
+          {mp.toProfile}
         </Link>
       </main>
     )
@@ -58,7 +67,6 @@ export default async function KaartPage() {
 
   for (const b of list) {
     const coords = cityToCoords(b.city)
-    const style = STATUS_STYLE[b.status] ?? { color: "#9ca3af", label: b.status }
     if (!coords) {
       if (b.city) unlocated.push(b.city)
       continue
@@ -67,32 +75,30 @@ export default async function KaartPage() {
       id: b.id,
       lat: coords[0],
       lng: coords[1],
-      color: style.color,
-      title: b.venue_name ?? b.city ?? "Boeking",
-      meta: `${new Date(b.event_date).toLocaleDateString("nl-NL", {
+      color: STATUS_COLOR[b.status] ?? "#9ca3af",
+      title: b.venue_name ?? b.city ?? "—",
+      meta: `${new Date(b.event_date).toLocaleDateString(dateLocale, {
         day: "numeric",
         month: "long",
         year: "numeric",
       })}${b.city ? ` · ${b.city}` : ""}`,
-      statusLabel: style.label,
+      statusLabel: statusLabel(b.status),
     })
   }
 
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Boekingen op de kaart
-      </h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{mp.title}</h1>
       <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
-        <Legend color="#3b82f6" label="In afwachting" />
-        <Legend color="#f59e0b" label="Geaccepteerd (wacht op betaling)" />
-        <Legend color="#22c55e" label="Betaald & bevestigd" />
+        <Legend color="#3b82f6" label={mp.legendPending} />
+        <Legend color="#f59e0b" label={mp.legendAccepted} />
+        <Legend color="#22c55e" label={mp.legendPaid} />
       </div>
 
       <div className="mt-4 h-[70vh] overflow-hidden rounded-2xl border border-border">
         {points.length === 0 ? (
           <div className="flex h-full items-center justify-center p-10 text-center text-sm text-muted">
-            Nog geen boekingen om op de kaart te tonen.
+            {mp.empty}
           </div>
         ) : (
           <KaartClient points={points} />
@@ -101,7 +107,8 @@ export default async function KaartPage() {
 
       {unlocated.length > 0 && (
         <p className="mt-3 text-xs text-muted">
-          Zonder kaartlocatie (onbekende stad): {unlocated.join(", ")}
+          {mp.noLocation}
+          {unlocated.join(", ")}
         </p>
       )}
     </main>
