@@ -62,9 +62,16 @@ export default async function Home() {
         </section>
 
         <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-12">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          {/* Zonder de DJ-werving-kaart blijven er twee over: dan een smaller
+              grid zodat het paar gecentreerd staat i.p.v. links uitgelijnd. */}
+          <div
+            className={`mx-auto grid grid-cols-1 gap-5 ${
+              showDjRecruitment
+                ? "sm:grid-cols-3"
+                : "sm:max-w-3xl sm:grid-cols-2"
+            }`}
+          >
             <SideCard
-              tag={h.card1Tag}
               title={h.card1Title}
               body={h.card1Body}
               cta={h.card1Cta}
@@ -81,7 +88,6 @@ export default async function Home() {
               />
             )}
             <SideCard
-              tag={h.card3Tag}
               title={h.card3Title}
               body={h.card3Body}
               cta={h.card3Cta}
@@ -153,7 +159,7 @@ function SideCard({
   href,
   primary,
 }: {
-  tag: string
+  tag?: string
   title: string
   body: string
   cta: string
@@ -162,10 +168,16 @@ function SideCard({
 }) {
   return (
     <div className="flex flex-col rounded-3xl border border-border bg-surface p-7">
-      <span className="text-xs font-semibold uppercase tracking-wider text-brand">
-        {tag}
-      </span>
-      <h3 className="mt-3 text-2xl font-semibold tracking-tight">{title}</h3>
+      {tag && (
+        <span className="text-xs font-semibold uppercase tracking-wider text-brand">
+          {tag}
+        </span>
+      )}
+      <h3
+        className={`text-2xl font-semibold tracking-tight ${tag ? "mt-3" : ""}`}
+      >
+        {title}
+      </h3>
       <p className="mt-2 flex-1 text-sm text-muted">{body}</p>
       <Link
         href={href}
