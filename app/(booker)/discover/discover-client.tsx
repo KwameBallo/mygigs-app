@@ -155,7 +155,7 @@ export function DiscoverClient({
           id: c.id,
           lat: c.lat as number,
           lng: c.lng as number,
-          pin: d.clubBadge,
+          pin: c.name,
           title: c.name,
           meta: c.city ?? d.unknownCity,
           href: `/clubs/${c.id}`,

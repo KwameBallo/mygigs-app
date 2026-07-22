@@ -25,10 +25,19 @@ export type MapPoint = {
   linkLabel: string
 }
 
+// Pin-labels kunnen DB-tekst bevatten (clubnaam) → escapen voor de innerHTML.
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
 function pinIcon(label: string, active: boolean) {
   return L.divIcon({
     className: "mg-pin-wrap",
-    html: `<div class="mg-pin${active ? " mg-pin--active" : ""}">${label}</div>`,
+    html: `<div class="mg-pin${active ? " mg-pin--active" : ""}">${escapeHtml(label)}</div>`,
     iconSize: [0, 0],
     iconAnchor: [0, 0],
   })
