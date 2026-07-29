@@ -10,6 +10,11 @@ const nl = {
   statusScheduled: "Gepland",
   statusPaid: "Uitbetaald",
   statusFailed: "Mislukt",
+  invoicesTitle: "Facturen",
+  emptyInvoices:
+    "Nog geen facturen. Na een betaalde boeking verschijnen hier je verkoopfactuur en de commissie-factuur van MyGigs.",
+  invoiceSale: "Verkoopfactuur (aan klant)",
+  invoiceCommission: "Commissie-factuur (MyGigs)",
 }
 
 const en: typeof nl = {
@@ -24,6 +29,11 @@ const en: typeof nl = {
   statusScheduled: "Scheduled",
   statusPaid: "Paid out",
   statusFailed: "Failed",
+  invoicesTitle: "Invoices",
+  emptyInvoices:
+    "No invoices yet. After a paid booking your sales invoice and the MyGigs commission invoice appear here.",
+  invoiceSale: "Sales invoice (to client)",
+  invoiceCommission: "Commission invoice (MyGigs)",
 }
 
 export const dict = { nl, en }

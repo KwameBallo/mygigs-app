@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
+import { generateInvoicesForBooking } from "@/lib/invoicing"
 
 // De boeker annuleert een eigen aanvraag. Alleen als de boeking nog niet
 // definitief is (in afwachting of geaccepteerd) en van deze gebruiker is.
@@ -86,6 +87,14 @@ export async function payBooking(formData: FormData) {
 
   // 3) Boeking op 'betaald' zetten.
   await admin.from("bookings").update({ status: "paid" }).eq("id", booking.id)
+
+  // 4) Facturen aanmaken (verkoopfactuur DJ->klant + commissie MyGigs->DJ).
+  //    Best-effort: een factuurfout mag de betaling niet blokkeren.
+  try {
+    await generateInvoicesForBooking(booking.id)
+  } catch (e) {
+    console.error("invoice generation failed:", e)
+  }
 
   // Audit: betaling in escrow + geplande uitbetaling (A.8.15).
   await logAudit({

@@ -44,13 +44,21 @@ export default async function EarningsPage() {
     )
   }
 
-  const { data: payouts } = await supabase
-    .from("payouts")
-    .select("id, amount, status, created_at")
-    .eq("artist_id", artist.id)
-    .order("created_at", { ascending: false })
+  const [{ data: payouts }, { data: invoices }] = await Promise.all([
+    supabase
+      .from("payouts")
+      .select("id, amount, status, created_at")
+      .eq("artist_id", artist.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("invoices")
+      .select("id, kind, number, gross, issued_at")
+      .eq("artist_id", artist.id)
+      .order("issued_at", { ascending: false }),
+  ])
 
   const list = payouts ?? []
+  const invoiceList = invoices ?? []
   const paid = list
     .filter((p) => p.status === "paid")
     .reduce((s, p) => s + p.amount, 0)
@@ -102,6 +110,42 @@ export default async function EarningsPage() {
                   {PAYOUT_LABEL[p.status] ?? p.status}
                 </span>
               </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold tracking-tight">{d.invoicesTitle}</h2>
+        {invoiceList.length === 0 ? (
+          <p className="mt-4 rounded-2xl border border-dashed border-border bg-surface p-10 text-center text-sm text-muted">
+            {d.emptyInvoices}
+          </p>
+        ) : (
+          <div className="mt-4 flex flex-col gap-2">
+            {invoiceList.map((inv) => (
+              <Link
+                key={inv.id}
+                href={`/invoices/${inv.id}`}
+                className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-4 transition hover:border-brand/40"
+              >
+                <div>
+                  <p className="font-semibold">
+                    {inv.kind === "dj_sale" ? d.invoiceSale : d.invoiceCommission}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {inv.number} ·{" "}
+                    {new Date(inv.issued_at).toLocaleDateString(dateLocale, {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <span className="text-sm font-medium text-brand">
+                  {formatEuro(inv.gross)} →
+                </span>
+              </Link>
             ))}
           </div>
         )}

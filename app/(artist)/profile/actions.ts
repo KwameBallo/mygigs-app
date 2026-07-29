@@ -125,6 +125,44 @@ export async function saveArtistProfile(formData: FormData) {
   revalidatePath("/discover")
 }
 
+// Facturatiegegevens van de DJ opslaan. AVG/ISO: deze PII staat in een aparte
+// tabel (artist_billing) met owner-only RLS; de gewone client respecteert die
+// policy, dus geen service-role nodig.
+export async function saveArtistBilling(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data: artist } = await supabase
+    .from("artists")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle()
+  if (!artist) return
+
+  const str = (k: string) => {
+    const v = String(formData.get(k) ?? "").trim()
+    return v === "" ? null : v
+  }
+
+  await supabase.from("artist_billing").upsert(
+    {
+      artist_id: artist.id,
+      invoice_name: str("invoice_name"),
+      invoice_address: str("invoice_address"),
+      kvk_number: str("kvk_number"),
+      vat_number: str("vat_number"),
+      is_vat_registered: formData.get("is_vat_registered") != null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "artist_id" },
+  )
+
+  revalidatePath("/profile")
+}
+
 // Profielfoto (avatar) instellen — verschijnt op het profiel en in de
 // zoekresultaten i.p.v. de initialen.
 export async function setArtistAvatar(url: string) {

@@ -31,6 +31,20 @@ export default async function BookingsPage({
   const m = t.myBookings
   const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
 
+  // Verkoopfactuur (DJ -> klant) per betaalde boeking, zodat de boeker 'm kan openen.
+  const paidIds = list
+    .filter((b) => b.status === "paid" || b.status === "completed")
+    .map((b) => b.id)
+  const invoiceByBooking = new Map<string, string>()
+  if (paidIds.length > 0) {
+    const { data: invs } = await supabase
+      .from("invoices")
+      .select("id, booking_id")
+      .eq("kind", "dj_sale")
+      .in("booking_id", paidIds)
+    for (const i of invs ?? []) invoiceByBooking.set(i.booking_id, i.id)
+  }
+
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">{m.title}</h1>
@@ -102,6 +116,14 @@ export default async function BookingsPage({
                           className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted transition hover:border-brand/50 hover:text-foreground"
                         >
                           {m.invoice}
+                        </Link>
+                      )}
+                      {invoiceByBooking.get(b.id) && (
+                        <Link
+                          href={`/invoices/${invoiceByBooking.get(b.id)}`}
+                          className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted transition hover:border-brand/50 hover:text-foreground"
+                        >
+                          {m.djInvoice}
                         </Link>
                       )}
                       {/* Na acceptatie: chatten voor meer info. */}

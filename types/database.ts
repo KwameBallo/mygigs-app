@@ -1007,6 +1007,137 @@ export type Database = {
           },
         ]
       }
+      artist_billing: {
+        Row: {
+          artist_id: string
+          invoice_name: string | null
+          invoice_address: string | null
+          kvk_number: string | null
+          vat_number: string | null
+          is_vat_registered: boolean
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          invoice_name?: string | null
+          invoice_address?: string | null
+          kvk_number?: string | null
+          vat_number?: string | null
+          is_vat_registered?: boolean
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          invoice_name?: string | null
+          invoice_address?: string | null
+          kvk_number?: string | null
+          vat_number?: string | null
+          is_vat_registered?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_billing_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: true
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          id: string
+          booking_id: string
+          kind: Database["public"]["Enums"]["invoice_kind"]
+          number: string
+          issued_at: string
+          issuer_name: string
+          issuer_address: string | null
+          issuer_vat: string | null
+          issuer_kvk: string | null
+          recipient_name: string
+          recipient_address: string | null
+          recipient_vat: string | null
+          description: string
+          net: number
+          vat_rate: number
+          vat_amount: number
+          gross: number
+          vat_note: string | null
+          artist_id: string
+          booker_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          booking_id: string
+          kind: Database["public"]["Enums"]["invoice_kind"]
+          number: string
+          issued_at?: string
+          issuer_name: string
+          issuer_address?: string | null
+          issuer_vat?: string | null
+          issuer_kvk?: string | null
+          recipient_name: string
+          recipient_address?: string | null
+          recipient_vat?: string | null
+          description: string
+          net: number
+          vat_rate?: number
+          vat_amount?: number
+          gross: number
+          vat_note?: string | null
+          artist_id: string
+          booker_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          booking_id?: string
+          kind?: Database["public"]["Enums"]["invoice_kind"]
+          number?: string
+          issued_at?: string
+          issuer_name?: string
+          issuer_address?: string | null
+          issuer_vat?: string | null
+          issuer_kvk?: string | null
+          recipient_name?: string
+          recipient_address?: string | null
+          recipient_vat?: string | null
+          description?: string
+          net?: number
+          vat_rate?: number
+          vat_amount?: number
+          gross?: number
+          vat_note?: string | null
+          artist_id?: string
+          booker_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_counters: {
+        Row: { scope: string; year: number; seq: number }
+        Insert: { scope: string; year: number; seq?: number }
+        Update: { scope?: string; year?: number; seq?: number }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1146,6 +1277,10 @@ export type Database = {
     }
     Functions: {
       is_artist_owner: { Args: { a_id: string }; Returns: boolean }
+      next_invoice_number: {
+        Args: { p_scope: string; p_prefix: string; p_year: number }
+        Returns: string
+      }
     }
     Enums: {
       act_type:
@@ -1166,6 +1301,7 @@ export type Database = {
         | "completed"
         | "paid"
       booking_type: "prive" | "zakelijk"
+      invoice_kind: "dj_sale" | "mg_commission"
       payment_status: "pending" | "held" | "released" | "refunded" | "failed"
       payout_status: "scheduled" | "paid" | "failed"
       supplier_category:
@@ -1321,6 +1457,7 @@ export const Constants = {
         "paid",
       ],
       booking_type: ["prive", "zakelijk"],
+      invoice_kind: ["dj_sale", "mg_commission"],
       payment_status: ["pending", "held", "released", "refunded", "failed"],
       payout_status: ["scheduled", "paid", "failed"],
       supplier_category: [

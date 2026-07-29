@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
 import { getGenres } from "@/lib/data/artists"
 import { PROVINCES } from "@/lib/utils/provinces"
-import { saveArtistProfile } from "./actions"
+import { saveArtistProfile, saveArtistBilling } from "./actions"
 import { SyncSocials } from "./sync-button"
 import { GenrePicker } from "./genre-picker"
 import { MediaManager } from "./media-manager"
@@ -40,22 +40,36 @@ export default async function ProfilePage() {
   let selectedGenres: number[] = []
   const rates: Record<string, number> = {}
   let media: { id: string; url: string; kind: string; path: string | null }[] = []
+  let billing: {
+    invoice_name: string | null
+    invoice_address: string | null
+    kvk_number: string | null
+    vat_number: string | null
+    is_vat_registered: boolean
+  } | null = null
   if (artist) {
-    const [{ data: ag }, { data: pr }, { data: md }] = await Promise.all([
-      supabase.from("artist_genres").select("genre_id").eq("artist_id", artist.id),
-      supabase
-        .from("artist_province_rates")
-        .select("province, gage")
-        .eq("artist_id", artist.id),
-      supabase
-        .from("artist_media")
-        .select("id, url, kind, path")
-        .eq("artist_id", artist.id)
-        .order("created_at", { ascending: false }),
-    ])
+    const [{ data: ag }, { data: pr }, { data: md }, { data: bl }] =
+      await Promise.all([
+        supabase.from("artist_genres").select("genre_id").eq("artist_id", artist.id),
+        supabase
+          .from("artist_province_rates")
+          .select("province, gage")
+          .eq("artist_id", artist.id),
+        supabase
+          .from("artist_media")
+          .select("id, url, kind, path")
+          .eq("artist_id", artist.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("artist_billing")
+          .select("invoice_name, invoice_address, kvk_number, vat_number, is_vat_registered")
+          .eq("artist_id", artist.id)
+          .maybeSingle(),
+      ])
     selectedGenres = (ag ?? []).map((r) => r.genre_id)
     for (const r of pr ?? []) rates[r.province] = r.gage
     media = md ?? []
+    billing = bl
   }
   // Val terug op de primaire genre_id als er nog geen meervoudige genres zijn.
   if (selectedGenres.length === 0 && artist?.genre_id) {
@@ -100,6 +114,72 @@ export default async function ProfilePage() {
             tiktokFollowers={artist.tiktok_followers ?? 0}
           />
         </div>
+      )}
+
+      {artist && (
+        <section className="mt-8">
+          <h2 className="text-sm font-medium">{p.billingHeading}</h2>
+          <p className="mb-3 mt-0.5 text-xs text-muted">{p.billingHint}</p>
+          <form
+            action={saveArtistBilling}
+            className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5"
+          >
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs text-muted">{p.billingName}</span>
+              <input
+                name="invoice_name"
+                defaultValue={billing?.invoice_name ?? ""}
+                placeholder={p.billingNamePlaceholder}
+                className="input h-10"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs text-muted">{p.billingAddress}</span>
+              <input
+                name="invoice_address"
+                defaultValue={billing?.invoice_address ?? ""}
+                placeholder={p.billingAddressPlaceholder}
+                className="input h-10"
+              />
+            </label>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs text-muted">{p.billingKvk}</span>
+                <input
+                  name="kvk_number"
+                  defaultValue={billing?.kvk_number ?? ""}
+                  placeholder="12345678"
+                  className="input h-10"
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs text-muted">{p.billingVat}</span>
+                <input
+                  name="vat_number"
+                  defaultValue={billing?.vat_number ?? ""}
+                  placeholder="NL000000000B00"
+                  className="input h-10"
+                />
+              </label>
+            </div>
+            <label className="flex items-center gap-2.5">
+              <input
+                type="checkbox"
+                name="is_vat_registered"
+                defaultChecked={billing?.is_vat_registered ?? false}
+                className="h-4 w-4 accent-brand"
+              />
+              <span className="text-sm">{p.billingVatRegistered}</span>
+            </label>
+            <p className="text-xs text-muted">{p.billingKorNote}</p>
+            <button
+              type="submit"
+              className="mt-1 h-11 self-start rounded-full bg-brand px-6 font-medium text-black transition hover:bg-brand-strong"
+            >
+              {p.billingSave}
+            </button>
+          </form>
+        </section>
       )}
 
       {artist && (
