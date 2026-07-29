@@ -473,6 +473,9 @@ const nl = {
     billingKorNote:
       "Niet aangevinkt? Dan factureren we zonder btw volgens de kleineondernemersregeling (KOR).",
     billingSave: "Facturatie opslaan",
+    billingSaved: "Facturatiegegevens opgeslagen.",
+    billingError:
+      "Opslaan mislukt. Ververs de pagina en probeer opnieuw — bestaat de tabel al in de database?",
   },
   messages: {
     title: "Berichten",
@@ -1026,6 +1029,9 @@ const en: typeof nl = {
     billingKorNote:
       "Not ticked? Then we invoice without VAT under the small-business scheme (KOR).",
     billingSave: "Save billing details",
+    billingSaved: "Billing details saved.",
+    billingError:
+      "Saving failed. Refresh the page and try again — does the table already exist in the database?",
   },
   messages: {
     title: "Messages",

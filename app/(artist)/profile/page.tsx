@@ -12,7 +12,12 @@ import { AvatarUploader } from "./avatar-uploader"
 import { ProvinceMap } from "./province-map"
 import { EquipmentPicker } from "./equipment-picker"
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ billing?: string }>
+}) {
+  const { billing: billingStatus } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -120,6 +125,16 @@ export default async function ProfilePage() {
         <section className="mt-8">
           <h2 className="text-sm font-medium">{p.billingHeading}</h2>
           <p className="mb-3 mt-0.5 text-xs text-muted">{p.billingHint}</p>
+          {billingStatus === "ok" && (
+            <div className="mb-3 rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-2.5 text-sm text-green-300">
+              {p.billingSaved}
+            </div>
+          )}
+          {billingStatus === "err" && (
+            <div className="mb-3 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
+              {p.billingError}
+            </div>
+          )}
           <form
             action={saveArtistBilling}
             className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5"

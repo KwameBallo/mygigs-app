@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { ACT_TYPES } from "@/lib/utils/acts"
 import { PROVINCE_NAMES } from "@/lib/utils/provinces"
@@ -140,14 +141,14 @@ export async function saveArtistBilling(formData: FormData) {
     .select("id")
     .eq("user_id", user.id)
     .maybeSingle()
-  if (!artist) return
+  if (!artist) redirect("/profile?billing=err")
 
   const str = (k: string) => {
     const v = String(formData.get(k) ?? "").trim()
     return v === "" ? null : v
   }
 
-  await supabase.from("artist_billing").upsert(
+  const { error } = await supabase.from("artist_billing").upsert(
     {
       artist_id: artist.id,
       invoice_name: str("invoice_name"),
@@ -160,7 +161,13 @@ export async function saveArtistBilling(formData: FormData) {
     { onConflict: "artist_id" },
   )
 
+  if (error) {
+    console.error("saveArtistBilling failed:", error.message)
+    redirect("/profile?billing=err")
+  }
+
   revalidatePath("/profile")
+  redirect("/profile?billing=ok")
 }
 
 // Profielfoto (avatar) instellen — verschijnt op het profiel en in de
