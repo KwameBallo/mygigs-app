@@ -1,12 +1,10 @@
 name: Supabase migraties toepassen
 
-# Draait automatisch zodra er een migratie wijzigt op main. Zo hoef je geen
-# SQL meer handmatig in de Supabase-editor te plakken.
+# Handmatige workflow. De automatische push-trigger is uitgezet: migraties worden
+# in dit project handmatig in de Supabase SQL-editor gedraaid (de migratie-historie
+# van de CLI is niet gesynchroniseerd, waardoor `db push` op bestaande objecten zou
+# botsen). Wil je hem tóch draaien? Start 'm via Actions → "Run workflow".
 on:
-  push:
-    branches: [main]
-    paths:
-      - "supabase/migrations/**"
   workflow_dispatch: {}
 
 jobs:
