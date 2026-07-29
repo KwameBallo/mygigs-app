@@ -13,19 +13,19 @@ const nl = {
   benefits: [
     {
       title: "Factuur op naam",
-      body: "Automatische factuur met bedrijfsnaam, BTW-nummer en factuur-e-mail. Klaar voor je boekhouding.",
+      body: "Automatisch, met bedrijfsnaam en BTW-nummer.",
     },
     {
       title: "BTW-aftrek",
-      body: "Zakelijke boekingen met correcte BTW-specificatie, zodat je de kosten kunt verrekenen.",
+      body: "Correcte BTW-specificatie om te verrekenen.",
     },
     {
       title: "Eén aanspreekpunt",
-      body: "Alles via MyGigs: aanvraag, contract, betaling en uitbetaling. Geen losse afspraken.",
+      body: "Aanvraag, contract en betaling — alles via MyGigs.",
     },
     {
       title: "Geverifieerde DJ's",
-      body: "Boek met vertrouwen dankzij geverifieerde profielen, reviews en aantal eerdere boekingen.",
+      body: "Geverifieerde profielen met reviews en boekingen.",
     },
   ],
   howItWorksTitle: "Zo werkt het",
@@ -33,17 +33,17 @@ const nl = {
     {
       step: "01",
       title: "Kies je DJ",
-      body: "Filter op genre, stad en budget. Vergelijk reviews en eerdere boekingen.",
+      body: "Filter op genre, stad en budget.",
     },
     {
       step: "02",
       title: "Boek zakelijk",
-      body: "Kies 'Zakelijk' bij de aanvraag en vul je factuurgegevens in. Eenmalig opslaan kan ook.",
+      body: "Kies 'Zakelijk' en vul je factuurgegevens in.",
     },
     {
       step: "03",
       title: "Ontvang je factuur",
-      body: "Na acceptatie staat je betaling veilig in escrow en krijg je direct een factuur.",
+      body: "Betaling veilig in escrow, factuur direct.",
     },
   ],
   ctaTitle: "Klaar voor je volgende bedrijfsevent?",
@@ -67,19 +67,19 @@ const en: typeof nl = {
   benefits: [
     {
       title: "Invoice in your name",
-      body: "An automatic invoice with your company name, VAT number and billing e-mail. Ready for your bookkeeping.",
+      body: "Automatic, with your company name and VAT number.",
     },
     {
       title: "VAT deduction",
-      body: "Business bookings with a correct VAT breakdown, so you can reclaim the costs.",
+      body: "A correct VAT breakdown to reclaim costs.",
     },
     {
       title: "A single point of contact",
-      body: "Everything through MyGigs: request, contract, payment and payout. No loose arrangements.",
+      body: "Request, contract and payment — all via MyGigs.",
     },
     {
       title: "Verified DJs",
-      body: "Book with confidence thanks to verified profiles, reviews and the number of previous bookings.",
+      body: "Verified profiles with reviews and bookings.",
     },
   ],
   howItWorksTitle: "How it works",
@@ -87,17 +87,17 @@ const en: typeof nl = {
     {
       step: "01",
       title: "Choose your DJ",
-      body: "Filter by genre, city and budget. Compare reviews and previous bookings.",
+      body: "Filter by genre, city and budget.",
     },
     {
       step: "02",
       title: "Book as a business",
-      body: "Select 'Business' when you make the request and fill in your invoice details. You can also save them once.",
+      body: "Select 'Business' and add your invoice details.",
     },
     {
       step: "03",
       title: "Receive your invoice",
-      body: "After acceptance your payment is held safely in escrow and you receive an invoice straight away.",
+      body: "Payment safe in escrow, invoice right away.",
     },
   ],
   ctaTitle: "Ready for your next corporate event?",
