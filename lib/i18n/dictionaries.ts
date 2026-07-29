@@ -17,17 +17,14 @@ const nl = {
     becomeDj: "Word DJ",
     toDashboard: "Naar dashboard",
     card1Title: "Ontdek & boek",
-    card1Body:
-      "Blader door de agenda met feesten en DJ's bij jou in de buurt. Boek een DJ voor je eigen event. Filter op genre, stad, datum en budget.",
+    card1Body: "Vind de DJ die bij jouw event past.",
     card1Cta: "Ontdek feesten",
     card2Tag: "Voor DJ's",
     card2Title: "Word geboekt",
-    card2Body:
-      "Maak een DJ-profiel aan, toon je demo's en volgers, en ontvang boekingsaanvragen. Aanmelden is gratis: MyGigs verdient 7% per boeking.",
+    card2Body: "Maak je profiel en ontvang boekingen.",
     card2Cta: "Word DJ",
     card3Title: "Zakelijk boeken",
-    card3Body:
-      "Boek DJ's voor je bedrijfsevent met factuur op naam, BTW-aftrek en één aanspreekpunt. Sla je factuurgegevens eenmalig op.",
+    card3Body: "DJ's voor je bedrijfsevent — met factuur en btw.",
     card3Cta: "Naar zakelijk",
     featuredTitle: "Uitgelichte DJ's",
     viewAll: "Bekijk alles",
@@ -563,17 +560,14 @@ const en: typeof nl = {
     becomeDj: "Become a DJ",
     toDashboard: "To dashboard",
     card1Title: "Discover & book",
-    card1Body:
-      "Browse the calendar of parties and DJs near you. Book a DJ for your own event. Filter by genre, city, date and budget.",
+    card1Body: "Find the DJ that fits your event.",
     card1Cta: "Discover events",
     card2Tag: "For DJs",
     card2Title: "Get booked",
-    card2Body:
-      "Create a DJ profile, show your demos and followers, and receive booking requests. Signing up is free: MyGigs earns 7% per booking.",
+    card2Body: "Create your profile and receive bookings.",
     card2Cta: "Become a DJ",
     card3Title: "Business bookings",
-    card3Body:
-      "Book DJs for your company event with a proper invoice, VAT deduction and a single point of contact. Save your billing details once.",
+    card3Body: "DJs for your company event — with invoice and VAT.",
     card3Cta: "To business",
     featuredTitle: "Featured DJs",
     viewAll: "View all",
