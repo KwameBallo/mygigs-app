@@ -2,8 +2,10 @@
 
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { priceBreakdown, VAT_RATE } from "@/lib/utils/pricing"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { priceBreakdown, VAT_RATE, formatEuro } from "@/lib/utils/pricing"
 import { getI18n } from "@/lib/i18n"
+import { sendNewRequestToDJ, getUserEmail } from "@/lib/email"
 import { dict } from "./i18n"
 
 export async function createBooking(formData: FormData) {
@@ -63,13 +65,23 @@ export async function createBooking(formData: FormData) {
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("base_gage, equipment_prices")
+    .select("base_gage, equipment_prices, user_id, stage_name")
     .eq("id", artistId)
     .maybeSingle()
 
   if (!artist) {
     redirect(`/artists/${artistId}?error=notfound`)
   }
+
+  // Btw-status van de DJ bepaalt of zakelijk btw krijgt (KOR = geen btw). Via de
+  // service-role, want artist_billing is owner-only (de boeker mag het niet lezen);
+  // deze vlag is geen gevoelige PII, alleen of er btw van toepassing is.
+  const { data: djBilling } = await createAdminClient()
+    .from("artist_billing")
+    .select("is_vat_registered")
+    .eq("artist_id", artistId)
+    .maybeSingle()
+  const djVatRegistered = djBilling?.is_vat_registered ?? false
 
   // Alleen de door de boeker gekozen DJ-apparatuur telt mee in het totaal.
   const selectedEquip = formData.getAll("dj_equipment").map(String)
@@ -84,10 +96,10 @@ export async function createBooking(formData: FormData) {
     Math.round(artist.base_gage * hours),
     equipmentCost,
   )
-  // Particulier: gage + apparatuur is incl. btw. Zakelijk: dat bedrag is
-  // exclusief btw en de boeker betaalt 21% btw erbovenop (t.b.v. de factuur).
+  // Particulier: gage + apparatuur is incl. btw. Zakelijk: alleen als de DJ
+  // btw-plichtig is komt er 21% btw bovenop (KOR-DJ = geen btw, dus geen opslag).
   const total =
-    bookingType === "zakelijk"
+    bookingType === "zakelijk" && djVatRegistered
       ? Math.round(grossIncl * (1 + VAT_RATE) * 100) / 100
       : grossIncl
 
@@ -115,6 +127,32 @@ export async function createBooking(formData: FormData) {
     redirect(
       `/artists/${artistId}?error=${encodeURIComponent(dict[locale].bookingFailed)}`,
     )
+  }
+
+  // Nieuwe-aanvraag-mail naar de DJ. Best-effort — mag de boeking niet blokkeren.
+  try {
+    const djEmail = artist.user_id ? await getUserEmail(artist.user_id) : null
+    if (djEmail) {
+      const { locale } = await getI18n()
+      const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+      await sendNewRequestToDJ({
+        to: djEmail,
+        locale,
+        occasion: occasion ?? "",
+        when: eventDate
+          ? new Date(eventDate).toLocaleDateString(dateLocale, {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          : "",
+        place: [city, venue].filter(Boolean).join(" · "),
+        gage: formatEuro(gage),
+      })
+    }
+  } catch (e) {
+    console.error("new-request email failed:", e)
   }
 
   redirect("/bookings?created=1")

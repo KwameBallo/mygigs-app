@@ -3,6 +3,9 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { logAudit } from "@/lib/audit"
+import { getI18n } from "@/lib/i18n"
+import { formatEuro } from "@/lib/utils/pricing"
+import { sendAcceptedToBooker, getUserEmail } from "@/lib/email"
 import type { Database } from "@/types/database"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
@@ -20,14 +23,14 @@ export async function updateBookingStatus(formData: FormData) {
   // Verifieer dat de boeking bij de ingelogde DJ hoort.
   const { data: artist } = await supabase
     .from("artists")
-    .select("id")
+    .select("id, stage_name")
     .eq("user_id", user.id)
     .maybeSingle()
   if (!artist) return
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id, event_date")
+    .select("id, event_date, booker_id, city, venue_name, total")
     .eq("id", bookingId)
     .eq("artist_id", artist.id)
     .maybeSingle()
@@ -59,6 +62,30 @@ export async function updateBookingStatus(formData: FormData) {
       date: booking.event_date,
       status: "booked",
     })
+
+    // Mail de boeker dat de aanvraag is geaccepteerd (met betaal-CTA). Best-effort.
+    try {
+      const bookerEmail = await getUserEmail(booking.booker_id)
+      if (bookerEmail) {
+        const { locale } = await getI18n()
+        const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+        await sendAcceptedToBooker({
+          to: bookerEmail,
+          locale,
+          djName: artist.stage_name,
+          when: new Date(booking.event_date).toLocaleDateString(dateLocale, {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }),
+          place: [booking.city, booking.venue_name].filter(Boolean).join(" · "),
+          amount: formatEuro(booking.total),
+        })
+      }
+    } catch (e) {
+      console.error("accepted email failed:", e)
+    }
   }
 
   revalidatePath("/dashboard")

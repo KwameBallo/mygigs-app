@@ -6,6 +6,7 @@ import { EquipmentPlanner, type MiniSupplier } from "./equipment-planner"
 import { EquipmentSelectionProvider } from "./equipment-selection"
 import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
 import { getSuppliers, type Supplier } from "@/lib/data/suppliers"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { getViewer } from "@/lib/auth"
 import { formatFollowers } from "@/lib/utils/format"
 import { getI18n } from "@/lib/i18n"
@@ -47,6 +48,15 @@ export default async function ArtistPage({
   const { profile, emailConfirmed } = viewer
 
   if (!artist) notFound()
+
+  // Btw-status van de DJ (via service-role; artist_billing is owner-only). Bepaalt
+  // of een zakelijke boeking btw krijgt — nodig voor de juiste prijsweergave.
+  const { data: djBilling } = await createAdminClient()
+    .from("artist_billing")
+    .select("is_vat_registered")
+    .eq("artist_id", artist.id)
+    .maybeSingle()
+  const djVatRegistered = djBilling?.is_vat_registered ?? false
 
   // Verhuur aanbieden zodra de DJ minstens één geluid- of licht-item mist.
   const SOUND_ITEMS = ["Microfoon", "Draaitafel", "Speakers", "Bass"]
@@ -239,6 +249,7 @@ export default async function ArtistPage({
             <BookForm
               artistId={artist.id}
               baseGage={artist.base_gage}
+              djVatRegistered={djVatRegistered}
               isLoggedIn={!!profile}
               emailConfirmed={emailConfirmed}
               company={

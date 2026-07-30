@@ -98,3 +98,95 @@ export async function sendPaymentReceipt(opts: {
   }
   return sendEmail({ to: opts.to, subject, html: shell(title, rows, cta) })
 }
+
+// Nieuwe aanvraag binnen — naar de DJ.
+export async function sendNewRequestToDJ(opts: {
+  to: string
+  locale: "nl" | "en"
+  occasion: string
+  when: string
+  place: string
+  gage: string
+}) {
+  const nl = opts.locale === "nl"
+  const subject = nl
+    ? `Nieuwe aanvraag${opts.occasion ? ` — ${opts.occasion}` : ""}`
+    : `New request${opts.occasion ? ` — ${opts.occasion}` : ""}`
+  const rows =
+    (opts.occasion ? row(nl ? "Gelegenheid" : "Occasion", opts.occasion) : "") +
+    row(nl ? "Wanneer" : "When", opts.when) +
+    (opts.place ? row(nl ? "Locatie" : "Location", opts.place) : "") +
+    row(nl ? "Gage" : "Fee", opts.gage, true)
+  return sendEmail({
+    to: opts.to,
+    subject,
+    html: shell(nl ? "Je hebt een nieuwe aanvraag 🎉" : "You have a new request 🎉", rows, {
+      href: `${siteUrl()}/dashboard`,
+      label: nl ? "Bekijk aanvraag" : "View request",
+    }),
+  })
+}
+
+// Aanvraag geaccepteerd door de DJ — naar de boeker (met betaal-CTA).
+export async function sendAcceptedToBooker(opts: {
+  to: string
+  locale: "nl" | "en"
+  djName: string
+  when: string
+  place: string
+  amount: string
+}) {
+  const nl = opts.locale === "nl"
+  const subject = nl
+    ? `${opts.djName} heeft je aanvraag geaccepteerd`
+    : `${opts.djName} accepted your request`
+  const rows =
+    row("DJ", opts.djName) +
+    row(nl ? "Wanneer" : "When", opts.when) +
+    (opts.place ? row(nl ? "Locatie" : "Location", opts.place) : "") +
+    row(nl ? "Te betalen" : "To pay", opts.amount, true)
+  return sendEmail({
+    to: opts.to,
+    subject,
+    html: shell(nl ? "Je aanvraag is geaccepteerd ✓" : "Your request was accepted ✓", rows, {
+      href: `${siteUrl()}/bookings`,
+      label: nl ? "Betaal je boeking" : "Pay your booking",
+    }),
+  })
+}
+
+// Boeking betaald & bevestigd — naar de DJ (met uitbetaal-info).
+export async function sendBookingConfirmedToDJ(opts: {
+  to: string
+  locale: "nl" | "en"
+  when: string
+  place: string
+  payout: string
+}) {
+  const nl = opts.locale === "nl"
+  const subject = nl ? "Boeking betaald & bevestigd" : "Booking paid & confirmed"
+  const rows =
+    row(nl ? "Wanneer" : "When", opts.when) +
+    (opts.place ? row(nl ? "Locatie" : "Location", opts.place) : "") +
+    row(nl ? "Jouw uitbetaling" : "Your payout", opts.payout, true) +
+    row(
+      nl ? "Uitbetaling" : "Payout",
+      nl ? "Binnen 14 dagen na het optreden" : "Within 14 days after the performance",
+    )
+  return sendEmail({
+    to: opts.to,
+    subject,
+    html: shell(nl ? "Boeking bevestigd ✓" : "Booking confirmed ✓", rows, {
+      href: `${siteUrl()}/dashboard`,
+      label: nl ? "Bekijk boeking" : "View booking",
+    }),
+  })
+}
+
+// E-mailadres van een gebruiker ophalen via de service-role (auth.users).
+export async function getUserEmail(userId: string): Promise<string | null> {
+  const { createAdminClient } = await import("@/lib/supabase/admin")
+  const admin = createAdminClient()
+  const { data } = await admin.auth.admin.getUserById(userId)
+  return data.user?.email ?? null
+}

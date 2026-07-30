@@ -165,6 +165,9 @@ const nl = {
     totalIncl: "Totaal (incl. btw)",
     businessNote:
       "Zakelijk: prijzen zijn exclusief btw; de btw staat apart op de factuur en vorder je terug.",
+    totalLabel: "Totaal",
+    korNote:
+      "Deze DJ valt onder de kleineondernemersregeling (KOR): geen btw, dus geen btw om terug te vorderen.",
     equipmentRent: "Apparatuur (huur van DJ)",
     youPayIncl: "Jij betaalt (incl. btw)",
     ofWhichVat: "waarvan btw",
@@ -724,6 +727,9 @@ const en: typeof nl = {
     totalIncl: "Total (incl. VAT)",
     businessNote:
       "Business: prices are excluding VAT; VAT is listed separately on the invoice and is reclaimable.",
+    totalLabel: "Total",
+    korNote:
+      "This DJ falls under the small-business scheme (KOR): no VAT, so nothing to reclaim.",
     equipmentRent: "Equipment (rented from DJ)",
     youPayIncl: "You pay (incl. VAT)",
     ofWhichVat: "of which VAT",

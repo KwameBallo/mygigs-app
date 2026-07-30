@@ -28,12 +28,14 @@ function formatHours(h: number, comma: boolean, unit: string) {
 export function BookForm({
   artistId,
   baseGage,
+  djVatRegistered,
   isLoggedIn,
   emailConfirmed,
   company,
 }: {
   artistId: string
   baseGage: number
+  djVatRegistered: boolean
   isLoggedIn: boolean
   emailConfirmed: boolean
   company?: {
@@ -55,9 +57,12 @@ export function BookForm({
   )
   // Particulier: gage + apparatuur is inclusief 21% btw (btw terugrekenen).
   const { vat: vatIncl } = vatBreakdown(grossIncl)
-  // Zakelijk: gage + apparatuur zijn exclusief btw; 21% komt er bovenop.
+  // Zakelijk: gage + apparatuur exclusief btw. Alleen bij een btw-plichtige DJ
+  // komt 21% erbovenop; is de DJ KOR, dan geen btw.
   const netZak = gage + equipment
-  const vatZak = Math.round(netZak * VAT_RATE * 100) / 100
+  const vatZak = djVatRegistered
+    ? Math.round(netZak * VAT_RATE * 100) / 100
+    : 0
   const grossZak = netZak + vatZak
 
   if (!isLoggedIn) {
@@ -239,23 +244,38 @@ export function BookForm({
 
       <div className="rounded-xl border border-border bg-surface-2 p-4 text-sm">
         {type === "zakelijk" ? (
-          <>
-            <Row
-              label={`${b.gage} · ${fmtHours(hours)} ${b.gageExcl}`}
-              value={formatEuro(gage)}
-            />
-            {equipment > 0 && (
-              <Row label={b.equipmentExcl} value={formatEuro(equipment)} />
-            )}
-            <div className="my-2 border-t border-border" />
-            <Row label={b.subtotalExcl} value={formatEuro(netZak)} strong />
-            <Row
-              label={`${b.vatRow} (${formatPercent(VAT_RATE)})`}
-              value={formatEuro(vatZak)}
-            />
-            <Row label={b.totalIncl} value={formatEuro(grossZak)} />
-            <p className="mt-2 text-xs text-muted">{b.businessNote}</p>
-          </>
+          djVatRegistered ? (
+            <>
+              <Row
+                label={`${b.gage} · ${fmtHours(hours)} ${b.gageExcl}`}
+                value={formatEuro(gage)}
+              />
+              {equipment > 0 && (
+                <Row label={b.equipmentExcl} value={formatEuro(equipment)} />
+              )}
+              <div className="my-2 border-t border-border" />
+              <Row label={b.subtotalExcl} value={formatEuro(netZak)} strong />
+              <Row
+                label={`${b.vatRow} (${formatPercent(VAT_RATE)})`}
+                value={formatEuro(vatZak)}
+              />
+              <Row label={b.totalIncl} value={formatEuro(grossZak)} />
+              <p className="mt-2 text-xs text-muted">{b.businessNote}</p>
+            </>
+          ) : (
+            <>
+              <Row
+                label={`${b.gage} · ${fmtHours(hours)}`}
+                value={formatEuro(gage)}
+              />
+              {equipment > 0 && (
+                <Row label={b.equipmentRent} value={formatEuro(equipment)} />
+              )}
+              <div className="my-2 border-t border-border" />
+              <Row label={b.totalLabel} value={formatEuro(grossZak)} strong />
+              <p className="mt-2 text-xs text-muted">{b.korNote}</p>
+            </>
+          )
         ) : (
           <>
             <Row
