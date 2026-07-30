@@ -1,0 +1,100 @@
+import "server-only"
+
+// Transactionele e-mail via Resend (REST API, geen extra dependency nodig).
+// AVG/ISO: verzending gaat over TLS bij de provider, we sturen minimale gegevens
+// (geen adres/betaalgegevens) en linken naar de app i.p.v. PII mee te sturen.
+// Slaat stil over als er (nog) geen RESEND_API_KEY is ingesteld.
+
+const RESEND_URL = "https://api.resend.com/emails"
+
+function siteUrl() {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+    "https://mygigs-app-t7ve.vercel.app"
+  )
+}
+
+export async function sendEmail(opts: {
+  to: string
+  subject: string
+  html: string
+}): Promise<{ ok: boolean; skipped?: boolean }> {
+  const key = process.env.RESEND_API_KEY
+  const from = process.env.EMAIL_FROM || "MyGigs <onboarding@resend.dev>"
+  if (!key) {
+    console.warn("e-mail overgeslagen: RESEND_API_KEY niet ingesteld")
+    return { ok: false, skipped: true }
+  }
+  try {
+    const res = await fetch(RESEND_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [opts.to],
+        subject: opts.subject,
+        html: opts.html,
+      }),
+    })
+    if (!res.ok) {
+      console.error("e-mail versturen mislukt:", res.status, await res.text())
+      return { ok: false }
+    }
+    return { ok: true }
+  } catch (e) {
+    console.error("e-mail fout:", e)
+    return { ok: false }
+  }
+}
+
+function shell(title: string, bodyRows: string, cta: { href: string; label: string }) {
+  return `<!doctype html><html><body style="margin:0;background:#0b0b0c;font-family:Segoe UI,Arial,sans-serif;color:#f5f4f2">
+  <div style="max-width:560px;margin:0 auto;padding:32px 24px">
+    <div style="font-size:22px;font-weight:800">My<span style="color:#ff6f14">Gigs</span><span style="color:#ff6f14">.</span></div>
+    <div style="margin-top:24px;background:#161618;border:1px solid #2a2a2e;border-radius:18px;padding:24px">
+      <h1 style="margin:0 0 12px;font-size:20px">${title}</h1>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#cfcfd4">${bodyRows}</table>
+      <a href="${cta.href}" style="display:inline-block;margin-top:20px;background:#ff6f14;color:#000;font-weight:700;text-decoration:none;border-radius:999px;padding:11px 20px">${cta.label}</a>
+    </div>
+    <p style="margin-top:18px;font-size:11px;color:#8b8b93">Dit is een automatisch betaalbewijs van MyGigs. Bewaar deze e-mail voor je administratie.</p>
+  </div></body></html>`
+}
+
+function row(label: string, value: string, strong = false) {
+  return `<tr><td style="padding:5px 0;color:#8b8b93">${label}</td><td style="padding:5px 0;text-align:right;${strong ? "font-weight:800;color:#ff8a3d" : ""}">${value}</td></tr>`
+}
+
+// Betaalbewijs naar de (hoofd)boeker na een geslaagde betaling.
+export async function sendPaymentReceipt(opts: {
+  to: string
+  locale: "nl" | "en"
+  djName: string
+  when: string
+  place: string
+  amount: string
+}) {
+  const nl = opts.locale === "nl"
+  const subject = nl
+    ? `Betaalbewijs — je boeking van ${opts.djName} is betaald`
+    : `Payment receipt — your booking of ${opts.djName} is paid`
+  const title = nl ? "Betaling geslaagd ✓" : "Payment successful ✓"
+  const rows =
+    row(nl ? "DJ" : "DJ", opts.djName) +
+    row(nl ? "Wanneer" : "When", opts.when) +
+    (opts.place ? row(nl ? "Locatie" : "Location", opts.place) : "") +
+    row(nl ? "Betaald bedrag" : "Amount paid", opts.amount, true) +
+    row(
+      nl ? "Status" : "Status",
+      nl
+        ? "Veilig in escrow — uitbetaling ná het optreden"
+        : "Held safely in escrow — paid out after the performance",
+    )
+  const cta = {
+    href: `${siteUrl()}/bookings`,
+    label: nl ? "Bekijk je boeking" : "View your booking",
+  }
+  return sendEmail({ to: opts.to, subject, html: shell(title, rows, cta) })
+}

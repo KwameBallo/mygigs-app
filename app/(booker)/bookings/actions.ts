@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
 import { generateInvoicesForBooking } from "@/lib/invoicing"
+import { sendPaymentReceipt } from "@/lib/email"
+import { getI18n } from "@/lib/i18n"
+import { formatEuro } from "@/lib/utils/pricing"
 
 // De boeker annuleert een eigen aanvraag. Alleen als de boeking nog niet
 // definitief is (in afwachting of geaccepteerd) en van deze gebruiker is.
@@ -53,7 +56,9 @@ export async function payBooking(formData: FormData) {
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id, artist_id, total, service_fee, status")
+    .select(
+      "id, artist_id, total, service_fee, status, event_date, city, venue_name, artists(stage_name)",
+    )
     .eq("id", bookingId)
     .eq("booker_id", user.id)
     .maybeSingle()
@@ -94,6 +99,32 @@ export async function payBooking(formData: FormData) {
     await generateInvoicesForBooking(booking.id)
   } catch (e) {
     console.error("invoice generation failed:", e)
+  }
+
+  // 5) Betaalbewijs mailen naar de (hoofd)boeker. Best-effort.
+  try {
+    if (user.email) {
+      const { locale } = await getI18n()
+      const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+      const artist = Array.isArray(booking.artists)
+        ? booking.artists[0]
+        : booking.artists
+      await sendPaymentReceipt({
+        to: user.email,
+        locale,
+        djName: artist?.stage_name ?? "DJ",
+        when: new Date(booking.event_date).toLocaleDateString(dateLocale, {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
+        place: [booking.city, booking.venue_name].filter(Boolean).join(" · "),
+        amount: formatEuro(booking.total),
+      })
+    }
+  } catch (e) {
+    console.error("payment receipt email failed:", e)
   }
 
   // Audit: betaling in escrow + geplande uitbetaling (A.8.15).
