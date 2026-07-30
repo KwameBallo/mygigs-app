@@ -59,7 +59,7 @@ function shell(title: string, bodyRows: string, cta: { href: string; label: stri
       <table style="width:100%;border-collapse:collapse;font-size:14px;color:#cfcfd4">${bodyRows}</table>
       <a href="${cta.href}" style="display:inline-block;margin-top:20px;background:#ff6f14;color:#000;font-weight:700;text-decoration:none;border-radius:999px;padding:11px 20px">${cta.label}</a>
     </div>
-    <p style="margin-top:18px;font-size:11px;color:#8b8b93">Dit is een automatisch betaalbewijs van MyGigs. Bewaar deze e-mail voor je administratie.</p>
+    <p style="margin-top:18px;font-size:11px;color:#8b8b93">Automatische e-mail van MyGigs — reageer niet op dit bericht.</p>
   </div></body></html>`
 }
 
