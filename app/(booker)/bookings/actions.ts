@@ -120,9 +120,10 @@ export async function payBooking(formData: FormData) {
     })
     const place = [booking.city, booking.venue_name].filter(Boolean).join(" · ")
 
-    if (user.email) {
+    const bookerEmail = await getUserEmail(user.id)
+    if (bookerEmail) {
       await sendPaymentReceipt({
-        to: user.email,
+        to: bookerEmail,
         locale,
         djName: artist?.stage_name ?? "DJ",
         when,

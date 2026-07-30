@@ -55,6 +55,24 @@ export async function updateAccount(formData: FormData) {
   revalidatePath("/settings")
 }
 
+// E-mailvoorkeur: de gebruiker kiest zelf of MyGigs e-mails mag sturen.
+// In-app meldingen blijven altijd; alleen de e-mails worden bij opt-out overgeslagen.
+export async function updateEmailPrefs(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const emailOn = formData.get("email_on") != null
+  await supabase
+    .from("profiles")
+    .update({ email_opt_out: !emailOn })
+    .eq("id", user.id)
+
+  revalidatePath("/settings")
+}
+
 // Bedrijfs-/factuurgegevens die bij elke zakelijke boeking hergebruikt worden.
 export async function updateCompanyDetails(formData: FormData) {
   const str = (k: string) => {

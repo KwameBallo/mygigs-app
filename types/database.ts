@@ -1146,6 +1146,7 @@ export type Database = {
           company_name: string | null
           created_at: string
           email: string | null
+          email_opt_out: boolean
           flag_count: number
           flagged: boolean
           full_name: string | null
@@ -1171,6 +1172,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           email?: string | null
+          email_opt_out?: boolean
           flag_count?: number
           flagged?: boolean
           full_name?: string | null
@@ -1196,6 +1198,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           email?: string | null
+          email_opt_out?: boolean
           flag_count?: number
           flagged?: boolean
           full_name?: string | null

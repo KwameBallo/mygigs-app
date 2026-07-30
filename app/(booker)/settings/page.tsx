@@ -9,7 +9,11 @@ import {
   hasActiveSubscription,
 } from "@/lib/subscriptions"
 import { roleLabel } from "@/lib/roles"
-import { updateAccount, updateCompanyDetails } from "./actions"
+import {
+  updateAccount,
+  updateCompanyDetails,
+  updateEmailPrefs,
+} from "./actions"
 import { DeleteAccountButton } from "./delete-account-button"
 import { dict } from "./i18n"
 
@@ -162,6 +166,33 @@ export default async function SettingsPage() {
           <button
             type="submit"
             className="mt-1 h-11 self-start rounded-full bg-brand px-6 font-medium text-black transition hover:bg-brand-strong"
+          >
+            {d.save}
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <h2 className="text-lg font-semibold">{d.emailPrefTitle}</h2>
+        <p className="mt-1 text-sm text-muted">{d.emailPrefSubtitle}</p>
+        <form action={updateEmailPrefs} className="mt-4 flex flex-col gap-4">
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              name="email_on"
+              defaultChecked={!profile.email_opt_out}
+              className="mt-0.5 h-4 w-4 accent-brand"
+            />
+            <span className="text-sm">
+              {d.emailPrefLabel}
+              <span className="mt-0.5 block text-xs text-muted">
+                {d.emailPrefHint}
+              </span>
+            </span>
+          </label>
+          <button
+            type="submit"
+            className="h-11 self-start rounded-full bg-brand px-6 font-medium text-black transition hover:bg-brand-strong"
           >
             {d.save}
           </button>

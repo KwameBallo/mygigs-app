@@ -52,6 +52,14 @@ const nl = {
   manageSubscription: "Abonnement beheren",
   viewSubscriptions: "Bekijk abonnementen",
 
+  // E-mailmeldingen
+  emailPrefTitle: "E-mailmeldingen",
+  emailPrefSubtitle:
+    "Kies of MyGigs je e-mails stuurt. Meldingen in je account blijf je altijd zien.",
+  emailPrefLabel: "Stuur mij e-mails van MyGigs",
+  emailPrefHint:
+    "Bijv. nieuwe aanvraag, geaccepteerd, betaalbewijs en bevestigingen. Uitzetten kan altijd.",
+
   // Privacy section
   privacyTitle: "Privacy en gegevens",
   privacySubtitle:
@@ -136,6 +144,14 @@ const en: typeof nl = {
     "Take out a subscription to post events as a club or organizer. Start with a free trial.",
   manageSubscription: "Manage subscription",
   viewSubscriptions: "View subscriptions",
+
+  // Email notifications
+  emailPrefTitle: "Email notifications",
+  emailPrefSubtitle:
+    "Choose whether MyGigs sends you emails. You'll always see notifications in your account.",
+  emailPrefLabel: "Send me emails from MyGigs",
+  emailPrefHint:
+    "E.g. new request, accepted, payment receipt and confirmations. You can turn this off anytime.",
 
   // Privacy section
   privacyTitle: "Privacy and data",

@@ -59,7 +59,7 @@ function shell(title: string, bodyRows: string, cta: { href: string; label: stri
       <table style="width:100%;border-collapse:collapse;font-size:14px;color:#cfcfd4">${bodyRows}</table>
       <a href="${cta.href}" style="display:inline-block;margin-top:20px;background:#ff6f14;color:#000;font-weight:700;text-decoration:none;border-radius:999px;padding:11px 20px">${cta.label}</a>
     </div>
-    <p style="margin-top:18px;font-size:11px;color:#8b8b93">Automatische e-mail van MyGigs — reageer niet op dit bericht.</p>
+    <p style="margin-top:18px;font-size:11px;color:#8b8b93">Automatische e-mail van MyGigs. Reageer niet op dit bericht.</p>
   </div></body></html>`
 }
 
@@ -184,9 +184,17 @@ export async function sendBookingConfirmedToDJ(opts: {
 }
 
 // E-mailadres van een gebruiker ophalen via de service-role (auth.users).
+// Respecteert de e-mailvoorkeur: heeft de gebruiker e-mails uitgezet (opt-out),
+// dan geven we null terug en wordt er niets verstuurd.
 export async function getUserEmail(userId: string): Promise<string | null> {
   const { createAdminClient } = await import("@/lib/supabase/admin")
   const admin = createAdminClient()
+  const { data: prof } = await admin
+    .from("profiles")
+    .select("email_opt_out")
+    .eq("id", userId)
+    .maybeSingle()
+  if (prof?.email_opt_out) return null
   const { data } = await admin.auth.admin.getUserById(userId)
   return data.user?.email ?? null
 }
