@@ -1,4 +1,5 @@
 const nl = {
+  brandTagline: "Be the star you want to be",
   back: "Terug",
   print: "Print / opslaan als PDF",
   kindSale: "Verkoopfactuur",
@@ -14,12 +15,12 @@ const nl = {
   subtotal: "Subtotaal",
   vat: "Btw ({rate})",
   total: "Totaal",
-  paidViaMyGigs: "Betaald via MyGigs — het bedrag staat in escrow tot na het optreden.",
-  footer:
-    "Factuur gegenereerd via MyGigs. Bewaar dit document voor je administratie (bewaarplicht 7 jaar).",
+  paidViaMyGigs:
+    "Betaald via MyGigs — het bedrag staat in escrow tot na het optreden en wordt binnen 14 dagen uitbetaald.",
 }
 
 const en: typeof nl = {
+  brandTagline: "Be the star you want to be",
   back: "Back",
   print: "Print / save as PDF",
   kindSale: "Sales invoice",
@@ -35,9 +36,8 @@ const en: typeof nl = {
   subtotal: "Subtotal",
   vat: "VAT ({rate})",
   total: "Total",
-  paidViaMyGigs: "Paid via MyGigs — the amount is held in escrow until after the performance.",
-  footer:
-    "Invoice generated via MyGigs. Keep this document for your records (7-year retention).",
+  paidViaMyGigs:
+    "Paid via MyGigs — held in escrow until after the performance and paid out within 14 days.",
 }
 
 export const dict = { nl, en }

@@ -47,9 +47,21 @@ export default async function InvoicePage({
       </div>
 
       <div className="mt-6 rounded-3xl border border-border bg-surface p-8 text-sm print:border-0 print:bg-white print:p-0 print:text-black">
+        {/* MyGigs-merkbalk bovenaan (volle breedte) */}
+        <div className="mb-6 border-b border-border pb-4 print:border-black/20">
+          <div className="text-2xl font-bold tracking-tight">
+            My
+            <span className="text-brand print:text-black">Gigs</span>
+            <span className="text-brand print:text-black">.</span>
+          </div>
+          <div className="mt-0.5 text-xs text-muted print:text-black">
+            {d.brandTagline}
+          </div>
+        </div>
+
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-2xl font-semibold tracking-tight text-brand print:text-black">
+            <p className="text-2xl font-semibold tracking-tight">
               {inv.issuer_name}
             </p>
             {inv.issuer_address && (
@@ -132,7 +144,6 @@ export default async function InvoicePage({
           <p className="mt-6 text-xs text-muted">{inv.vat_note}</p>
         )}
         <p className="mt-2 text-xs text-muted">{d.paidViaMyGigs}</p>
-        <p className="mt-6 text-xs text-muted">{d.footer}</p>
       </div>
     </main>
   )
