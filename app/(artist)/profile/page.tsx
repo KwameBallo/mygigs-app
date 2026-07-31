@@ -125,6 +125,20 @@ export default async function ProfilePage({
         <section className="mt-8">
           <h2 className="text-sm font-medium">{p.billingHeading}</h2>
           <p className="mb-3 mt-0.5 text-xs text-muted">{p.billingHint}</p>
+
+          {/* Uitleg KVK-inschrijving + KOR (tijdelijk) bij het opzetten als DJ. */}
+          <div className="mb-4 rounded-2xl border border-brand/30 bg-brand/5 p-4 text-xs leading-relaxed text-muted">
+            <p className="text-sm font-medium text-foreground">
+              {p.kvkInfoTitle}
+            </p>
+            <ul className="mt-2 flex flex-col gap-1.5">
+              <li>{p.kvkInfo1}</li>
+              <li>{p.kvkInfo2}</li>
+              <li>{p.kvkInfo3}</li>
+            </ul>
+            <p className="mt-2.5 italic">{p.kvkInfoDisclaimer}</p>
+          </div>
+
           {billingStatus === "ok" && (
             <div className="mb-3 rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-2.5 text-sm text-green-300">
               {p.billingSaved}

@@ -482,6 +482,15 @@ const nl = {
     billingVatRegistered: "Ik ben btw-plichtig",
     billingKorNote:
       "Niet aangevinkt? Dan factureren we zonder btw volgens de kleineondernemersregeling (KOR).",
+    kvkInfoTitle: "Inschrijving KVK & btw",
+    kvkInfo1:
+      "Om via MyGigs uitbetaald te worden, factureer je als ondernemer. Schrijf je daarom in bij de KVK (Kamer van Koophandel) — dan krijg je een KVK-nummer en meestal een btw-id.",
+    kvkInfo2:
+      "Kleineondernemersregeling (KOR): blijf je onder € 20.000 omzet per jaar, dan kun je de KOR gebruiken en breng je géén btw in rekening. Je meldt je hiervoor apart aan bij de Belastingdienst.",
+    kvkInfo3:
+      "De KOR is tijdelijk: kom je boven € 20.000 uit, dan word je automatisch btw-plichtig. Zet dan de schakelaar hieronder aan en vul je btw-id in.",
+    kvkInfoDisclaimer:
+      "Dit is algemene informatie, geen fiscaal advies. Twijfel je? Vraag het de Belastingdienst of je boekhouder.",
     billingSave: "Facturatie opslaan",
     billingSaved: "Facturatiegegevens opgeslagen.",
     billingError:
@@ -1048,6 +1057,15 @@ const en: typeof nl = {
     billingVatRegistered: "I am VAT-registered",
     billingKorNote:
       "Not ticked? Then we invoice without VAT under the small-business scheme (KOR).",
+    kvkInfoTitle: "Chamber of Commerce & VAT",
+    kvkInfo1:
+      "To get paid via MyGigs, you invoice as a business. Register with the Dutch Chamber of Commerce (KVK) — you'll get a KVK number and usually a VAT ID.",
+    kvkInfo2:
+      "Small-business scheme (KOR): if you stay under €20,000 turnover per year, you can use the KOR and charge no VAT. You register for it separately with the Tax Administration.",
+    kvkInfo3:
+      "The KOR is temporary: once you exceed €20,000, you automatically become VAT-liable. Turn on the toggle below and enter your VAT ID.",
+    kvkInfoDisclaimer:
+      "This is general information, not tax advice. In doubt? Ask the Tax Administration or your accountant.",
     billingSave: "Save billing details",
     billingSaved: "Billing details saved.",
     billingError:
