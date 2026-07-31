@@ -16,7 +16,7 @@ const nl = {
   vat: "Btw ({rate})",
   total: "Totaal",
   paidViaMyGigs:
-    "Betaald via MyGigs — het bedrag staat in escrow tot na het optreden en wordt binnen 14 dagen uitbetaald.",
+    "Betaald via MyGigs — het bedrag staat in escrow tot na het optreden en wordt binnen 5 werkdagen uitbetaald.",
 }
 
 const en: typeof nl = {
@@ -37,7 +37,7 @@ const en: typeof nl = {
   vat: "VAT ({rate})",
   total: "Total",
   paidViaMyGigs:
-    "Paid via MyGigs — held in escrow until after the performance and paid out within 14 days.",
+    "Paid via MyGigs — held in escrow until after the performance and paid out within 5 business days.",
 }
 
 export const dict = { nl, en }

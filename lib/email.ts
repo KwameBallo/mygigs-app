@@ -182,7 +182,7 @@ export async function sendBookingConfirmedToDJ(opts: {
     row(nl ? "Jouw uitbetaling" : "Your payout", opts.payout, true) +
     row(
       nl ? "Uitbetaling" : "Payout",
-      nl ? "Binnen 14 dagen na het optreden" : "Within 14 days after the performance",
+      nl ? "Binnen 5 werkdagen na het optreden" : "Within 5 business days after the performance",
     )
   return sendEmail({
     to: opts.to,
