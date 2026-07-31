@@ -250,6 +250,10 @@ const nl = {
     pay: "Betalen",
     cancel: "Annuleren",
     paidNote: "Betaald — geld staat bij MyGigs, uitbetaling binnen 5 werkdagen.",
+    reviewCta: "Review plaatsen",
+    reviewThanks: "Bedankt voor je review!",
+    reviewBanner:
+      "Je hebt {n} afgerond optreden om te reviewen — help je DJ met een beoordeling.",
   },
   agenda: {
     title: "Agenda",
@@ -373,6 +377,7 @@ const nl = {
     accept: "Accepteer",
     decline: "Weiger",
     chatClient: "Chat met klant",
+    markDone: "Markeer als afgerond",
     visibleFans: "Zichtbaar voor fans",
     showPublic: "Toon op publiek profiel",
     private: "Privé",
@@ -813,6 +818,10 @@ const en: typeof nl = {
     pay: "Pay",
     cancel: "Cancel",
     paidNote: "Paid — money is held by MyGigs, payout within 5 business days.",
+    reviewCta: "Leave a review",
+    reviewThanks: "Thanks for your review!",
+    reviewBanner:
+      "You have {n} completed gig to review — help your DJ with a rating.",
   },
   agenda: {
     title: "Calendar",
@@ -934,6 +943,7 @@ const en: typeof nl = {
     accept: "Accept",
     decline: "Decline",
     chatClient: "Chat with client",
+    markDone: "Mark as completed",
     visibleFans: "Visible to fans",
     showPublic: "Show on public profile",
     private: "Private",

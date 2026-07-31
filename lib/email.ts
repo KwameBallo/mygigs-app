@@ -227,6 +227,35 @@ export async function sendBookingConfirmedToDJ(opts: {
   })
 }
 
+// Na het optreden: vraag de boeker om een review (belangrijk voor de
+// naamsbekendheid van de DJ). CTA linkt naar de review-pagina van de boeking.
+export async function sendReviewRequestToBooker(opts: {
+  to: string
+  locale: "nl" | "en"
+  djName: string
+  when: string
+  bookingId: string
+}) {
+  const nl = opts.locale === "nl"
+  const rows =
+    row(nl ? "DJ" : "DJ", opts.djName) +
+    (opts.when ? row(nl ? "Optreden" : "Performance", opts.when) : "")
+  return sendEmail({
+    to: opts.to,
+    subject: nl
+      ? `Hoe was ${opts.djName}? Laat een review achter`
+      : `How was ${opts.djName}? Leave a review`,
+    html: shell(
+      nl ? "Laat een review achter ⭐" : "Leave a review ⭐",
+      rows,
+      {
+        href: `${siteUrl()}/bookings/${opts.bookingId}/review`,
+        label: nl ? "Review plaatsen" : "Write a review",
+      },
+    ),
+  })
+}
+
 // E-mailadres van een gebruiker ophalen via de service-role (auth.users).
 // Respecteert de e-mailvoorkeur: heeft de gebruiker e-mails uitgezet (opt-out),
 // dan geven we null terug en wordt er niets verstuurd.

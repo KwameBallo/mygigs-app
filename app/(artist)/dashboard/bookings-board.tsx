@@ -348,6 +348,21 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
           </form>
         )}
 
+        {/* Na het optreden: markeer als afgerond → de boeker krijgt een
+            review-verzoek (mail + in-app). Alleen bij een betaalde boeking. */}
+        {b.status === "paid" && (
+          <form action={updateBookingStatus}>
+            <input type="hidden" name="booking_id" value={b.id} />
+            <input type="hidden" name="status" value="completed" />
+            <button
+              type="submit"
+              className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+            >
+              {d.markDone}
+            </button>
+          </form>
+        )}
+
         {PUBLIC_STATUSES.includes(b.status) && (
           <form action={toggleBookingPublic}>
             <input type="hidden" name="booking_id" value={b.id} />

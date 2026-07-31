@@ -10,9 +10,14 @@ import { openBookingChat } from "@/lib/actions/chat"
 export default async function BookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ shortlist?: string; created?: string; paid?: string }>
+  searchParams: Promise<{
+    shortlist?: string
+    created?: string
+    paid?: string
+    reviewed?: string
+  }>
 }) {
-  const { shortlist, paid } = await searchParams
+  const { shortlist, paid, reviewed } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -46,6 +51,29 @@ export default async function BookingsPage({
       if (i.booking_id) invoiceByBooking.set(i.booking_id, i.id)
   }
 
+  // In-app review-prompt: welke afgeronde boekingen mag de boeker nog reviewen?
+  const today = new Date().toISOString().slice(0, 10)
+  const reviewableIds = list
+    .filter(
+      (b) =>
+        b.status === "completed" ||
+        (b.status === "paid" && b.event_date < today),
+    )
+    .map((b) => b.id)
+  const reviewedSet = new Set<string>()
+  if (reviewableIds.length > 0) {
+    const { data: revs } = await supabase
+      .from("reviews")
+      .select("booking_id")
+      .eq("booker_id", user.id)
+      .in("booking_id", reviewableIds)
+    for (const r of revs ?? [])
+      if (r.booking_id) reviewedSet.add(r.booking_id)
+  }
+  const pendingReviews = reviewableIds.filter(
+    (id) => !reviewedSet.has(id),
+  ).length
+
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
         <h1 className="text-3xl font-semibold tracking-tight">{m.title}</h1>
@@ -59,6 +87,18 @@ export default async function BookingsPage({
         {paid === "1" && (
           <div className="mt-6 rounded-2xl border border-green-500/40 bg-green-500/10 p-4 text-sm text-green-300">
             {m.paidBanner}
+          </div>
+        )}
+
+        {reviewed === "1" && (
+          <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/10 p-4 text-sm text-brand">
+            {m.reviewThanks}
+          </div>
+        )}
+
+        {pendingReviews > 0 && (
+          <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/10 p-4 text-sm text-brand">
+            ⭐ {m.reviewBanner.replace("{n}", String(pendingReviews))}
           </div>
         )}
 
@@ -80,6 +120,10 @@ export default async function BookingsPage({
                 stage_name: string
                 avatar_url: string | null
               } | null
+              const needsReview =
+                (b.status === "completed" ||
+                  (b.status === "paid" && b.event_date < today)) &&
+                !reviewedSet.has(b.id)
               return (
                 <div
                   key={b.id}
@@ -125,6 +169,14 @@ export default async function BookingsPage({
                           className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted transition hover:border-brand/50 hover:text-foreground"
                         >
                           {m.djInvoice}
+                        </Link>
+                      )}
+                      {needsReview && (
+                        <Link
+                          href={`/bookings/${b.id}/review`}
+                          className="rounded-full border border-brand/40 bg-brand/15 px-3 py-1 text-xs font-medium text-brand transition hover:bg-brand/25"
+                        >
+                          {m.reviewCta}
                         </Link>
                       )}
                       {/* Na acceptatie: chatten voor meer info. */}
