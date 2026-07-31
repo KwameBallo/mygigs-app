@@ -63,6 +63,18 @@ export default async function InvoicePage({
     }
   }
 
+  // Factuurregels: het optreden + eventuele bijgeboekte apparatuur. Valt terug
+  // op de enkele omschrijving voor oude facturen zonder line_items.
+  const lineItems =
+    Array.isArray(inv.line_items) && inv.line_items.length > 0
+      ? (inv.line_items as { description: string; amount: number }[])
+      : [
+          {
+            description: inv.description,
+            amount: hasVat ? Number(inv.net) : Number(inv.gross),
+          },
+        ]
+
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
       <div className="flex items-center justify-between print:hidden">
@@ -72,7 +84,7 @@ export default async function InvoicePage({
         <PrintButton label={d.print} />
       </div>
 
-      <div className="mt-6 rounded-3xl border border-border bg-surface p-8 text-sm print:border print:border-black/10 print:bg-white print:text-black">
+      <div className="mt-6 rounded-3xl border border-neutral-200 bg-white p-8 text-sm text-neutral-800 print:rounded-none print:border-0">
         {/* MyGigs-merkbalk in huisstijl (oranje vlak, zwarte tekst — print-veilig) */}
         <div
           className="mb-8 rounded-2xl bg-brand px-6 py-5 text-black"
@@ -84,42 +96,47 @@ export default async function InvoicePage({
           </div>
         </div>
 
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-6">
           <div>
-            <p className="text-2xl font-semibold tracking-tight">
+            <p className="text-xs uppercase tracking-wider text-neutral-500">
+              {d.from}
+            </p>
+            <p className="mt-1 text-lg font-semibold tracking-tight text-neutral-900">
               {inv.issuer_name}
             </p>
             {inv.issuer_address && (
-              <p className="mt-1 text-muted">{inv.issuer_address}</p>
+              <p className="text-neutral-500">{inv.issuer_address}</p>
             )}
             {inv.issuer_vat && (
-              <p className="text-muted">
+              <p className="text-neutral-500">
                 {d.vatLabel.replace("{vat}", inv.issuer_vat)}
               </p>
             )}
             {inv.issuer_kvk && (
-              <p className="text-muted">
+              <p className="text-neutral-500">
                 {d.kvkLabel.replace("{kvk}", inv.issuer_kvk)}
               </p>
             )}
           </div>
           <div className="text-right">
-            <h1 className="text-xl font-semibold tracking-tight">{kindLabel}</h1>
-            <p className="mt-1 text-muted">{inv.number}</p>
-            <p className="text-muted">
+            <h1 className="text-lg font-semibold tracking-tight text-neutral-900">
+              {kindLabel}
+            </h1>
+            <p className="mt-1 text-neutral-500">{inv.number}</p>
+            <p className="text-neutral-500">
               {d.date}: {issued}
             </p>
           </div>
         </div>
 
         <div className="mt-8">
-          <p className="text-xs uppercase tracking-wider text-muted">{d.to}</p>
-          <p className="mt-2 font-medium">{inv.recipient_name}</p>
+          <p className="text-xs uppercase tracking-wider text-neutral-500">{d.to}</p>
+          <p className="mt-2 font-medium text-neutral-900">{inv.recipient_name}</p>
           {inv.recipient_address && (
-            <p className="text-muted">{inv.recipient_address}</p>
+            <p className="text-neutral-500">{inv.recipient_address}</p>
           )}
           {inv.recipient_vat && (
-            <p className="text-muted">
+            <p className="text-neutral-500">
               {d.vatLabel.replace("{vat}", inv.recipient_vat)}
             </p>
           )}
@@ -127,7 +144,7 @@ export default async function InvoicePage({
 
         <table className="mt-8 w-full border-collapse">
           <thead>
-            <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted print:border-black/20">
+            <tr className="border-b border-neutral-200 text-left text-xs uppercase tracking-wider text-neutral-500">
               <th className="py-2 font-medium">{d.description}</th>
               <th className="py-2 text-right font-medium">
                 {hasVat ? d.amountExcl : d.total}
@@ -135,12 +152,14 @@ export default async function InvoicePage({
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-border print:border-black/10">
-              <td className="py-3">{inv.description}</td>
-              <td className="py-3 text-right align-top">
-                {formatEuro(Number(hasVat ? inv.net : inv.gross))}
-              </td>
-            </tr>
+            {lineItems.map((li, i) => (
+              <tr key={i} className="border-b border-neutral-100">
+                <td className="py-3">{d.equip[li.description] ?? li.description}</td>
+                <td className="py-3 text-right align-top tabular-nums">
+                  {formatEuro(Number(li.amount))}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
 
@@ -169,16 +188,16 @@ export default async function InvoicePage({
         </div>
 
         {inv.vat_note && (
-          <p className="mt-6 text-xs text-muted">{inv.vat_note}</p>
+          <p className="mt-6 text-xs text-neutral-500">{inv.vat_note}</p>
         )}
-        <p className="mt-2 text-xs text-muted">{d.paidViaMyGigs}</p>
+        <p className="mt-2 text-xs text-neutral-500">{d.paidViaMyGigs}</p>
       </div>
 
       {/* Uitbetalingsspecificatie — alleen voor de DJ, nooit op de klant-PDF. */}
       {payout && (
-        <div className="mt-6 rounded-3xl border border-border bg-surface p-8 text-sm print:hidden">
+        <div className="mt-6 rounded-3xl border border-neutral-200 bg-neutral-50 p-8 text-sm text-neutral-800 print:hidden">
           <h2 className="text-base font-semibold text-brand">{d.payoutTitle}</h2>
-          <p className="mt-1 text-xs text-muted">{d.payoutHint}</p>
+          <p className="mt-1 text-xs text-neutral-500">{d.payoutHint}</p>
           <div className="mt-4 flex justify-end">
             <div className="w-full max-w-sm">
               <Row label={d.payoutGross} value={formatEuro(payout.gross)} />
@@ -186,11 +205,11 @@ export default async function InvoicePage({
                 label={d.payoutCommission}
                 value={`− ${formatEuro(payout.commNet)}`}
               />
-              <div className="my-2 border-t border-border" />
+              <div className="my-2 border-t border-neutral-200" />
               <Row label={d.payoutNet} value={formatEuro(payout.net)} strong />
             </div>
           </div>
-          <p className="mt-4 text-xs text-muted">
+          <p className="mt-4 text-xs text-neutral-500">
             {d.payoutVatNote.replace("{vat}", formatEuro(payout.commVat))}
           </p>
         </div>
@@ -212,10 +231,18 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between py-1">
-      <span className={strong ? "font-semibold" : "text-muted"}>{label}</span>
       <span
-        className={`${strong ? "font-semibold" : ""} ${
-          accent ? "text-brand print:text-black" : ""
+        className={strong ? "font-semibold text-neutral-900" : "text-neutral-500"}
+      >
+        {label}
+      </span>
+      <span
+        className={`tabular-nums ${
+          accent
+            ? "font-semibold text-brand"
+            : strong
+              ? "font-semibold text-neutral-900"
+              : "text-neutral-800"
         }`}
       >
         {value}

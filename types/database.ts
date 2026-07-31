@@ -687,6 +687,7 @@ export type Database = {
           company_name: string | null
           created_at: string
           end_time: string | null
+          equipment_items: Json
           event_date: string
           gage: number
           hours: number
@@ -713,6 +714,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           end_time?: string | null
+          equipment_items?: Json
           event_date: string
           gage: number
           hours?: number
@@ -739,6 +741,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           end_time?: string | null
+          equipment_items?: Json
           event_date?: string
           gage?: number
           hours?: number
@@ -1065,6 +1068,7 @@ export type Database = {
           vat_amount: number
           gross: number
           vat_note: string | null
+          line_items: Json | null
           artist_id: string | null
           booker_id: string | null
           created_at: string
@@ -1088,6 +1092,7 @@ export type Database = {
           vat_amount?: number
           gross: number
           vat_note?: string | null
+          line_items?: Json | null
           artist_id: string
           booker_id: string
           created_at?: string
@@ -1111,6 +1116,7 @@ export type Database = {
           vat_amount?: number
           gross?: number
           vat_note?: string | null
+          line_items?: Json | null
           artist_id?: string
           booker_id?: string
           created_at?: string

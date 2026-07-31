@@ -25,6 +25,13 @@ const nl = {
   payoutNet: "Netto uitbetaling",
   payoutVatNote:
     "Over de commissie berekenen wij 21% btw ({vat}) via een aparte commissie-factuur — voor btw-plichtige DJ's verrekenbaar.",
+  equip: {
+    Microfoon: "Microfoon (huur)",
+    Draaitafel: "Draaitafel (huur)",
+    Speakers: "Speakers (huur)",
+    Verlichting: "Verlichting (huur)",
+    Bass: "Bass (huur)",
+  } as Record<string, string>,
 }
 
 const en: typeof nl = {
@@ -53,6 +60,13 @@ const en: typeof nl = {
   payoutNet: "Net payout",
   payoutVatNote:
     "We charge 21% VAT ({vat}) on the commission via a separate commission invoice — reclaimable for VAT-registered DJs.",
+  equip: {
+    Microfoon: "Microphone (rental)",
+    Draaitafel: "Turntable (rental)",
+    Speakers: "Speakers (rental)",
+    Verlichting: "Lighting (rental)",
+    Bass: "Bass (rental)",
+  } as Record<string, string>,
 }
 
 export const dict = { nl, en }

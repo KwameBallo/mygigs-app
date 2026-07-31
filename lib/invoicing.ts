@@ -57,21 +57,28 @@ export async function generateInvoicesForBooking(bookingId: string) {
   // --- 1. Verkoopfactuur DJ -> klant ---
   if (!has.has("dj_sale")) {
     const saleGross = Number(booking.total)
-    let saleNet = saleGross
-    let saleVat = 0
-    let saleNote: string | null = null
-    if (djVatRegistered) {
-      saleNet = r2(saleGross / (1 + VAT_RATE))
-      saleVat = r2(saleGross - saleNet)
-    } else {
-      saleNote = KOR_NOTE
-    }
+    // Apparatuur (draaitafel/speakers/...) die de boeker bijboekte, als aparte
+    // regels. saleNet = gage + apparatuur (= bedrag excl. btw); btw komt daar
+    // bovenop bij een btw-plichtige DJ, KOR = geen btw.
+    const equip = Array.isArray(booking.equipment_items)
+      ? (booking.equipment_items as { item: string; price: number }[])
+      : []
+    const equipTotal = equip.reduce((s, e) => s + (Number(e.price) || 0), 0)
+    const perfNet = Number(booking.gage)
+    const saleNet = r2(perfNet + equipTotal)
+    const saleVat = djVatRegistered ? r2(saleGross - saleNet) : 0
+    const saleNote: string | null = djVatRegistered ? null : KOR_NOTE
     const recipientName = isBusiness
       ? booking.company_name || booker?.full_name || "Klant"
       : booker?.full_name || "Particuliere klant"
     const description =
       `Optreden${artist?.stage_name ? ` ${artist.stage_name}` : ""}` +
       (booking.occasion ? ` — ${booking.occasion}` : "")
+    // Regelitems: het optreden + elke apparatuurregel; samen = saleNet.
+    const lineItems = [
+      { description, amount: perfNet },
+      ...equip.map((e) => ({ description: e.item, amount: Number(e.price) || 0 })),
+    ]
 
     const { data: saleNumber } = await admin.rpc("next_invoice_number", {
       p_scope: `dj_sale:${booking.artist_id}`,
@@ -96,6 +103,7 @@ export async function generateInvoicesForBooking(bookingId: string) {
       vat_amount: saleVat,
       gross: saleGross,
       vat_note: saleNote,
+      line_items: lineItems,
       artist_id: booking.artist_id,
       booker_id: booking.booker_id,
     })

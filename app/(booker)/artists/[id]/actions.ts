@@ -91,6 +91,12 @@ export async function createBooking(formData: FormData) {
     0,
   )
 
+  // Regelitems voor op de verkoopfactuur: alleen apparatuur met een prijs (die
+  // dus in het totaal meetelt). Vorm: [{ item, price }].
+  const equipmentItems = selectedEquip
+    .map((item) => ({ item, price: Number(prices[item]) || 0 }))
+    .filter((e) => e.price > 0)
+
   // Basisgage is een uurtarief; schaal mee met de gekozen duur.
   const { gage, commission, total: grossIncl } = priceBreakdown(
     Math.round(artist.base_gage * hours),
@@ -119,6 +125,7 @@ export async function createBooking(formData: FormData) {
     company_name: companyName,
     vat_number: vatNumber,
     invoice_email: invoiceEmail,
+    equipment_items: equipmentItems,
   })
 
   if (error) {
