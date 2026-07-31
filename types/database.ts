@@ -696,6 +696,7 @@ export type Database = {
           is_public: boolean
           message: string | null
           occasion: string | null
+          review_request_sent_at: string | null
           service_fee: number
           shortlist_id: string | null
           start_time: string | null
@@ -723,6 +724,7 @@ export type Database = {
           is_public?: boolean
           message?: string | null
           occasion?: string | null
+          review_request_sent_at?: string | null
           service_fee: number
           shortlist_id?: string | null
           start_time?: string | null
@@ -750,6 +752,7 @@ export type Database = {
           is_public?: boolean
           message?: string | null
           occasion?: string | null
+          review_request_sent_at?: string | null
           service_fee?: number
           shortlist_id?: string | null
           start_time?: string | null
@@ -1286,6 +1289,10 @@ export type Database = {
     }
     Functions: {
       is_artist_owner: { Args: { a_id: string }; Returns: boolean }
+      bookings_due_for_review: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Tables"]["bookings"]["Row"][]
+      }
       next_invoice_number: {
         Args: { p_scope: string; p_prefix: string; p_year: number }
         Returns: string

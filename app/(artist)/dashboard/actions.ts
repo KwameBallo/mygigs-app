@@ -6,11 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
 import { getI18n } from "@/lib/i18n"
 import { formatEuro } from "@/lib/utils/pricing"
-import {
-  sendAcceptedToBooker,
-  sendReviewRequestToBooker,
-  getUserEmail,
-} from "@/lib/email"
+import { sendAcceptedToBooker, getUserEmail } from "@/lib/email"
 import type { Database } from "@/types/database"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
@@ -101,30 +97,9 @@ export async function updateBookingStatus(formData: FormData) {
     }
   }
 
-  // Afgerond → vraag de boeker om een review (belangrijk voor de naams-
-  // bekendheid van de DJ). Best-effort; mag de statuswissel niet blokkeren.
-  if (status === "completed") {
-    try {
-      const bookerEmail = await getUserEmail(booking.booker_id)
-      if (bookerEmail) {
-        const { locale } = await getI18n()
-        const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
-        await sendReviewRequestToBooker({
-          to: bookerEmail,
-          locale,
-          djName: artist.stage_name,
-          when: new Date(booking.event_date).toLocaleDateString(dateLocale, {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          }),
-          bookingId: booking.id,
-        })
-      }
-    } catch (e) {
-      console.error("review-request email failed:", e)
-    }
-  }
+  // Het review-verzoek gaat NIET hier, maar automatisch ~3 uur na het einde van
+  // het optreden via de geplande taak (/api/cron/review-requests) — zie
+  // migratie 0022. Zo is de timing onafhankelijk van of de DJ handmatig afrondt.
 
   revalidatePath("/dashboard")
   revalidatePath("/availability")
