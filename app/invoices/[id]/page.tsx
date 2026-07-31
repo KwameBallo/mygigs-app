@@ -72,15 +72,14 @@ export default async function InvoicePage({
         <PrintButton label={d.print} />
       </div>
 
-      <div className="mt-6 rounded-3xl border border-border bg-surface p-8 text-sm print:border-0 print:bg-white print:p-0 print:text-black">
-        {/* MyGigs-merkbalk bovenaan (volle breedte) */}
-        <div className="mb-6 border-b border-border pb-4 print:border-black/20">
-          <div className="text-2xl font-bold tracking-tight">
-            My
-            <span className="text-brand print:text-black">Gigs</span>
-            <span className="text-brand print:text-black">.</span>
-          </div>
-          <div className="mt-0.5 text-xs text-muted print:text-black">
+      <div className="mt-6 rounded-3xl border border-border bg-surface p-8 text-sm print:border print:border-black/10 print:bg-white print:text-black">
+        {/* MyGigs-merkbalk in huisstijl (oranje vlak, zwarte tekst — print-veilig) */}
+        <div
+          className="mb-8 rounded-2xl bg-brand px-6 py-5 text-black"
+          style={{ printColorAdjust: "exact", WebkitPrintColorAdjust: "exact" }}
+        >
+          <div className="text-2xl font-bold tracking-tight">MyGigs.</div>
+          <div className="mt-0.5 text-xs font-medium text-black/70">
             {d.brandTagline}
           </div>
         </div>
@@ -157,11 +156,14 @@ export default async function InvoicePage({
                   )}
                   value={formatEuro(Number(inv.vat_amount))}
                 />
-                <div className="my-2 border-t border-border print:border-black/20" />
-                <Row label={d.total} value={formatEuro(Number(inv.gross))} strong />
+                <div
+                  className="my-2 border-t-2 border-brand"
+                  style={{ printColorAdjust: "exact", WebkitPrintColorAdjust: "exact" }}
+                />
+                <Row label={d.total} value={formatEuro(Number(inv.gross))} strong accent />
               </>
             ) : (
-              <Row label={d.total} value={formatEuro(Number(inv.gross))} strong />
+              <Row label={d.total} value={formatEuro(Number(inv.gross))} strong accent />
             )}
           </div>
         </div>
@@ -175,7 +177,7 @@ export default async function InvoicePage({
       {/* Uitbetalingsspecificatie — alleen voor de DJ, nooit op de klant-PDF. */}
       {payout && (
         <div className="mt-6 rounded-3xl border border-border bg-surface p-8 text-sm print:hidden">
-          <h2 className="text-base font-semibold">{d.payoutTitle}</h2>
+          <h2 className="text-base font-semibold text-brand">{d.payoutTitle}</h2>
           <p className="mt-1 text-xs text-muted">{d.payoutHint}</p>
           <div className="mt-4 flex justify-end">
             <div className="w-full max-w-sm">
@@ -201,15 +203,23 @@ function Row({
   label,
   value,
   strong,
+  accent,
 }: {
   label: string
   value: string
   strong?: boolean
+  accent?: boolean
 }) {
   return (
     <div className="flex items-center justify-between py-1">
       <span className={strong ? "font-semibold" : "text-muted"}>{label}</span>
-      <span className={strong ? "font-semibold" : ""}>{value}</span>
+      <span
+        className={`${strong ? "font-semibold" : ""} ${
+          accent ? "text-brand print:text-black" : ""
+        }`}
+      >
+        {value}
+      </span>
     </div>
   )
 }
