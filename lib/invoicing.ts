@@ -32,13 +32,14 @@ export async function generateInvoicesForBooking(bookingId: string) {
     .maybeSingle()
   if (!booking) return
 
-  // Idempotent: niets doen als er al facturen voor deze boeking bestaan.
+  // Idempotent PER SOORT: genereer alleen de factuur-soort die nog ontbreekt,
+  // zodat een half mislukte poging bij retry alsnog compleet wordt (FIX #15).
   const { data: existing } = await admin
     .from("invoices")
-    .select("id")
+    .select("kind")
     .eq("booking_id", bookingId)
-    .limit(1)
-  if (existing && existing.length > 0) return
+  const has = new Set((existing ?? []).map((e) => e.kind))
+  if (has.has("dj_sale") && has.has("mg_commission")) return
 
   const [{ data: artist }, { data: billing }, { data: booker }] = await Promise.all([
     admin.from("artists").select("stage_name").eq("id", booking.artist_id).maybeSingle(),
@@ -51,88 +52,97 @@ export async function generateInvoicesForBooking(bookingId: string) {
   const isBusiness = booking.booking_type === "zakelijk"
   const djVatRegistered = billing?.is_vat_registered ?? false
   const issuerName = billing?.invoice_name || artist?.stage_name || "DJ"
+  const issued: string[] = []
 
   // --- 1. Verkoopfactuur DJ -> klant ---
-  const saleGross = Number(booking.total)
-  let saleNet = saleGross
-  let saleVat = 0
-  let saleNote: string | null = null
-  if (djVatRegistered) {
-    saleNet = r2(saleGross / (1 + VAT_RATE))
-    saleVat = r2(saleGross - saleNet)
-  } else {
-    saleNote = KOR_NOTE
+  if (!has.has("dj_sale")) {
+    const saleGross = Number(booking.total)
+    let saleNet = saleGross
+    let saleVat = 0
+    let saleNote: string | null = null
+    if (djVatRegistered) {
+      saleNet = r2(saleGross / (1 + VAT_RATE))
+      saleVat = r2(saleGross - saleNet)
+    } else {
+      saleNote = KOR_NOTE
+    }
+    const recipientName = isBusiness
+      ? booking.company_name || booker?.full_name || "Klant"
+      : booker?.full_name || "Particuliere klant"
+    const description =
+      `Optreden${artist?.stage_name ? ` ${artist.stage_name}` : ""}` +
+      (booking.occasion ? ` — ${booking.occasion}` : "")
+
+    const { data: saleNumber } = await admin.rpc("next_invoice_number", {
+      p_scope: `dj_sale:${booking.artist_id}`,
+      p_prefix: artistShort,
+      p_year: year,
+    })
+
+    await admin.from("invoices").insert({
+      booking_id: bookingId,
+      kind: "dj_sale",
+      number: saleNumber as string,
+      issuer_name: issuerName,
+      issuer_address: billing?.invoice_address ?? null,
+      issuer_vat: billing?.vat_number ?? null,
+      issuer_kvk: billing?.kvk_number ?? null,
+      recipient_name: recipientName,
+      recipient_address: null,
+      recipient_vat: isBusiness ? booking.vat_number : null,
+      description,
+      net: saleNet,
+      vat_rate: djVatRegistered ? VAT_RATE : 0,
+      vat_amount: saleVat,
+      gross: saleGross,
+      vat_note: saleNote,
+      artist_id: booking.artist_id,
+      booker_id: booking.booker_id,
+    })
+    issued.push("dj_sale")
   }
-  const recipientName = isBusiness
-    ? booking.company_name || booker?.full_name || "Klant"
-    : booker?.full_name || "Particuliere klant"
-  const description =
-    `Optreden${artist?.stage_name ? ` ${artist.stage_name}` : ""}` +
-    (booking.occasion ? ` — ${booking.occasion}` : "")
-
-  const { data: saleNumber } = await admin.rpc("next_invoice_number", {
-    p_scope: `dj_sale:${booking.artist_id}`,
-    p_prefix: artistShort,
-    p_year: year,
-  })
-
-  await admin.from("invoices").insert({
-    booking_id: bookingId,
-    kind: "dj_sale",
-    number: saleNumber as string,
-    issuer_name: issuerName,
-    issuer_address: billing?.invoice_address ?? null,
-    issuer_vat: billing?.vat_number ?? null,
-    issuer_kvk: billing?.kvk_number ?? null,
-    recipient_name: recipientName,
-    recipient_address: null,
-    recipient_vat: isBusiness ? booking.vat_number : null,
-    description,
-    net: saleNet,
-    vat_rate: djVatRegistered ? VAT_RATE : 0,
-    vat_amount: saleVat,
-    gross: saleGross,
-    vat_note: saleNote,
-    artist_id: booking.artist_id,
-    booker_id: booking.booker_id,
-  })
 
   // --- 2. Commissie-factuur MyGigs -> DJ (7% gage + 21% btw) ---
-  const commNet = Number(booking.service_fee)
-  const commVat = r2(commNet * VAT_RATE)
-  const commGross = r2(commNet + commVat)
+  if (!has.has("mg_commission")) {
+    const commNet = Number(booking.service_fee)
+    const commVat = r2(commNet * VAT_RATE)
+    const commGross = r2(commNet + commVat)
 
-  const { data: commNumber } = await admin.rpc("next_invoice_number", {
-    p_scope: "mg_commission",
-    p_prefix: "MG-C",
-    p_year: year,
-  })
+    const { data: commNumber } = await admin.rpc("next_invoice_number", {
+      p_scope: "mg_commission",
+      p_prefix: "MG-C",
+      p_year: year,
+    })
 
-  await admin.from("invoices").insert({
-    booking_id: bookingId,
-    kind: "mg_commission",
-    number: commNumber as string,
-    issuer_name: MYGIGS.name,
-    issuer_address: MYGIGS.address,
-    issuer_vat: MYGIGS.vat,
-    issuer_kvk: MYGIGS.kvk,
-    recipient_name: issuerName,
-    recipient_address: billing?.invoice_address ?? null,
-    recipient_vat: billing?.vat_number ?? null,
-    description: "Bemiddelingscommissie MyGigs (7%)",
-    net: commNet,
-    vat_rate: VAT_RATE,
-    vat_amount: commVat,
-    gross: commGross,
-    vat_note: null,
-    artist_id: booking.artist_id,
-    booker_id: booking.booker_id,
-  })
+    await admin.from("invoices").insert({
+      booking_id: bookingId,
+      kind: "mg_commission",
+      number: commNumber as string,
+      issuer_name: MYGIGS.name,
+      issuer_address: MYGIGS.address,
+      issuer_vat: MYGIGS.vat,
+      issuer_kvk: MYGIGS.kvk,
+      recipient_name: issuerName,
+      recipient_address: billing?.invoice_address ?? null,
+      recipient_vat: billing?.vat_number ?? null,
+      description: "Bemiddelingscommissie MyGigs (7%)",
+      net: commNet,
+      vat_rate: VAT_RATE,
+      vat_amount: commVat,
+      gross: commGross,
+      vat_note: null,
+      artist_id: booking.artist_id,
+      booker_id: booking.booker_id,
+    })
+    issued.push("mg_commission")
+  }
 
-  await logAudit({
-    action: "invoice.issued",
-    targetType: "booking",
-    targetId: bookingId,
-    metadata: { kinds: ["dj_sale", "mg_commission"], sale_number: saleNumber, commission_number: commNumber },
-  })
+  if (issued.length > 0) {
+    await logAudit({
+      action: "invoice.issued",
+      targetType: "booking",
+      targetId: bookingId,
+      metadata: { kinds: issued },
+    })
+  }
 }

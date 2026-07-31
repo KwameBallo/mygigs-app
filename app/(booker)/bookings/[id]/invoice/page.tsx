@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { formatEuro, vatBreakdown, VAT_RATE, formatPercent } from "@/lib/utils/pricing"
 import { getI18n } from "@/lib/i18n"
 import { PrintButton } from "./print-button"
@@ -44,7 +45,18 @@ export default async function InvoicePage({
   const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
 
   const artist = booking.artists as { stage_name: string } | null
-  const { net, vat, gross } = vatBreakdown(booking.total)
+
+  // FIX #16: alleen btw tonen als er ook echt btw is berekend — d.w.z. de DJ is
+  // btw-plichtig. Bij een KOR-DJ zit er geen btw in het totaal, dus geen spook-btw.
+  const { data: djBilling } = await createAdminClient()
+    .from("artist_billing")
+    .select("is_vat_registered")
+    .eq("artist_id", booking.artist_id)
+    .maybeSingle()
+  const djVatRegistered = djBilling?.is_vat_registered ?? false
+  const { net, vat, gross } = djVatRegistered
+    ? vatBreakdown(booking.total)
+    : { net: booking.total, vat: 0, gross: booking.total }
   const number = invoiceNumber(booking.id, booking.created_at)
 
   const issued = new Date(booking.created_at).toLocaleDateString(dateLocale, {
@@ -142,13 +154,19 @@ export default async function InvoicePage({
         {/* Totalen */}
         <div className="mt-4 flex justify-end">
           <div className="w-full max-w-xs">
-            <Row label={d.subtotal} value={formatEuro(net)} />
-            <Row
-              label={d.vat.replace("{rate}", formatPercent(VAT_RATE))}
-              value={formatEuro(vat)}
-            />
-            <div className="my-2 border-t border-border print:border-black/20" />
-            <Row label={d.total} value={formatEuro(gross)} strong />
+            {djVatRegistered ? (
+              <>
+                <Row label={d.subtotal} value={formatEuro(net)} />
+                <Row
+                  label={d.vat.replace("{rate}", formatPercent(VAT_RATE))}
+                  value={formatEuro(vat)}
+                />
+                <div className="my-2 border-t border-border print:border-black/20" />
+                <Row label={d.total} value={formatEuro(gross)} strong />
+              </>
+            ) : (
+              <Row label={d.total} value={formatEuro(gross)} strong />
+            )}
           </div>
         </div>
 

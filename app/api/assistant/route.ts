@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
 import { getArtists } from "@/lib/data/artists"
+import { createClient } from "@/lib/supabase/server"
+import { rateLimit } from "@/lib/ratelimit"
 import {
   assistantReply,
   type AssistantMode,
@@ -8,6 +10,24 @@ import {
 } from "@/lib/ai/assistant"
 
 export async function POST(req: Request) {
+  // FIX #10/#11: alleen ingelogde gebruikers + rate limiting. Voorheen kon een
+  // anonieme loop de Anthropic-rekening opjagen en de DB belasten.
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+  }
+  const rl = await rateLimit(user.id, {
+    limit: 20,
+    windowSec: 60,
+    scope: "assistant",
+  })
+  if (!rl.ok) {
+    return NextResponse.json({ error: "rate limited" }, { status: 429 })
+  }
+
   let body: { mode?: string; messages?: ChatMessage[] }
   try {
     body = await req.json()
@@ -16,7 +36,10 @@ export async function POST(req: Request) {
   }
 
   const mode: AssistantMode = body.mode === "dj" ? "dj" : "consument"
-  const messages = Array.isArray(body.messages) ? body.messages : []
+  // Begrens de invoer: hoogstens 20 berichten van elk 2000 tekens.
+  const messages = (Array.isArray(body.messages) ? body.messages : [])
+    .slice(-20)
+    .map((m) => ({ ...m, content: String(m.content ?? "").slice(0, 2000) }))
   if (messages.length === 0) {
     return NextResponse.json({ error: "no messages" }, { status: 400 })
   }

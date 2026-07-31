@@ -23,6 +23,48 @@ export async function deleteAccount() {
     targetType: "profile",
     targetId: user.id,
   })
+
+  const { data: artist } = await admin
+    .from("artists")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  // AVG art. 17: facturen behouden hun nummer + bedragen (fiscale bewaarplicht
+  // 7 jaar), maar de persoonsgegevens erin worden geanonimiseerd (tombstone).
+  const TOMB = "Verwijderd"
+  const anon = {
+    issuer_name: TOMB,
+    issuer_address: null,
+    issuer_vat: null,
+    issuer_kvk: null,
+    recipient_name: TOMB,
+    recipient_address: null,
+    recipient_vat: null,
+  }
+  await admin.from("invoices").update(anon).eq("booker_id", user.id)
+  if (artist) {
+    await admin.from("invoices").update(anon).eq("artist_id", artist.id)
+    // DJ-facturatie-PII wissen + DJ-profiel anonimiseren. De boeking-historie van
+    // klanten blijft bestaan; alleen de persoonsgegevens van de DJ verdwijnen.
+    await admin.from("artist_billing").delete().eq("artist_id", artist.id)
+    await admin
+      .from("artists")
+      .update({
+        stage_name: "Verwijderde DJ",
+        bio: null,
+        avatar_url: null,
+        instagram_url: null,
+        tiktok_url: null,
+        spotify_url: null,
+        soundcloud_url: null,
+        mixcloud_url: null,
+      })
+      .eq("id", artist.id)
+  }
+
+  // Verwijder het account. Cascade wist profiel/boekingen/gesprekken/berichten/
+  // betalingen; facturen- en payout-FK's gaan naar null (behouden, geanonimiseerd).
   const { error } = await admin.auth.admin.deleteUser(user.id)
   if (error) {
     console.error("deleteAccount failed:", error.message)
@@ -69,6 +111,14 @@ export async function updateEmailPrefs(formData: FormData) {
     .from("profiles")
     .update({ email_opt_out: !emailOn })
     .eq("id", user.id)
+
+  await logAudit({
+    actorId: user.id,
+    action: "prefs.email",
+    targetType: "profile",
+    targetId: user.id,
+    metadata: { email_opt_out: !emailOn },
+  })
 
   revalidatePath("/settings")
 }

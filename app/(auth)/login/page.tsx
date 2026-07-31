@@ -51,6 +51,7 @@ export default async function LoginPage({
     signup: a.errSignup,
     "password-mismatch": a.errPasswordMismatch,
     terms: a.errTerms,
+    "too-many": a.errTooMany,
   }
   const errorMsg = error ? (errorMap[error] ?? a.errGeneric) : null
 

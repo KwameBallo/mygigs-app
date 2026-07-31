@@ -5,7 +5,13 @@ import { createClient } from "@/lib/supabase/server"
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
-  const next = searchParams.get("next") ?? "/discover"
+  // Alleen een lokaal pad toestaan (moet met één '/' beginnen). Voorkomt een
+  // open redirect via next=//evil.com of next=/\evil.com (FIX #14).
+  const rawNext = searchParams.get("next") ?? "/discover"
+  const next =
+    rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\")
+      ? rawNext
+      : "/discover"
 
   if (code) {
     const supabase = await createClient()

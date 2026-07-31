@@ -1048,7 +1048,7 @@ export type Database = {
       invoices: {
         Row: {
           id: string
-          booking_id: string
+          booking_id: string | null
           kind: Database["public"]["Enums"]["invoice_kind"]
           number: string
           issued_at: string
@@ -1065,8 +1065,8 @@ export type Database = {
           vat_amount: number
           gross: number
           vat_note: string | null
-          artist_id: string
-          booker_id: string
+          artist_id: string | null
+          booker_id: string | null
           created_at: string
         }
         Insert: {

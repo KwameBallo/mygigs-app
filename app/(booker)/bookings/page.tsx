@@ -42,7 +42,8 @@ export default async function BookingsPage({
       .select("id, booking_id")
       .eq("kind", "dj_sale")
       .in("booking_id", paidIds)
-    for (const i of invs ?? []) invoiceByBooking.set(i.booking_id, i.id)
+    for (const i of invs ?? [])
+      if (i.booking_id) invoiceByBooking.set(i.booking_id, i.id)
   }
 
   return (

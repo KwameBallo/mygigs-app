@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
 import { getI18n } from "@/lib/i18n"
 import { formatEuro } from "@/lib/utils/pricing"
@@ -10,9 +11,15 @@ import type { Database } from "@/types/database"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
 
+// Statussen die een DJ zelf mag zetten. 'paid' zit hier bewust NIET tussen —
+// dat kan alleen via betaling (payBooking); 'cancelled' hoort bij de boeker.
+const DJ_ALLOWED_STATUS = ["accepted", "declined", "completed"] as const
+
 export async function updateBookingStatus(formData: FormData) {
   const bookingId = String(formData.get("booking_id") ?? "")
-  const status = String(formData.get("status") ?? "") as BookingStatus
+  const statusRaw = String(formData.get("status") ?? "")
+  if (!(DJ_ALLOWED_STATUS as readonly string[]).includes(statusRaw)) return
+  const status = statusRaw as BookingStatus
 
   const supabase = await createClient()
   const {
@@ -36,7 +43,9 @@ export async function updateBookingStatus(formData: FormData) {
     .maybeSingle()
   if (!booking) return
 
-  await supabase
+  // Status wordt server-side gezet via de service-role (client mag 'status' niet
+  // meer schrijven); de filter op artist_id borgt dat het de eigen boeking is.
+  await createAdminClient()
     .from("bookings")
     .update({ status })
     .eq("id", bookingId)

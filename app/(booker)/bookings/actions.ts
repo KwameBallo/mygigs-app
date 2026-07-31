@@ -26,12 +26,24 @@ export async function cancelBooking(formData: FormData) {
   } = await supabase.auth.getUser()
   if (!user) return
 
-  await supabase
+  // Status wordt server-side gezet (client mag 'status' niet meer schrijven). De
+  // filters op booker_id + toegestane statussen borgen dat het je eigen boeking is.
+  const { data: cancelled } = await createAdminClient()
     .from("bookings")
     .update({ status: "cancelled" })
     .eq("id", bookingId)
     .eq("booker_id", user.id)
     .in("status", ["pending", "accepted"])
+    .select("id")
+
+  if (cancelled && cancelled.length > 0) {
+    await logAudit({
+      actorId: user.id,
+      action: "booking.cancel",
+      targetType: "booking",
+      targetId: bookingId,
+    })
+  }
 
   revalidatePath("/bookings")
 }
@@ -70,9 +82,25 @@ export async function payBooking(formData: FormData) {
 
   const admin = createAdminClient()
 
-  // 1) Betaling vastleggen — geld staat vast bij MyGigs (escrow).
-  //    provider_ref markeert (voorlopig) de gekozen methode; straks de
-  //    Stripe PaymentIntent-id.
+  // 1) Atomisch claimen: alleen als de boeking NOG 'accepted' is zetten we 'm op
+  //    'paid'. Een tweede gelijktijdige/herhaalde poging raakt 0 rijen en stopt —
+  //    zo geen dubbele betaling of dubbele uitbetaling (FIX #3).
+  const { data: claimed } = await admin
+    .from("bookings")
+    .update({ status: "paid" })
+    .eq("id", booking.id)
+    .eq("status", "accepted")
+    .select("id")
+  if (!claimed || claimed.length === 0) {
+    redirect("/bookings")
+  }
+
+  const payout = Math.max(
+    0,
+    Number(booking.total) - Number(booking.service_fee ?? 0),
+  )
+
+  // 2) Betaling vastleggen — geld staat vast bij MyGigs (escrow).
   await admin.from("payments").insert({
     booking_id: booking.id,
     amount: booking.total,
@@ -82,20 +110,14 @@ export async function payBooking(formData: FormData) {
     status: "held",
   })
 
-  // 2) Uitbetaling inplannen (bedrag minus MyGigs-commissie).
-  const payout = Math.max(
-    0,
-    Number(booking.total) - Number(booking.service_fee ?? 0),
-  )
+  // 3) Uitbetaling inplannen (bedrag minus commissie). De unieke index op
+  //    payouts.booking_id is de backstop tegen dubbele rijen.
   await admin.from("payouts").insert({
     artist_id: booking.artist_id,
     booking_id: booking.id,
     amount: payout,
     status: "scheduled",
   })
-
-  // 3) Boeking op 'betaald' zetten.
-  await admin.from("bookings").update({ status: "paid" }).eq("id", booking.id)
 
   // 4) Facturen aanmaken (verkoopfactuur DJ->klant + commissie MyGigs->DJ).
   //    Best-effort: een factuurfout mag de betaling niet blokkeren.

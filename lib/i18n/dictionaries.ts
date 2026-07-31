@@ -89,6 +89,7 @@ const nl = {
       "Aanmelden mislukt. Controleer je gegevens of probeer een ander e-mailadres.",
     errPasswordMismatch: "De wachtwoorden komen niet overeen.",
     errTerms: "Je moet akkoord gaan met de voorwaarden en het privacybeleid.",
+    errTooMany: "Te veel pogingen. Wacht een paar minuten en probeer opnieuw.",
     errGeneric: "Er ging iets mis. Probeer het opnieuw.",
   },
   nav: {
@@ -652,6 +653,7 @@ const en: typeof nl = {
       "Sign up failed. Check your details or try a different email address.",
     errPasswordMismatch: "The passwords do not match.",
     errTerms: "You must agree to the terms and the privacy policy.",
+    errTooMany: "Too many attempts. Wait a few minutes and try again.",
     errGeneric: "Something went wrong. Please try again.",
   },
   nav: {

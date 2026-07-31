@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { rateLimit, clientIpFromHeaders } from "@/lib/ratelimit"
 import type { Database } from "@/types/database"
 
 type Role = Database["public"]["Enums"]["user_role"]
@@ -14,6 +15,15 @@ function destinationFor(role: Role | undefined) {
 export async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim()
   const password = String(formData.get("password") ?? "")
+
+  // Rate limiting tegen brute-force/credential-stuffing (FIX #11).
+  const ip = await clientIpFromHeaders()
+  const rl = await rateLimit(`${ip}:${email.toLowerCase()}`, {
+    limit: 8,
+    windowSec: 300,
+    scope: "login",
+  })
+  if (!rl.ok) redirect("/login?error=too-many")
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -65,6 +75,11 @@ export async function signUp(formData: FormData) {
   const phone = String(formData.get("phone") ?? "").trim() || null
   const acceptedTerms = formData.get("accept_terms") != null
   const isDj = wantsDj
+
+  // Rate limiting tegen signup-misbruik / e-mail-bombing (FIX #11).
+  const ip = await clientIpFromHeaders()
+  const rl = await rateLimit(ip, { limit: 5, windowSec: 3600, scope: "signup" })
+  if (!rl.ok) signupError("too-many", isDj)
 
   // Beide wachtwoorden moeten gelijk zijn (voorkomt typefouten).
   if (password !== passwordConfirm) {

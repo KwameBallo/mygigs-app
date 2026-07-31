@@ -50,21 +50,32 @@ export async function sendEmail(opts: {
   }
 }
 
+// Alle gebruikerstekst wordt ge-escaped voordat het in de e-mail-HTML komt,
+// zodat een naam/gelegenheid/locatie geen HTML/links kan injecteren (FIX #12).
+function esc(s: string) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+}
+
 function shell(title: string, bodyRows: string, cta: { href: string; label: string }) {
   return `<!doctype html><html><body style="margin:0;background:#0b0b0c;font-family:Segoe UI,Arial,sans-serif;color:#f5f4f2">
   <div style="max-width:560px;margin:0 auto;padding:32px 24px">
     <div style="font-size:22px;font-weight:800">My<span style="color:#ff6f14">Gigs</span><span style="color:#ff6f14">.</span></div>
     <div style="margin-top:24px;background:#161618;border:1px solid #2a2a2e;border-radius:18px;padding:24px">
-      <h1 style="margin:0 0 12px;font-size:20px">${title}</h1>
+      <h1 style="margin:0 0 12px;font-size:20px">${esc(title)}</h1>
       <table style="width:100%;border-collapse:collapse;font-size:14px;color:#cfcfd4">${bodyRows}</table>
-      <a href="${cta.href}" style="display:inline-block;margin-top:20px;background:#ff6f14;color:#000;font-weight:700;text-decoration:none;border-radius:999px;padding:11px 20px">${cta.label}</a>
+      <a href="${encodeURI(cta.href)}" style="display:inline-block;margin-top:20px;background:#ff6f14;color:#000;font-weight:700;text-decoration:none;border-radius:999px;padding:11px 20px">${esc(cta.label)}</a>
     </div>
     <p style="margin-top:18px;font-size:11px;color:#8b8b93">Automatische e-mail van MyGigs. Reageer niet op dit bericht.</p>
   </div></body></html>`
 }
 
 function row(label: string, value: string, strong = false) {
-  return `<tr><td style="padding:5px 0;color:#8b8b93">${label}</td><td style="padding:5px 0;text-align:right;${strong ? "font-weight:800;color:#ff8a3d" : ""}">${value}</td></tr>`
+  return `<tr><td style="padding:5px 0;color:#8b8b93">${esc(label)}</td><td style="padding:5px 0;text-align:right;${strong ? "font-weight:800;color:#ff8a3d" : ""}">${esc(value)}</td></tr>`
 }
 
 // Betaalbewijs naar de (hoofd)boeker na een geslaagde betaling.

@@ -47,21 +47,17 @@ async function flagConversation(
     snippet: body.slice(0, 300),
   })
 
-  // Verhoog flag_count en markeer beide profielen als geflagd.
-  const ids = [senderId, counterpartyId].filter(Boolean) as string[]
-  const { data: profs } = await admin
+  // Alleen de VERZENDER wordt bestraft (flag_count + flagged). De tegenpartij
+  // wordt niet gepenaliseerd — die deed niets (voorheen een misbruik-vector).
+  const { data: prof } = await admin
     .from("profiles")
-    .select("id, flag_count")
-    .in("id", ids)
-
-  await Promise.all(
-    (profs ?? []).map((p) =>
-      admin
-        .from("profiles")
-        .update({ flagged: true, flag_count: (p.flag_count ?? 0) + 1 })
-        .eq("id", p.id),
-    ),
-  )
+    .select("flag_count")
+    .eq("id", senderId)
+    .maybeSingle()
+  await admin
+    .from("profiles")
+    .update({ flagged: true, flag_count: (prof?.flag_count ?? 0) + 1 })
+    .eq("id", senderId)
 }
 
 // Markeer inkomende berichten als gelezen en ververs de ongelezen-badge in de
@@ -112,6 +108,16 @@ export async function sendMessage(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return
+
+  // Bevestig eerst dat de gebruiker deelnemer is (RLS-beschermde select) — anders
+  // kon iemand met een willekeurige conversation_id een vreemd gesprek laten
+  // flaggen en het slachtoffer laten bestraffen (FIX #8).
+  const { data: conv } = await supabase
+    .from("conversations")
+    .select("id")
+    .eq("id", conversationId)
+    .maybeSingle()
+  if (!conv) return
 
   // MyGigs blijft exclusief: contactgegevens delen wordt geblokkeerd én geflagd.
   const scan = scanForContactInfo(body)
