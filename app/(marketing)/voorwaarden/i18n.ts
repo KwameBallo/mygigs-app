@@ -21,33 +21,37 @@ const nl = {
       body: "Betalingen verlopen uitsluitend digitaal via het platform (bijv. iDEAL of creditcard). Contante betaling is niet toegestaan. Na acceptatie betaal je het bedrag; MyGigs houdt dit veilig in escrow en betaalt de DJ pas ná het optreden uit. MyGigs rekent servicekosten die bij de prijs worden getoond.",
     },
     {
-      heading: "5. Annuleren en niet-verschijnen",
+      heading: "5. Commissie en uitbetaling aan DJ's",
+      body: "Voor de bemiddeling brengt MyGigs de DJ een commissie van 7% van de gage in rekening, vermeerderd met 21% btw. MyGigs verstrekt hiervoor een aparte commissie-factuur. Deze commissie inclusief btw wordt ingehouden op het door de boeker betaalde bedrag; de DJ ontvangt het resterende bedrag netto uitbetaald, uiterlijk binnen 5 werkdagen na het optreden. Btw-plichtige DJ's kunnen de in rekening gebrachte btw als voorbelasting verrekenen. De DJ is zelf verantwoordelijk voor de eigen btw-afdracht en administratie.",
+    },
+    {
+      heading: "6. Annuleren en niet-verschijnen",
       body: "Annuleringsvoorwaarden worden bij de boeking getoond. Verschijnt de DJ zonder geldige reden niet, dan krijg je het betaalde bedrag terug.",
     },
     {
-      heading: "6. Afspraken buiten het platform",
+      heading: "7. Afspraken buiten het platform",
       body: "Communicatie en betaling lopen via MyGigs. Het is niet toegestaan om de bemiddeling te omzeilen door buiten het platform af te rekenen of contactgegevens uit te wisselen om de servicekosten te ontlopen.",
     },
     {
-      heading: "7. Aansprakelijkheid",
+      heading: "8. Aansprakelijkheid",
       body: "MyGigs bemiddelt en is niet aansprakelijk voor de uitvoering van het optreden door de DJ. Onze aansprakelijkheid is beperkt voor zover wettelijk toegestaan.",
     },
     {
-      heading: "8. Wijzigingen",
+      heading: "9. Wijzigingen",
       body: "MyGigs kan deze voorwaarden aanpassen. Bij wezenlijke wijzigingen vragen we opnieuw je akkoord.",
     },
     {
-      heading: "9. Toepasselijk recht",
+      heading: "10. Toepasselijk recht",
       body: "Op deze voorwaarden is Nederlands recht van toepassing.",
     },
   ],
   contact: {
-    heading: "10. Contact",
+    heading: "11. Contact",
     prefix: "Vragen? Mail ",
     email: "support@mygigs.nl",
     suffix: ".",
   },
-  updatedDate: "17 juli 2026",
+  updatedDate: "31 juli 2026",
 }
 
 const en: typeof nl = {
@@ -73,33 +77,37 @@ const en: typeof nl = {
       body: "Payments are made exclusively digitally through the platform (e.g. iDEAL or credit card). Cash payment is not permitted. After acceptance you pay the amount; MyGigs holds it securely in escrow and only pays out the DJ after the gig. MyGigs charges service fees that are shown alongside the price.",
     },
     {
-      heading: "5. Cancellation and no-shows",
+      heading: "5. Commission and payout to DJs",
+      body: "For its facilitation, MyGigs charges the DJ a commission of 7% of the fee, plus 21% VAT. MyGigs issues a separate commission invoice for this. This commission including VAT is deducted from the amount paid by the booker; the DJ receives the remaining amount net, at the latest within 5 business days after the gig. VAT-registered DJs can reclaim the charged VAT as input tax. The DJ is responsible for their own VAT remittance and administration.",
+    },
+    {
+      heading: "6. Cancellation and no-shows",
       body: "Cancellation terms are shown at the time of booking. If the DJ fails to appear without a valid reason, you get the amount you paid refunded.",
     },
     {
-      heading: "6. Arrangements outside the platform",
+      heading: "7. Arrangements outside the platform",
       body: "Communication and payment take place through MyGigs. It is not permitted to circumvent the facilitation by settling outside the platform or exchanging contact details in order to avoid the service fees.",
     },
     {
-      heading: "7. Liability",
+      heading: "8. Liability",
       body: "MyGigs facilitates and is not liable for the performance of the gig by the DJ. Our liability is limited to the extent permitted by law.",
     },
     {
-      heading: "8. Changes",
+      heading: "9. Changes",
       body: "MyGigs may amend these terms. In the event of material changes we will ask for your consent again.",
     },
     {
-      heading: "9. Governing law",
+      heading: "10. Governing law",
       body: "Dutch law applies to these terms.",
     },
   ],
   contact: {
-    heading: "10. Contact",
+    heading: "11. Contact",
     prefix: "Questions? Email ",
     email: "support@mygigs.nl",
     suffix: ".",
   },
-  updatedDate: "17 July 2026",
+  updatedDate: "31 July 2026",
 }
 
 export const dict = { nl, en }

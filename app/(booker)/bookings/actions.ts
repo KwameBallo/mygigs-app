@@ -12,7 +12,7 @@ import {
   getUserEmail,
 } from "@/lib/email"
 import { getI18n } from "@/lib/i18n"
-import { formatEuro } from "@/lib/utils/pricing"
+import { formatEuro, VAT_RATE } from "@/lib/utils/pricing"
 
 // De boeker annuleert een eigen aanvraag. Alleen als de boeking nog niet
 // definitief is (in afwachting of geaccepteerd) en van deze gebruiker is.
@@ -95,10 +95,11 @@ export async function payBooking(formData: FormData) {
     redirect("/bookings")
   }
 
-  const payout = Math.max(
-    0,
-    Number(booking.total) - Number(booking.service_fee ?? 0),
-  )
+  // Commissie incl. 21% btw wordt ingehouden (gelijk aan de commissie-factuur);
+  // de DJ ontvangt het restant netto. Grondslag staat in de algemene voorwaarden.
+  const commissionInclVat =
+    Math.round(Number(booking.service_fee ?? 0) * (1 + VAT_RATE) * 100) / 100
+  const payout = Math.max(0, Number(booking.total) - commissionInclVat)
 
   // 2) Betaling vastleggen — geld staat vast bij MyGigs (escrow).
   await admin.from("payments").insert({
