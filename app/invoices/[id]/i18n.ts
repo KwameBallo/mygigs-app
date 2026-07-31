@@ -17,6 +17,14 @@ const nl = {
   total: "Totaal",
   paidViaMyGigs:
     "Betaald via MyGigs — het bedrag staat in escrow tot na het optreden en wordt binnen 5 werkdagen uitbetaald.",
+  payoutTitle: "Uitbetalingsspecificatie",
+  payoutHint:
+    "Alleen zichtbaar voor jou — dit staat niet op de factuur aan de klant.",
+  payoutGross: "Bruto boekingsbedrag",
+  payoutCommission: "MyGigs-commissie (7%, excl. btw)",
+  payoutNet: "Netto uitbetaling",
+  payoutVatNote:
+    "Over de commissie berekenen wij 21% btw ({vat}) via een aparte commissie-factuur — voor btw-plichtige DJ's verrekenbaar.",
 }
 
 const en: typeof nl = {
@@ -38,6 +46,13 @@ const en: typeof nl = {
   total: "Total",
   paidViaMyGigs:
     "Paid via MyGigs — held in escrow until after the performance and paid out within 5 business days.",
+  payoutTitle: "Payout breakdown",
+  payoutHint: "Only visible to you — this is not shown on the client invoice.",
+  payoutGross: "Gross booking amount",
+  payoutCommission: "MyGigs commission (7%, excl. VAT)",
+  payoutNet: "Net payout",
+  payoutVatNote:
+    "We charge 21% VAT ({vat}) on the commission via a separate commission invoice — reclaimable for VAT-registered DJs.",
 }
 
 export const dict = { nl, en }

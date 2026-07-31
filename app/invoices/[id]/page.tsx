@@ -37,6 +37,32 @@ export default async function InvoicePage({
   })
   const hasVat = Number(inv.vat_amount) > 0
 
+  // Uitbetalingsspecificatie: alleen voor de DJ (niet de boeker) op de
+  // verkoopfactuur. Toont wat er van het bruto bedrag afgaat aan MyGigs-
+  // commissie (7% excl. btw) en wat er netto wordt uitbetaald. Nooit op de
+  // print/PDF die naar de klant gaat (print:hidden hieronder).
+  const viewerIsDJ = user.id !== inv.booker_id
+  let payout: { gross: number; commNet: number; commVat: number; net: number } | null =
+    null
+  if (inv.kind === "dj_sale" && viewerIsDJ && inv.booking_id) {
+    const { data: comm } = await supabase
+      .from("invoices")
+      .select("net, vat_amount")
+      .eq("booking_id", inv.booking_id)
+      .eq("kind", "mg_commission")
+      .maybeSingle()
+    if (comm) {
+      const gross = Number(inv.gross)
+      const commNet = Number(comm.net)
+      payout = {
+        gross,
+        commNet,
+        commVat: Number(comm.vat_amount),
+        net: gross - commNet,
+      }
+    }
+  }
+
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
       <div className="flex items-center justify-between print:hidden">
@@ -145,6 +171,28 @@ export default async function InvoicePage({
         )}
         <p className="mt-2 text-xs text-muted">{d.paidViaMyGigs}</p>
       </div>
+
+      {/* Uitbetalingsspecificatie — alleen voor de DJ, nooit op de klant-PDF. */}
+      {payout && (
+        <div className="mt-6 rounded-3xl border border-border bg-surface p-8 text-sm print:hidden">
+          <h2 className="text-base font-semibold">{d.payoutTitle}</h2>
+          <p className="mt-1 text-xs text-muted">{d.payoutHint}</p>
+          <div className="mt-4 flex justify-end">
+            <div className="w-full max-w-sm">
+              <Row label={d.payoutGross} value={formatEuro(payout.gross)} />
+              <Row
+                label={d.payoutCommission}
+                value={`− ${formatEuro(payout.commNet)}`}
+              />
+              <div className="my-2 border-t border-border" />
+              <Row label={d.payoutNet} value={formatEuro(payout.net)} strong />
+            </div>
+          </div>
+          <p className="mt-4 text-xs text-muted">
+            {d.payoutVatNote.replace("{vat}", formatEuro(payout.commVat))}
+          </p>
+        </div>
+      )}
     </main>
   )
 }
