@@ -21,25 +21,9 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=(self), payment=()",
   },
   { key: "X-DNS-Prefetch-Control", value: "on" },
-  // Content Security Policy: beperk de herkomst van scripts, stijlen en data.
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "base-uri 'self'",
-      "object-src 'none'",
-      "frame-ancestors 'self'",
-      "form-action 'self'",
-      "script-src 'self' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      "connect-src 'self' https: wss:",
-      "frame-src 'self'",
-      "worker-src 'self' blob:",
-      "upgrade-insecure-requests",
-    ].join("; "),
-  },
+  // NB: de Content-Security-Policy wordt per request met een NONCE gezet in de
+  // middleware (lib/supabase/middleware.ts + middleware.ts) — dat is sterker dan
+  // 'unsafe-inline' voor scripts. Daarom staat hij hier bewust NIET meer statisch.
 ]
 
 const nextConfig: NextConfig = {
