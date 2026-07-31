@@ -18,6 +18,7 @@ export async function sendEmail(opts: {
   to: string
   subject: string
   html: string
+  replyTo?: string
 }): Promise<{ ok: boolean; skipped?: boolean }> {
   const key = process.env.RESEND_API_KEY
   const from = process.env.EMAIL_FROM || "MyGigs <onboarding@resend.dev>"
@@ -37,6 +38,7 @@ export async function sendEmail(opts: {
         to: [opts.to],
         subject: opts.subject,
         html: opts.html,
+        ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
       }),
     })
     if (!res.ok) {
@@ -76,6 +78,37 @@ function shell(title: string, bodyRows: string, cta: { href: string; label: stri
 
 function row(label: string, value: string, strong = false) {
   return `<tr><td style="padding:5px 0;color:#8b8b93">${esc(label)}</td><td style="padding:5px 0;text-align:right;${strong ? "font-weight:800;color:#ff8a3d" : ""}">${esc(value)}</td></tr>`
+}
+
+// Bericht uit het klantenservice-formulier naar de support-inbox. Het adres van
+// de afzender komt in reply_to zodat support direct kan antwoorden. Levert in
+// Resend-testmodus alleen af bij de accounteigenaar tot het domein geverifieerd is.
+export async function sendSupportMessage(opts: {
+  name: string
+  email: string
+  subject: string
+  message: string
+}) {
+  const to = process.env.SUPPORT_EMAIL || "support@mygigs.nl"
+  const rows =
+    row("Naam", opts.name) +
+    row("E-mail", opts.email) +
+    (opts.subject ? row("Onderwerp", opts.subject) : "")
+  const html = `<!doctype html><html><body style="margin:0;background:#0b0b0c;font-family:Segoe UI,Arial,sans-serif;color:#f5f4f2">
+  <div style="max-width:560px;margin:0 auto;padding:32px 24px">
+    <div style="font-size:22px;font-weight:800">My<span style="color:#ff6f14">Gigs</span><span style="color:#ff6f14">.</span></div>
+    <div style="margin-top:24px;background:#161618;border:1px solid #2a2a2e;border-radius:18px;padding:24px">
+      <h1 style="margin:0 0 12px;font-size:20px">Nieuw klantenservice-bericht</h1>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#cfcfd4">${rows}</table>
+      <p style="margin:16px 0 0;white-space:pre-wrap;font-size:14px;color:#cfcfd4">${esc(opts.message)}</p>
+    </div>
+  </div></body></html>`
+  return sendEmail({
+    to,
+    subject: `Klantenservice: ${opts.subject || "nieuwe vraag"}`,
+    html,
+    replyTo: opts.email,
+  })
 }
 
 // Betaalbewijs naar de (hoofd)boeker na een geslaagde betaling.

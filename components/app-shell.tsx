@@ -100,6 +100,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       label: n.settings,
       icon: "settings",
     } as NavItem,
+    support: {
+      href: "/klantenservice",
+      label: n.support,
+      icon: "chat",
+    } as NavItem,
   }
 
   const sections: NavSection[] = []
@@ -125,11 +130,17 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       title: n.sectionOrganise,
       items: [items.manageEvents, items.advertise],
     })
-    sections.push({ title: n.sectionAccount, items: [items.settings] })
+    sections.push({
+      title: n.sectionAccount,
+      items: [items.settings, items.support],
+    })
   } else {
     // Consument: beginscherm, Ontdek en de eigen boekingen.
     sections.push({ items: [items.home, items.discover, items.bookings] })
-    sections.push({ title: n.sectionAccount, items: [items.settings] })
+    sections.push({
+      title: n.sectionAccount,
+      items: [items.settings, items.support],
+    })
   }
 
   if (profile?.role === "admin") {
