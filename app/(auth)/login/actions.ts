@@ -15,6 +15,10 @@ function destinationFor(role: Role | undefined) {
 export async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim()
   const password = String(formData.get("password") ?? "")
+  // De gekozen tab: DJ-kant of organisator-kant. Bepaalt of het account
+  // op déze kant mag inloggen (rol-scheiding).
+  const chosenDj = String(formData.get("role") ?? "") === "artist"
+  const tab = chosenDj ? "&type=dj" : ""
 
   // Rate limiting tegen brute-force/credential-stuffing (FIX #11).
   const ip = await clientIpFromHeaders()
@@ -23,7 +27,7 @@ export async function signIn(formData: FormData) {
     windowSec: 300,
     scope: "login",
   })
-  if (!rl.ok) redirect("/login?error=too-many")
+  if (!rl.ok) redirect(`/login?error=too-many${tab}`)
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -32,23 +36,34 @@ export async function signIn(formData: FormData) {
     // Ruwe fout alleen server-side loggen; gebruiker krijgt een generieke
     // melding (voorkomt user-enumeratie en info-disclosure).
     console.error("signIn failed:", error.message)
-    redirect("/login?error=signin")
+    redirect(`/login?error=signin${tab}`)
   }
 
-  const profile = await supabase.auth
-    .getUser()
-    .then(({ data }) => data.user?.id)
-    .then(async (id) => {
-      if (!id) return null
-      const { data } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", id)
-        .maybeSingle()
-      return data
-    })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
+    : { data: null }
+  const role = profile?.role
 
-  redirect(destinationFor(profile?.role))
+  // Rol-scheiding: de gekozen kant moet bij het account passen. Een DJ-account
+  // kan dus niet via de organisator-tab inloggen, en andersom. Bij mismatch
+  // loggen we direct weer uit en sturen we naar de juiste tab. Admin mag beide.
+  if (role !== "admin") {
+    const isDjAccount = role === "artist" || role === "both"
+    const isBookerAccount = role === "booker" || role === "both"
+    if (chosenDj && !isDjAccount) {
+      await supabase.auth.signOut()
+      redirect("/login?error=use-organiser")
+    }
+    if (!chosenDj && !isBookerAccount) {
+      await supabase.auth.signOut()
+      redirect("/login?type=dj&error=use-dj")
+    }
+  }
+
+  redirect(destinationFor(role))
 }
 
 // Versie van de voorwaarden/privacyverklaring waarmee akkoord is gegaan.
