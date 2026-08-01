@@ -90,7 +90,7 @@ const nl = {
     errPasswordMismatch: "De wachtwoorden komen niet overeen.",
     errTerms: "Je moet akkoord gaan met de voorwaarden en het privacybeleid.",
     errTooMany: "Te veel pogingen. Wacht een paar minuten en probeer opnieuw.",
-    errUseOrganiser: "Dit is een organisator-account. Login via organisator.",
+    errUseOrganiser: "Dit is een organisator-account. Log in via organisator.",
     errUseDj: "Dit is een DJ-account. Login via DJ.",
     errGeneric: "Er ging iets mis. Probeer het opnieuw.",
   },
