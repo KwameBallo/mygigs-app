@@ -90,8 +90,8 @@ const nl = {
     errPasswordMismatch: "De wachtwoorden komen niet overeen.",
     errTerms: "Je moet akkoord gaan met de voorwaarden en het privacybeleid.",
     errTooMany: "Te veel pogingen. Wacht een paar minuten en probeer opnieuw.",
-    errUseOrganiser: "Dit is een organisator-account. Log in via de organisator-tab.",
-    errUseDj: "Dit is een DJ-account. Log in via de DJ-tab.",
+    errUseOrganiser: "Dit is een organisator-account. Login via organisator.",
+    errUseDj: "Dit is een DJ-account. Login via DJ.",
     errGeneric: "Er ging iets mis. Probeer het opnieuw.",
   },
   nav: {
@@ -671,8 +671,8 @@ const en: typeof nl = {
     errPasswordMismatch: "The passwords do not match.",
     errTerms: "You must agree to the terms and the privacy policy.",
     errTooMany: "Too many attempts. Wait a few minutes and try again.",
-    errUseOrganiser: "This is an organiser account. Sign in via the organiser tab.",
-    errUseDj: "This is a DJ account. Sign in via the DJ tab.",
+    errUseOrganiser: "This is an organiser account. Log in via organiser.",
+    errUseDj: "This is a DJ account. Log in via DJ.",
     errGeneric: "Something went wrong. Please try again.",
   },
   nav: {
