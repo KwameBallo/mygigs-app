@@ -220,7 +220,8 @@ export function OnboardingTour({
     return (
       <button
         onClick={reopen}
-        className="fixed bottom-5 left-5 z-40 flex items-center gap-2 rounded-full border border-border bg-surface/90 px-4 py-2 text-sm font-medium text-muted shadow-lg backdrop-blur transition hover:border-brand/50 hover:text-foreground"
+        style={{ zIndex: 99999 }}
+        className="fixed bottom-5 left-5 flex items-center gap-2 rounded-full border border-border bg-surface/90 px-4 py-2 text-sm font-medium text-muted shadow-lg backdrop-blur transition hover:border-brand/50 hover:text-foreground"
       >
         <span aria-hidden>❔</span>
         {d.reopen}
@@ -247,7 +248,8 @@ export function OnboardingTour({
     <div
       role="dialog"
       aria-label="Rondleiding"
-      className="fixed bottom-6 left-1/2 z-50 w-[min(92vw,430px)] -translate-x-1/2 rounded-2xl border border-border bg-surface p-5 shadow-2xl"
+      style={{ zIndex: 100000 }}
+      className="fixed bottom-6 left-1/2 w-[min(92vw,430px)] -translate-x-1/2 rounded-2xl border border-brand/40 bg-surface p-5 shadow-2xl"
     >
       <div className="flex items-start justify-between gap-3">
         <span className="text-xs font-medium uppercase tracking-wider text-brand">
