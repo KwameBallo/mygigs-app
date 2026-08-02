@@ -31,15 +31,19 @@ export async function getGenres(): Promise<Genre[]> {
 export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]> {
   const supabase = await createClient()
 
-  // Datum-filter: sluit DJ's uit die op die dag al geboekt zijn.
-  let bookedIds: string[] = []
+  // Datum-filter: toon alleen DJ's die zich op die dag beschikbaar hebben
+  // gemeld in hun agenda. Zo blijft de filterlijst in sync met de agenda:
+  // niet-beschikbare (of geboekte) DJ's verschijnen niet.
+  let availableIds: string[] | null = null
   if (filters.date) {
-    const { data: booked } = await supabase
+    const { data: avail } = await supabase
       .from("artist_availability")
       .select("artist_id")
       .eq("date", filters.date)
-      .eq("status", "booked")
-    bookedIds = (booked ?? []).map((r) => r.artist_id)
+      .eq("status", "available")
+    availableIds = (avail ?? []).map((r) => r.artist_id)
+    // Niemand beschikbaar op die dag → lege resultatenset.
+    if (availableIds.length === 0) return []
   }
 
   // Genre-filter: match op álle stijlen van een DJ (artist_genres), niet
@@ -75,8 +79,8 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
     .order("online", { ascending: false })
     .order("total_bookings", { ascending: false })
 
-  if (bookedIds.length > 0) {
-    query = query.not("id", "in", `(${bookedIds.join(",")})`)
+  if (availableIds) {
+    query = query.in("id", availableIds)
   }
   if (provinceRates) {
     query = query.in("id", [...provinceRates.keys()])

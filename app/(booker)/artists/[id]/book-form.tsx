@@ -32,6 +32,7 @@ export function BookForm({
   isLoggedIn,
   emailConfirmed,
   company,
+  availableDates = [],
 }: {
   artistId: string
   baseGage: number
@@ -43,12 +44,19 @@ export function BookForm({
     vat: string | null
     email: string | null
   }
+  availableDates?: string[]
 }) {
   const { locale, t } = useT()
   const b = t.booking
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
   const fmtHours = (h: number) => formatHours(h, locale === "nl", b.hoursUnit)
   const [type, setType] = useState<BookingType>("prive")
   const [hours, setHours] = useState(2)
+  // Agenda-gestuurde datumkeuze. Heeft de DJ beschikbare dagen ingesteld, dan
+  // mag de boeker alleen daaruit kiezen; anders is de datum vrij.
+  const hasAgenda = availableDates.length > 0
+  const [date, setDate] = useState("")
+  const dateBlocked = hasAgenda && date !== "" && !availableDates.includes(date)
   const { selected, equipmentCost } = useEquipmentSelection()
   // Basisgage is een uurtarief; langer draaien schaalt de gage automatisch mee.
   const { gage, equipment, total: grossIncl } = priceBreakdown(
@@ -143,7 +151,41 @@ export function BookForm({
 
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">{b.dateLabel}</span>
-        <input name="event_date" type="date" required className="input" />
+        <input
+          name="event_date"
+          type="date"
+          required
+          value={date}
+          onChange={(e) => setDate(e.currentTarget.value)}
+          className="input"
+        />
+        {hasAgenda && (
+          <>
+            <span className="text-xs text-muted">{b.availabilityNote}</span>
+            <div className="flex flex-wrap gap-1.5">
+              {availableDates.map((dt) => (
+                <button
+                  key={dt}
+                  type="button"
+                  onClick={() => setDate(dt)}
+                  className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                    date === dt
+                      ? "border-brand bg-brand/20 text-brand"
+                      : "border-border text-muted hover:border-brand/50 hover:text-foreground"
+                  }`}
+                >
+                  {new Date(dt).toLocaleDateString(dateLocale, {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        {dateBlocked && (
+          <span className="text-xs text-red-400">{b.dateUnavailable}</span>
+        )}
       </label>
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">{b.cityLabel}</span>
@@ -302,7 +344,8 @@ export function BookForm({
 
       <button
         type="submit"
-        className="rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong"
+        disabled={dateBlocked}
+        className="rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-40"
       >
         {b.submit}
       </button>

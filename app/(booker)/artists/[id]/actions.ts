@@ -73,6 +73,31 @@ export async function createBooking(formData: FormData) {
     redirect(`/artists/${artistId}?error=notfound`)
   }
 
+  // Agenda-check: de gekozen datum moet bij de DJ beschikbaar zijn.
+  // - Is de dag als "booked" gemarkeerd → altijd blokkeren (geen dubbele boeking).
+  // - Gebruikt de DJ zijn agenda (heeft hij beschikbare dagen) maar staat deze
+  //   dag daar niet tussen → blokkeren. Een DJ zonder ingevulde agenda blijft
+  //   op elke datum aanvraagbaar.
+  if (eventDate) {
+    const { data: dayRow } = await supabase
+      .from("artist_availability")
+      .select("status")
+      .eq("artist_id", artistId)
+      .eq("date", eventDate)
+      .maybeSingle()
+    if (dayRow?.status !== "available") {
+      const { count } = await supabase
+        .from("artist_availability")
+        .select("id", { count: "exact", head: true })
+        .eq("artist_id", artistId)
+        .eq("status", "available")
+      const usesAgenda = (count ?? 0) > 0
+      if (dayRow?.status === "booked" || usesAgenda) {
+        redirect(`/artists/${artistId}?error=unavailable`)
+      }
+    }
+  }
+
   // Btw-status van de DJ bepaalt of zakelijk btw krijgt (KOR = geen btw). Via de
   // service-role, want artist_billing is owner-only (de boeker mag het niet lezen);
   // deze vlag is geen gevoelige PII, alleen of er btw van toepassing is.

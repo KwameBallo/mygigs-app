@@ -54,6 +54,8 @@ const nl = {
 
   // actions.ts
   bookingFailed: "Je aanvraag kon niet worden verstuurd. Probeer het opnieuw.",
+  errUnavailable:
+    "Deze DJ is niet beschikbaar op de gekozen datum. Kies een beschikbare dag.",
 }
 
 const en: typeof nl = {
@@ -112,6 +114,8 @@ const en: typeof nl = {
 
   // actions.ts
   bookingFailed: "Your request could not be sent. Please try again.",
+  errUnavailable:
+    "This DJ isn't available on the chosen date. Pick an available day.",
 }
 
 export const dict = { nl, en }

@@ -33,10 +33,13 @@ function formatResponse(minutes: number, d: Dict) {
 
 export default async function ArtistPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ error?: string }>
 }) {
   const { id } = await params
+  const { error } = await searchParams
   const { locale } = await getI18n()
   const d = dict[locale]
   const [artist, reviews, shows, viewer] = await Promise.all([
@@ -48,6 +51,20 @@ export default async function ArtistPage({
   const { profile, emailConfirmed } = viewer
 
   if (!artist) notFound()
+
+  // Beschikbare dagen van de DJ (agenda). Beperkt de datumkeuze in het formulier.
+  const supabase = await createAdminClient()
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const { data: availRows } = await supabase
+    .from("artist_availability")
+    .select("date")
+    .eq("artist_id", artist.id)
+    .eq("status", "available")
+    .gte("date", todayStr)
+    .order("date", { ascending: true })
+  const availableDates = (availRows ?? []).map((r) => r.date)
+
+  const errorMessage = error === "unavailable" ? d.errUnavailable : null
 
   // Btw-status van de DJ (via service-role; artist_billing is owner-only). Bepaalt
   // of een zakelijke boeking btw krijgt — nodig voor de juiste prijsweergave.
@@ -100,6 +117,12 @@ export default async function ArtistPage({
         <Link href="/discover" className="text-sm text-muted hover:text-foreground">
           {d.backToDiscover}
         </Link>
+
+        {errorMessage && (
+          <div className="mt-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            {errorMessage}
+          </div>
+        )}
 
         <EquipmentSelectionProvider prices={equipmentPrices}>
         <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1.6fr_1fr]">
@@ -252,6 +275,7 @@ export default async function ArtistPage({
               djVatRegistered={djVatRegistered}
               isLoggedIn={!!profile}
               emailConfirmed={emailConfirmed}
+              availableDates={availableDates}
               company={
                 profile
                   ? {
