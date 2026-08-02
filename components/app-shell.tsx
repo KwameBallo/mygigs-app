@@ -8,6 +8,7 @@ import {
 } from "@/components/sidebar-nav"
 import { LogoutIcon, Icon } from "@/components/icons"
 import { AiAssistant } from "@/components/ai-assistant"
+import { OnboardingTour } from "@/components/onboarding-tour"
 import { getProfile } from "@/lib/auth"
 import { getUnreadCount } from "@/lib/data/messages"
 import { getPendingBookingCount } from "@/lib/data/bookings"
@@ -268,6 +269,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <AiAssistant defaultMode={isArtist ? "dj" : "consument"} />
+      {profile && <OnboardingTour locale={locale} role={profile.role} />}
     </div>
   )
 }
