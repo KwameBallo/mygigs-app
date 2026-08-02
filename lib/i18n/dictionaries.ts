@@ -268,7 +268,7 @@ const nl = {
     prevMonth: "Vorige maand",
     nextMonth: "Volgende maand",
     calendarHint:
-      "Tik op een dag om je beschikbaarheid aan of uit te zetten. Geboekte dagen kun je niet wijzigen.",
+      "Tik op een dag om die aan te zetten en meteen de tijden in te stellen. Geboekte dagen kun je niet wijzigen.",
     noProfile: "Je hebt nog geen DJ-profiel. Maak er eerst een aan.",
     toProfile: "Naar profiel",
     timesTitle: "Beschikbare tijden",
@@ -277,6 +277,8 @@ const nl = {
     from: "van",
     to: "tot",
     allDay: "Hele dag",
+    editHint: "Laat op 'Hele dag' staan of stel tijden in.",
+    setUnavailable: "Niet meer beschikbaar",
     weekdays: ["ma", "di", "wo", "do", "vr", "za", "zo"],
     months: [
       "januari",
@@ -847,7 +849,7 @@ const en: typeof nl = {
     prevMonth: "Previous month",
     nextMonth: "Next month",
     calendarHint:
-      "Tap a day to turn your availability on or off. Booked days can't be changed.",
+      "Tap a day to turn it on and set the times right there. Booked days can't be changed.",
     noProfile: "You don't have a DJ profile yet. Create one first.",
     toProfile: "To profile",
     timesTitle: "Available times",
@@ -856,6 +858,8 @@ const en: typeof nl = {
     from: "from",
     to: "until",
     allDay: "All day",
+    editHint: "Keep 'All day' or set specific times.",
+    setUnavailable: "Mark unavailable",
     weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     months: [
       "January",

@@ -3,7 +3,6 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
 import { AvailabilityCalendar } from "./availability-calendar"
-import { AvailabilityTimes } from "./availability-times"
 
 export default async function AvailabilityPage() {
   const supabase = await createClient()
@@ -49,13 +48,6 @@ export default async function AvailabilityPage() {
 
   const list = slots ?? []
   const booked = list.filter((s) => s.status === "booked")
-  const availDays = list
-    .filter((s) => s.status === "available")
-    .map((s) => ({
-      date: s.date,
-      start: s.start_time ?? null,
-      end: s.end_time ?? null,
-    }))
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
@@ -65,8 +57,6 @@ export default async function AvailabilityPage() {
       <div className="mt-6">
         <AvailabilityCalendar slots={list} today={today} />
       </div>
-
-      <AvailabilityTimes days={availDays} />
 
       {booked.length > 0 && (
         <div className="mt-6">

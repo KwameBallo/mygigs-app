@@ -1,14 +1,25 @@
 "use client"
 
-import { useEffect, useMemo, useState, useTransition } from "react"
+import { Fragment, useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { toggleAvailability } from "./actions"
+import { saveAvailabilityTime, toggleAvailability } from "./actions"
 import { useT } from "@/components/i18n-provider"
 
-type Slot = { date: string; status: string }
+type Slot = {
+  date: string
+  status: string
+  start_time?: string | null
+  end_time?: string | null
+}
+type Times = { start: string; end: string }
 
 function pad(n: number) {
   return String(n).padStart(2, "0")
+}
+
+// "18:00:00" → "18:00" (input[type=time] verwacht HH:MM).
+function hhmm(t: string | null | undefined) {
+  return t ? t.slice(0, 5) : ""
 }
 
 export function AvailabilityCalendar({
@@ -19,8 +30,9 @@ export function AvailabilityCalendar({
   today: string
 }) {
   const router = useRouter()
-  const { t } = useT()
+  const { locale, t } = useT()
   const a = t.agenda
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
 
   // Geboekte dagen zijn niet te wijzigen; beschikbare dagen wél (optimistisch).
   const booked = useMemo(
@@ -33,12 +45,35 @@ export function AvailabilityCalendar({
         slots.filter((s) => s.status === "available").map((s) => s.date),
       ),
   )
+  // Per-dag tijden (van/tot). Leeg = hele dag.
+  const [times, setTimes] = useState<Record<string, Times>>(() =>
+    Object.fromEntries(
+      slots
+        .filter((s) => s.status === "available")
+        .map((s) => [
+          s.date,
+          { start: hhmm(s.start_time), end: hhmm(s.end_time) },
+        ]),
+    ),
+  )
   // Sync met verse server-data na een refresh.
   useEffect(() => {
     setAvailable(
       new Set(slots.filter((s) => s.status === "available").map((s) => s.date)),
     )
+    setTimes(
+      Object.fromEntries(
+        slots
+          .filter((s) => s.status === "available")
+          .map((s) => [
+            s.date,
+            { start: hhmm(s.start_time), end: hhmm(s.end_time) },
+          ]),
+      ),
+    )
   }, [slots])
+
+  const [selected, setSelected] = useState<string | null>(null)
 
   const [ty, tmonth] = today.split("-").map(Number) // jaar, maand (1-12)
   const [view, setView] = useState({ y: ty, m: tmonth - 1 }) // m = 0-11
@@ -54,32 +89,140 @@ export function AvailabilityCalendar({
   for (let d = 1; d <= daysInMonth; d++) {
     cells.push(`${view.y}-${pad(view.m + 1)}-${pad(d)}`)
   }
+  // In weken (rijen van 7) hakken, zodat we de editor direct ónder de rij van
+  // de gekozen dag kunnen tonen.
+  const weeks: (string | null)[][] = []
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
 
   const canGoPrev = view.y > ty || (view.y === ty && view.m > tmonth - 1)
   const availableCount = [...available].filter((d) => d >= today).length
 
   function shift(delta: number) {
+    setSelected(null)
     setView((v) => {
       const total = v.y * 12 + v.m + delta
       return { y: Math.floor(total / 12), m: ((total % 12) + 12) % 12 }
     })
   }
 
-  function onToggle(dateStr: string) {
+  function onDayClick(dateStr: string) {
     if (booked.has(dateStr) || dateStr < today) return
-    // Optimistisch meteen omzetten voor directe feedback.
-    setAvailable((prev) => {
-      const next = new Set(prev)
-      if (next.has(dateStr)) next.delete(dateStr)
-      else next.add(dateStr)
-      return next
-    })
+    if (available.has(dateStr)) {
+      // Al beschikbaar: editor openen (of sluiten als je 'm nogmaals aantikt).
+      setSelected((cur) => (cur === dateStr ? null : dateStr))
+      return
+    }
+    // Nog niet beschikbaar: meteen aanzetten en de editor openen.
+    setAvailable((prev) => new Set(prev).add(dateStr))
+    setTimes((prev) => ({ ...prev, [dateStr]: { start: "", end: "" } }))
+    setSelected(dateStr)
     setBusyDate(dateStr)
     startTransition(async () => {
       await toggleAvailability(dateStr)
       router.refresh()
       setBusyDate(null)
     })
+  }
+
+  function persistTimes(dateStr: string, next: Times) {
+    setTimes((prev) => ({ ...prev, [dateStr]: next }))
+    setBusyDate(dateStr)
+    startTransition(async () => {
+      const fd = new FormData()
+      fd.set("date", dateStr)
+      fd.set("start", next.start)
+      fd.set("end", next.end)
+      await saveAvailabilityTime(fd)
+      setBusyDate(null)
+    })
+  }
+
+  function removeDay(dateStr: string) {
+    setAvailable((prev) => {
+      const n = new Set(prev)
+      n.delete(dateStr)
+      return n
+    })
+    setSelected(null)
+    setBusyDate(dateStr)
+    startTransition(async () => {
+      await toggleAvailability(dateStr)
+      router.refresh()
+      setBusyDate(null)
+    })
+  }
+
+  function renderEditor(dateStr: string) {
+    const tm = times[dateStr] ?? { start: "", end: "" }
+    const allDay = !tm.start && !tm.end
+    return (
+      <div className="col-span-7 mt-1 rounded-xl border border-brand/40 bg-surface-2 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <span className="text-sm font-semibold">
+            {new Date(dateStr).toLocaleDateString(dateLocale, {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelected(null)}
+            aria-label="×"
+            className="-mr-1 -mt-1 rounded-lg p-1 text-muted transition hover:text-foreground"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => persistTimes(dateStr, { start: "", end: "" })}
+            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+              allDay
+                ? "border-brand bg-brand/20 text-brand"
+                : "border-border text-muted hover:text-foreground"
+            }`}
+          >
+            {a.allDay}
+          </button>
+          <label className="flex items-center gap-1.5 text-xs text-muted">
+            {a.from}
+            <input
+              type="time"
+              value={tm.start}
+              onChange={(e) =>
+                persistTimes(dateStr, { ...tm, start: e.currentTarget.value })
+              }
+              className="input h-9 w-28"
+            />
+          </label>
+          <label className="flex items-center gap-1.5 text-xs text-muted">
+            {a.to}
+            <input
+              type="time"
+              value={tm.end}
+              onChange={(e) =>
+                persistTimes(dateStr, { ...tm, end: e.currentTarget.value })
+              }
+              className="input h-9 w-28"
+            />
+          </label>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <span className="text-xs text-muted">{a.editHint}</span>
+          <button
+            type="button"
+            onClick={() => removeDay(dateStr)}
+            className="rounded-full border border-red-500/40 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-500/10"
+          >
+            {a.setUnavailable}
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -116,36 +259,48 @@ export function AvailabilityCalendar({
       </div>
 
       <div className="mt-1 grid grid-cols-7 gap-1">
-        {cells.map((dateStr, i) => {
-          if (!dateStr) return <div key={`b${i}`} />
-          const isPast = dateStr < today
-          const isToday = dateStr === today
-          const isBooked = booked.has(dateStr)
-          const isAvailable = available.has(dateStr)
-
-          let cls =
-            "border-border bg-surface-2 text-foreground hover:border-brand/50"
-          if (isBooked) {
-            cls =
-              "border-red-500/40 bg-red-500/15 text-red-300 cursor-not-allowed"
-          } else if (isAvailable) {
-            cls = "border-brand bg-brand/20 text-brand hover:bg-brand/30"
-          } else if (isPast) {
-            cls = "border-transparent text-muted/30 cursor-not-allowed"
-          }
-
+        {weeks.map((week, wi) => {
+          const selInWeek =
+            selected && week.includes(selected) ? selected : null
           return (
-            <button
-              key={dateStr}
-              type="button"
-              disabled={isPast || isBooked}
-              onClick={() => onToggle(dateStr)}
-              className={`aspect-square rounded-lg border text-sm font-medium transition ${cls} ${
-                isToday ? "ring-1 ring-brand" : ""
-              } ${busyDate === dateStr ? "opacity-60" : ""}`}
-            >
-              {Number(dateStr.slice(8))}
-            </button>
+            <Fragment key={wi}>
+              {week.map((dateStr, i) => {
+                if (!dateStr) return <div key={`b${wi}-${i}`} />
+                const isPast = dateStr < today
+                const isToday = dateStr === today
+                const isBooked = booked.has(dateStr)
+                const isAvailable = available.has(dateStr)
+                const isSelected = selected === dateStr
+
+                let cls =
+                  "border-border bg-surface-2 text-foreground hover:border-brand/50"
+                if (isBooked) {
+                  cls =
+                    "border-red-500/40 bg-red-500/15 text-red-300 cursor-not-allowed"
+                } else if (isAvailable) {
+                  cls = "border-brand bg-brand/20 text-brand hover:bg-brand/30"
+                } else if (isPast) {
+                  cls = "border-transparent text-muted/30 cursor-not-allowed"
+                }
+
+                return (
+                  <button
+                    key={dateStr}
+                    type="button"
+                    disabled={isPast || isBooked}
+                    onClick={() => onDayClick(dateStr)}
+                    className={`aspect-square rounded-lg border text-sm font-medium transition ${cls} ${
+                      isToday ? "ring-1 ring-brand" : ""
+                    } ${isSelected ? "ring-2 ring-brand" : ""} ${
+                      busyDate === dateStr ? "opacity-60" : ""
+                    }`}
+                  >
+                    {Number(dateStr.slice(8))}
+                  </button>
+                )
+              })}
+              {selInWeek && renderEditor(selInWeek)}
+            </Fragment>
           )
         })}
       </div>
