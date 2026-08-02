@@ -200,7 +200,7 @@ export function OnboardingTour({
       <button
         onClick={reopen}
         style={{ zIndex: 99999 }}
-        className="fixed bottom-5 left-5 flex items-center gap-2 rounded-full border border-border bg-surface/90 px-4 py-2 text-sm font-medium text-muted shadow-lg backdrop-blur transition hover:border-brand/50 hover:text-foreground"
+        className="fixed bottom-24 right-5 flex items-center gap-2 rounded-full border border-border bg-surface/90 px-4 py-2 text-sm font-medium text-muted shadow-lg backdrop-blur transition hover:border-brand/50 hover:text-foreground lg:bottom-6 lg:right-44"
       >
         <span aria-hidden>❔</span>
         {d.reopen}
