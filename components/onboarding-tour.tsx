@@ -1,20 +1,24 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useState, type CSSProperties } from "react"
+import { usePathname, useRouter } from "next/navigation"
 
-// Rol-bewuste welkomst-rondleiding die de gebruiker bij de eerste login stap
-// voor stap door de app leidt. Voortgang staat in localStorage zodat de gids
-// meeloopt over paginawissels heen. Later opnieuw te openen via het knopje
-// linksonder.
+// Coach-mark rondleiding: licht het echte element uit (spotlight), wijst ernaar
+// met een vinger en een callout, en leidt de gebruiker stap voor stap door de
+// app. Rol-bewust. Voortgang in localStorage. Opnieuw te openen via het knopje
+// linksonder. Werkt met terugval: vindt hij een element niet, dan toont hij de
+// callout gecentreerd zodat de tour nooit vastloopt.
 
-type Step = { title: string; body: string; cta: string; href?: string }
+type Step = { sel?: string; page?: string; title: string; body: string }
+type Rect = { top: number; left: number; width: number; height: number }
 
 type Dict = {
   skip: string
   back: string
+  next: string
+  done: string
   reopen: string
-  stepLabel: string // "Stap {n} van {t}"
+  stepLabel: string
   bookerSteps: Step[]
   djSteps: Step[]
 }
@@ -22,146 +26,58 @@ type Dict = {
 const nl: Dict = {
   skip: "Overslaan",
   back: "Vorige",
+  next: "Volgende",
+  done: "Klaar",
   reopen: "Rondleiding",
-  stepLabel: "Stap {n} van {t}",
+  stepLabel: "Stap {n} / {t}",
   bookerSteps: [
-    {
-      title: "Welkom bij MyGigs 👋",
-      body: "In een paar stappen laten we zien hoe je de perfecte DJ boekt.",
-      cta: "Start",
-    },
-    {
-      title: "Ontdek DJ's",
-      body: "Vind op de kaart de DJ die bij je event past — gefilterd op stijl, budget en datum.",
-      cta: "Ga naar Ontdekken",
-      href: "/discover",
-    },
-    {
-      title: "Doe een aanvraag",
-      body: "Kies een DJ, geef datum en locatie op en bespreek de details in de chat.",
-      cta: "Volgende",
-    },
-    {
-      title: "Veilig betalen",
-      body: "Na acceptatie betaal je via de app. Je geld staat veilig in escrow tot ná het optreden.",
-      cta: "Volgende",
-    },
-    {
-      title: "Je boekingen",
-      body: "Al je boekingen, facturen en reviews vind je hier terug. Veel plezier!",
-      cta: "Naar mijn boekingen",
-      href: "/bookings",
-    },
+    { sel: 'a[href="/discover"]', title: "Ontdek DJ's", body: "Klik op Ontdek om DJ's op de kaart te bladeren." },
+    { sel: '[data-tour="discover-search"]', page: "/discover", title: "Zoeken & filteren", body: "Zoek op DJ of stad, of open de filters om te verfijnen." },
+    { sel: 'a[href="/bookings"]', page: "/bookings", title: "Mijn boekingen", body: "Hier vind je je boekingen, facturen en reviews terug." },
+    { title: "Klaar! 🎉", body: "Je kent nu de weg. Veel plezier met boeken." },
   ],
   djSteps: [
-    {
-      title: "Welkom bij MyGigs 👋",
-      body: "Zet je act neer en ontvang boekingen. We lopen de belangrijkste stappen even langs.",
-      cta: "Start",
-    },
-    {
-      title: "Bouw je profiel",
-      body: "Vul je profiel: media, uurtarief en welke apparatuur je meeneemt.",
-      cta: "Naar mijn profiel",
-      href: "/profile",
-    },
-    {
-      title: "Facturatie & KVK",
-      body: "Stel op je profiel je facturatiegegevens in: KVK-nummer en btw-status (btw-plichtig of KOR). Zonder KVK kun je niet factureren.",
-      cta: "Volgende",
-    },
-    {
-      title: "Beschikbaarheid",
-      body: "Zet je beschikbare data zodat organisatoren je kunnen boeken.",
-      cta: "Naar beschikbaarheid",
-      href: "/availability",
-    },
-    {
-      title: "Aanvragen accepteren",
-      body: "Nieuwe boekingsaanvragen accepteer je op je dashboard.",
-      cta: "Naar dashboard",
-      href: "/dashboard",
-    },
-    {
-      title: "Uitbetaling",
-      body: "Na het optreden word je netto binnen 5 werkdagen uitbetaald, met verkoop- en commissiefactuur. Succes!",
-      cta: "Klaar",
-    },
+    { sel: 'a[href="/profile"]', title: "Je profiel", body: "Begin hier: zet je act, media en uurtarief op." },
+    { sel: '[data-tour="profile-billing"]', page: "/profile", title: "Facturatie & KVK", body: "Vul je KVK-nummer en btw-status in (btw-plichtig of KOR)." },
+    { sel: 'a[href="/availability"]', page: "/availability", title: "Beschikbaarheid", body: "Zet hier je beschikbare data zodat je geboekt kunt worden." },
+    { sel: 'a[href="/dashboard"]', page: "/dashboard", title: "Aanvragen", body: "Nieuwe boekingsaanvragen accepteer je op je dashboard." },
+    { title: "Succes! 🎧", body: "Je bent klaar om boekingen te ontvangen." },
   ],
 }
 
 const en: Dict = {
   skip: "Skip",
   back: "Back",
+  next: "Next",
+  done: "Done",
   reopen: "Tour",
-  stepLabel: "Step {n} of {t}",
+  stepLabel: "Step {n} / {t}",
   bookerSteps: [
-    {
-      title: "Welcome to MyGigs 👋",
-      body: "In a few steps we'll show you how to book the perfect DJ.",
-      cta: "Start",
-    },
-    {
-      title: "Discover DJs",
-      body: "Find the DJ that fits your event on the map — filtered by style, budget and date.",
-      cta: "Go to Discover",
-      href: "/discover",
-    },
-    {
-      title: "Send a request",
-      body: "Pick a DJ, add date and location, and discuss the details in chat.",
-      cta: "Next",
-    },
-    {
-      title: "Pay securely",
-      body: "After acceptance you pay through the app. Your money is held in escrow until after the gig.",
-      cta: "Next",
-    },
-    {
-      title: "Your bookings",
-      body: "You'll find all your bookings, invoices and reviews here. Enjoy!",
-      cta: "Go to my bookings",
-      href: "/bookings",
-    },
+    { sel: 'a[href="/discover"]', title: "Discover DJs", body: "Click Discover to browse DJs on the map." },
+    { sel: '[data-tour="discover-search"]', page: "/discover", title: "Search & filter", body: "Search by DJ or city, or open the filters to refine." },
+    { sel: 'a[href="/bookings"]', page: "/bookings", title: "My bookings", body: "You'll find your bookings, invoices and reviews here." },
+    { title: "All set! 🎉", body: "You know the way now. Enjoy booking." },
   ],
   djSteps: [
-    {
-      title: "Welcome to MyGigs 👋",
-      body: "Set up your act and receive bookings. Let's walk through the key steps.",
-      cta: "Start",
-    },
-    {
-      title: "Build your profile",
-      body: "Fill in your profile: media, hourly rate and the equipment you bring.",
-      cta: "Go to my profile",
-      href: "/profile",
-    },
-    {
-      title: "Billing & Chamber of Commerce",
-      body: "On your profile, set your billing details: Chamber of Commerce number and VAT status (VAT-registered or KOR). Without registration you can't invoice.",
-      cta: "Next",
-    },
-    {
-      title: "Availability",
-      body: "Set your available dates so organisers can book you.",
-      cta: "Go to availability",
-      href: "/availability",
-    },
-    {
-      title: "Accept requests",
-      body: "You accept new booking requests on your dashboard.",
-      cta: "Go to dashboard",
-      href: "/dashboard",
-    },
-    {
-      title: "Payout",
-      body: "After the gig you're paid out net within 5 business days, with a sales and commission invoice. Good luck!",
-      cta: "Done",
-    },
+    { sel: 'a[href="/profile"]', title: "Your profile", body: "Start here: set up your act, media and hourly rate." },
+    { sel: '[data-tour="profile-billing"]', page: "/profile", title: "Billing & registration", body: "Fill in your Chamber of Commerce number and VAT status." },
+    { sel: 'a[href="/availability"]', page: "/availability", title: "Availability", body: "Set your available dates so you can be booked." },
+    { sel: 'a[href="/dashboard"]', page: "/dashboard", title: "Requests", body: "You accept new booking requests on your dashboard." },
+    { title: "Good luck! 🎧", body: "You're ready to receive bookings." },
   ],
 }
 
-const KEY = "mygigs_onboarding_v1"
+const KEY = "mygigs_onboarding_v2"
+
+function visibleEl(sel: string): HTMLElement | null {
+  const els = Array.from(document.querySelectorAll<HTMLElement>(sel))
+  return (
+    els.find((e) => {
+      const r = e.getBoundingClientRect()
+      return r.width > 0 && r.height > 0
+    }) ?? null
+  )
+}
 
 export function OnboardingTour({
   locale,
@@ -172,9 +88,12 @@ export function OnboardingTour({
 }) {
   const d = locale === "en" ? en : nl
   const router = useRouter()
+  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   const [active, setActive] = useState(false)
   const [step, setStep] = useState(0)
+  const [rect, setRect] = useState<Rect | null>(null)
+  const [above, setAbove] = useState(false)
 
   const isDj = role === "artist" || role === "both"
   const steps = isDj ? d.djSteps : d.bookerSteps
@@ -196,24 +115,84 @@ export function OnboardingTour({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Onboarding is voor DJ's en organisatoren; admins slaan we over.
+  const measure = useCallback(
+    (el: HTMLElement) => {
+      const r = el.getBoundingClientRect()
+      setRect({ top: r.top, left: r.left, width: r.width, height: r.height })
+      setAbove(r.top > window.innerHeight * 0.55)
+    },
+    [],
+  )
+
+  // Zoek het doel-element voor de huidige stap (met retries, want na navigatie
+  // is het er soms nog niet direct).
+  useEffect(() => {
+    if (!active) return
+    const s = steps[step]
+    if (!s || !s.sel) {
+      setRect(null)
+      return
+    }
+    if (s.page && pathname !== s.page) return // wacht tot we op de juiste pagina zijn
+    let tries = 0
+    let stop = false
+    const find = () => {
+      if (stop) return
+      const el = visibleEl(s.sel!)
+      if (el) {
+        el.scrollIntoView({ block: "center", behavior: "smooth" })
+        setTimeout(() => !stop && measure(el), 280)
+      } else if (tries < 15) {
+        tries++
+        setTimeout(find, 180)
+      } else {
+        setRect(null) // terugval: gecentreerd
+      }
+    }
+    find()
+    return () => {
+      stop = true
+    }
+  }, [active, step, pathname, steps, measure])
+
+  // Herposition bij scroll/resize.
+  useEffect(() => {
+    if (!active) return
+    const on = () => {
+      const s = steps[step]
+      if (s?.sel && (!s.page || pathname === s.page)) {
+        const el = visibleEl(s.sel)
+        if (el) measure(el)
+      }
+    }
+    window.addEventListener("resize", on)
+    window.addEventListener("scroll", on, true)
+    return () => {
+      window.removeEventListener("resize", on)
+      window.removeEventListener("scroll", on, true)
+    }
+  }, [active, step, pathname, steps, measure])
+
   if (!mounted || role === "admin" || !role) return null
 
-  function persist(n: number) {
+  const persist = (n: number) => {
     try {
       localStorage.setItem(KEY, String(n))
     } catch {}
   }
-  function complete() {
+  const complete = () => {
     try {
       localStorage.setItem(KEY, "done")
     } catch {}
     setActive(false)
+    setRect(null)
   }
-  function reopen() {
+  const reopen = () => {
     persist(0)
     setStep(0)
+    setRect(null)
     setActive(true)
+    if (steps[0]?.page && pathname !== steps[0].page) router.push(steps[0].page)
   }
 
   if (!active) {
@@ -232,75 +211,156 @@ export function OnboardingTour({
   const s = steps[step]
   const isLast = step === steps.length - 1
 
-  function primary() {
-    if (isLast) {
-      complete()
-      if (s.href) router.push(s.href)
-      return
+  const goStep = (n: number) => {
+    const clamped = Math.max(0, Math.min(steps.length - 1, n))
+    persist(clamped)
+    setStep(clamped)
+    setRect(null)
+    const ns = steps[clamped]
+    if (ns.page && pathname !== ns.page) router.push(ns.page)
+  }
+  const next = () => (isLast ? complete() : goStep(step + 1))
+
+  const pad = 6
+  const spot = rect
+    ? {
+        left: rect.left - pad,
+        top: rect.top - pad,
+        width: rect.width + 2 * pad,
+        height: rect.height + 2 * pad,
+      }
+    : null
+
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1200
+  const cw = Math.min(340, vw - 28)
+  let callout: CSSProperties
+  if (rect) {
+    const left = Math.min(Math.max(rect.left, 14), vw - cw - 14)
+    callout = above
+      ? {
+          position: "fixed",
+          left,
+          bottom: window.innerHeight - rect.top + 18,
+          width: cw,
+          zIndex: 100001,
+        }
+      : {
+          position: "fixed",
+          left,
+          top: rect.top + rect.height + 18,
+          width: cw,
+          zIndex: 100001,
+        }
+  } else {
+    callout = {
+      position: "fixed",
+      left: "50%",
+      bottom: "9vh",
+      transform: "translateX(-50%)",
+      width: cw,
+      zIndex: 100001,
     }
-    const next = step + 1
-    persist(next)
-    setStep(next)
-    if (s.href) router.push(s.href)
   }
 
   return (
-    <div
-      role="dialog"
-      aria-label="Rondleiding"
-      style={{ zIndex: 100000 }}
-      className="fixed bottom-6 left-1/2 w-[min(92vw,430px)] -translate-x-1/2 rounded-2xl border border-brand/40 bg-surface p-5 shadow-2xl"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <span className="text-xs font-medium uppercase tracking-wider text-brand">
-          {d.stepLabel
-            .replace("{n}", String(step + 1))
-            .replace("{t}", String(steps.length))}
-        </span>
-        <button
-          onClick={complete}
-          aria-label={d.skip}
-          className="-mr-1 -mt-1 rounded-lg p-1 text-muted transition hover:text-foreground"
+    <>
+      {spot ? (
+        <div
+          className="onb-spot"
+          style={{
+            position: "fixed",
+            zIndex: 100000,
+            pointerEvents: "none",
+            left: spot.left,
+            top: spot.top,
+            width: spot.width,
+            height: spot.height,
+            borderRadius: 14,
+            outline: "2px solid var(--brand)",
+            transition: "left .25s, top .25s, width .25s, height .25s",
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100000,
+            pointerEvents: "none",
+            background: "rgba(6,6,9,.55)",
+          }}
+        />
+      )}
+
+      {spot && rect && (
+        <div
+          className="onb-finger"
+          aria-hidden
+          style={{
+            position: "fixed",
+            zIndex: 100001,
+            pointerEvents: "none",
+            left: rect.left + rect.width / 2 - 13,
+            top: above ? spot.top - 34 : spot.top + spot.height + 2,
+            fontSize: 26,
+            filter: "drop-shadow(0 2px 6px rgba(0,0,0,.6))",
+          }}
         >
-          ✕
-        </button>
-      </div>
-
-      <h3 className="mt-2 text-lg font-semibold tracking-tight">{s.title}</h3>
-      <p className="mt-1.5 text-sm leading-relaxed text-muted">{s.body}</p>
-
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <div className="flex gap-1.5">
-          {steps.map((_, k) => (
-            <span
-              key={k}
-              className={`h-1.5 rounded-full transition-all ${
-                k === step ? "w-5 bg-brand" : "w-1.5 bg-border"
-              }`}
-            />
-          ))}
+          {above ? "👇" : "👆"}
         </div>
-        <div className="flex items-center gap-2">
-          {step > 0 && (
-            <button
-              onClick={() => {
-                const p = step - 1
-                persist(p)
-                setStep(p)
-              }}
-              className="rounded-full border border-border px-3 py-1.5 text-sm text-muted transition hover:text-foreground"
-            >
-              {d.back}
-            </button>
-          )}
+      )}
+
+      <div
+        role="dialog"
+        aria-label="Rondleiding"
+        style={callout}
+        className="rounded-2xl border border-brand/40 bg-surface p-5 shadow-2xl"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <span className="text-xs font-medium uppercase tracking-wider text-brand">
+            {d.stepLabel
+              .replace("{n}", String(step + 1))
+              .replace("{t}", String(steps.length))}
+          </span>
           <button
-            onClick={primary}
-            className="rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-black transition hover:bg-brand-strong"
+            onClick={complete}
+            aria-label={d.skip}
+            className="-mr-1 -mt-1 rounded-lg p-1 text-muted transition hover:text-foreground"
           >
-            {s.cta}
+            ✕
           </button>
         </div>
+        <h3 className="mt-2 text-lg font-semibold tracking-tight">{s.title}</h3>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted">{s.body}</p>
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="flex gap-1.5">
+            {steps.map((_, k) => (
+              <span
+                key={k}
+                className={`h-1.5 rounded-full transition-all ${
+                  k === step ? "w-5 bg-brand" : "w-1.5 bg-border"
+                }`}
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            {step > 0 && (
+              <button
+                onClick={() => goStep(step - 1)}
+                className="rounded-full border border-border px-3 py-1.5 text-sm text-muted transition hover:text-foreground"
+              >
+                {d.back}
+              </button>
+            )}
+            <button
+              onClick={next}
+              className="rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-black transition hover:bg-brand-strong"
+            >
+              {isLast ? d.done : d.next}
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

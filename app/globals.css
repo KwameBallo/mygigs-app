@@ -164,3 +164,20 @@ select:-webkit-autofill {
   border-color: var(--border);
   transition: background-color 9999s ease-out 0s;
 }
+
+/* Onboarding coach-mark: dimmen rondom + pulserende rand + bouncende vinger. */
+.onb-spot {
+  box-shadow: 0 0 0 9999px rgba(6, 6, 9, 0.62);
+}
+@keyframes onbPulse {
+  0%, 100% { box-shadow: 0 0 0 9999px rgba(6,6,9,0.62), 0 0 0 0 rgba(255,106,0,0.55); }
+  50% { box-shadow: 0 0 0 9999px rgba(6,6,9,0.62), 0 0 0 9px rgba(255,106,0,0); }
+}
+@keyframes onbBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .onb-spot { animation: onbPulse 1.8s ease-out infinite; }
+  .onb-finger { animation: onbBounce 1s ease-in-out infinite; }
+}

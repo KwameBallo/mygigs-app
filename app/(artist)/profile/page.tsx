@@ -122,7 +122,7 @@ export default async function ProfilePage({
       )}
 
       {artist && (
-        <section className="mt-8">
+        <section className="mt-8" data-tour="profile-billing">
           <h2 className="text-sm font-medium">{p.billingHeading}</h2>
           <p className="mb-3 mt-0.5 text-xs text-muted">{p.billingHint}</p>
 

@@ -238,7 +238,7 @@ export function DiscoverClient({
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[1200] px-3 pt-3">
         <div className="pointer-events-auto mx-auto flex max-w-2xl flex-col gap-2">
           <form method="get" className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-1.5 rounded-3xl border border-border bg-surface/95 p-1.5 shadow-xl backdrop-blur">
+            <div data-tour="discover-search" className="flex flex-wrap items-center gap-1.5 rounded-3xl border border-border bg-surface/95 p-1.5 shadow-xl backdrop-blur">
               <div className="flex flex-none rounded-full bg-surface-2 p-0.5">
                 <Seg label={d.segDjs} active={!isClubs} filters={filters} clubs={false} />
                 <Seg label={d.segClubs} active={isClubs} filters={filters} clubs />
