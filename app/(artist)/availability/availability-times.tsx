@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { saveAvailabilityTime } from "./actions"
 import { useT } from "@/components/i18n-provider"
 
@@ -18,6 +19,63 @@ function hhmm(t: string | null) {
   return t ? t.slice(0, 5) : ""
 }
 
+function DayRow({
+  day,
+  dateLocale,
+  a,
+}: {
+  day: Day
+  dateLocale: string
+  a: ReturnType<typeof useT>["t"]["agenda"]
+}) {
+  const [start, setStart] = useState(hhmm(day.start))
+  const [end, setEnd] = useState(hhmm(day.end))
+  const allDay = !start && !end
+
+  return (
+    <form
+      action={saveAvailabilityTime}
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-surface-2 p-3"
+    >
+      <input type="hidden" name="date" value={day.date} />
+      <span className="w-24 flex-none text-sm font-medium">
+        {label(day.date, dateLocale)}
+      </span>
+      <label className="flex items-center gap-1.5 text-xs text-muted">
+        {a.from}
+        <input
+          type="time"
+          name="start"
+          value={start}
+          onChange={(e) => {
+            setStart(e.currentTarget.value)
+            e.currentTarget.form?.requestSubmit()
+          }}
+          className="input h-9 w-28"
+        />
+      </label>
+      <label className="flex items-center gap-1.5 text-xs text-muted">
+        {a.to}
+        <input
+          type="time"
+          name="end"
+          value={end}
+          onChange={(e) => {
+            setEnd(e.currentTarget.value)
+            e.currentTarget.form?.requestSubmit()
+          }}
+          className="input h-9 w-28"
+        />
+      </label>
+      {allDay && (
+        <span className="inline-flex items-center rounded-full border border-brand/40 bg-brand/10 px-2.5 py-1 text-xs font-medium text-brand">
+          {a.allDay}
+        </span>
+      )}
+    </form>
+  )
+}
+
 export function AvailabilityTimes({ days }: { days: Day[] }) {
   const { locale, t } = useT()
   const a = t.agenda
@@ -31,36 +89,7 @@ export function AvailabilityTimes({ days }: { days: Day[] }) {
 
       <div className="mt-3 flex flex-col gap-2">
         {days.map((d) => (
-          <form
-            key={d.date}
-            action={saveAvailabilityTime}
-            className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-surface-2 p-3"
-          >
-            <input type="hidden" name="date" value={d.date} />
-            <span className="w-24 flex-none text-sm font-medium">
-              {label(d.date, dateLocale)}
-            </span>
-            <label className="flex items-center gap-1.5 text-xs text-muted">
-              {a.from}
-              <input
-                type="time"
-                name="start"
-                defaultValue={hhmm(d.start)}
-                onChange={(e) => e.currentTarget.form?.requestSubmit()}
-                className="input h-9 w-28"
-              />
-            </label>
-            <label className="flex items-center gap-1.5 text-xs text-muted">
-              {a.to}
-              <input
-                type="time"
-                name="end"
-                defaultValue={hhmm(d.end)}
-                onChange={(e) => e.currentTarget.form?.requestSubmit()}
-                className="input h-9 w-28"
-              />
-            </label>
-          </form>
+          <DayRow key={d.date} day={d} dateLocale={dateLocale} a={a} />
         ))}
       </div>
     </div>

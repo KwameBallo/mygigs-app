@@ -276,6 +276,7 @@ const nl = {
       "Geef per dag aan van hoe laat tot hoe laat je kunt. Laat leeg voor de hele dag. Wijzigingen worden meteen opgeslagen.",
     from: "van",
     to: "tot",
+    allDay: "Hele dag",
     weekdays: ["ma", "di", "wo", "do", "vr", "za", "zo"],
     months: [
       "januari",
@@ -854,6 +855,7 @@ const en: typeof nl = {
       "Set from and until what time you're available per day. Leave empty for the whole day. Changes are saved instantly.",
     from: "from",
     to: "until",
+    allDay: "All day",
     weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     months: [
       "January",
