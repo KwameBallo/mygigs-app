@@ -165,6 +165,16 @@ select:-webkit-autofill {
   transition: background-color 9999s ease-out 0s;
 }
 
+/* Datumveld: de native kalender-glyph is standaard donker (onzichtbaar op het
+   donkere thema). Vervang 'm door een oranje merk-icoon. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ff6a00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
 /* Onboarding coach-mark: dimmen rondom + pulserende rand + bouncende vinger. */
 .onb-spot {
   box-shadow: 0 0 0 9999px rgba(6, 6, 9, 0.62);
