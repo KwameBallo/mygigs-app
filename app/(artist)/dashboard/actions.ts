@@ -64,19 +64,10 @@ export async function updateBookingStatus(formData: FormData) {
     metadata: { status },
   })
 
-  // Accepteren = die dag is geboekt → blokkeer 'm in je agenda/Ontdek.
+  // Accepteren blokkeert NIET meer de hele dag. Een boeking blokkeert alleen
+  // zijn eigen tijdvak (mét reistijd-buffer), zodat de DJ die dag op andere
+  // tijden nog boekbaar blijft — de tijd-overlapcheck gebeurt bij het boeken.
   if (status === "accepted") {
-    await supabase
-      .from("artist_availability")
-      .delete()
-      .eq("artist_id", artist.id)
-      .eq("date", booking.event_date)
-    await supabase.from("artist_availability").insert({
-      artist_id: artist.id,
-      date: booking.event_date,
-      status: "booked",
-    })
-
     // Mail de boeker dat de aanvraag is geaccepteerd (met betaal-CTA). Best-effort.
     try {
       const bookerEmail = await getUserEmail(booking.booker_id)

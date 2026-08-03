@@ -42,6 +42,31 @@ export function formatDuration(
   return `${m} ${mUnit}`
 }
 
+// Reistijd-buffer (minuten) die we tussen twee optredens vrijhouden, zodat een
+// DJ dezelfde dag op een ander tijdstip nog geboekt kan worden mét reistijd.
+export const BOOKING_BUFFER_MIN = 60
+
+// Overlappen twee tijdvakken op dezelfde dag (het tweede met buffer verruimd)?
+// Houdt rekening met optredens die middernacht overschrijden.
+export function rangesOverlap(
+  aStart: string,
+  aEnd: string,
+  bStart: string,
+  bEnd: string,
+  bufferMin = 0,
+): boolean {
+  if (!aStart || !aEnd || !bStart || !bEnd) return false
+  let as = toMin(aStart)
+  let ae = toMin(aEnd)
+  if (ae <= as) ae += 1440
+  let bs = toMin(bStart)
+  let be = toMin(bEnd)
+  if (be <= bs) be += 1440
+  bs -= bufferMin
+  be += bufferMin
+  return as < be && bs < ae
+}
+
 // Valt [start,end] binnen het beschikbaarheidsvenster [winStart,winEnd]? Zonder
 // venster (DJ = hele dag beschikbaar) is elk tijdstip toegestaan. Houdt rekening
 // met vensters/optredens die middernacht overschrijden.

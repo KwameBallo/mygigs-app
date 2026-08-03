@@ -161,6 +161,9 @@ const nl = {
     durationComputed: "Duur: {h}",
     timeInvalid: "De eindtijd moet na de starttijd liggen.",
     timeOutsideWindow: "Deze tijd valt buiten de beschikbaarheid van de DJ.",
+    timeOverlap:
+      "Deze tijd overlapt met een andere boeking (incl. reistijd). Kies een ander tijdvak.",
+    bookedSlotsLabel: "Al geboekt op deze dag:",
     cityLabel: "Stad",
     cityPlaceholder: "Amsterdam",
     venueLabel: "Locatie / venue",
@@ -802,6 +805,9 @@ const en: typeof nl = {
     durationComputed: "Duration: {h}",
     timeInvalid: "The end time must be after the start time.",
     timeOutsideWindow: "This time is outside the DJ's availability.",
+    timeOverlap:
+      "This time overlaps another booking (incl. travel time). Pick a different slot.",
+    bookedSlotsLabel: "Already booked this day:",
     cityLabel: "City",
     cityPlaceholder: "Amsterdam",
     venueLabel: "Location / venue",

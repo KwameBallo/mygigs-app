@@ -47,7 +47,17 @@ export default async function AvailabilityPage() {
     .order("date", { ascending: true })
 
   const list = slots ?? []
-  const booked = list.filter((s) => s.status === "booked")
+
+  // Geboekte optredens komen nu uit de boekingen zelf (met tijdvak), niet meer
+  // uit een 'hele dag'-blokkade. Zo blijft de DJ op andere tijden boekbaar.
+  const { data: bookedGigs } = await supabase
+    .from("bookings")
+    .select("id, event_date, start_time, end_time, city")
+    .eq("artist_id", artist.id)
+    .in("status", ["accepted", "paid", "completed"])
+    .gte("event_date", today)
+    .order("event_date", { ascending: true })
+  const booked = bookedGigs ?? []
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
@@ -62,23 +72,34 @@ export default async function AvailabilityPage() {
         <div className="mt-6">
           <h2 className="text-sm font-semibold text-muted">{a.bookedDays}</h2>
           <div className="mt-2 flex flex-col gap-2">
-            {booked.map((s) => (
-              <div
-                key={s.id}
-                className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3"
-              >
-                <span className="h-2.5 w-2.5 flex-none rounded-full bg-red-400" />
-                <span className="text-sm font-medium">
-                  {new Date(s.date).toLocaleDateString(dateLocale, {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
-                <span className="text-xs text-muted">{a.booked}</span>
-              </div>
-            ))}
+            {booked.map((s) => {
+              const slot =
+                s.start_time && s.end_time
+                  ? `${s.start_time.slice(0, 5)}–${s.end_time.slice(0, 5)}`
+                  : null
+              return (
+                <div
+                  key={s.id}
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-border bg-surface p-3"
+                >
+                  <span className="h-2.5 w-2.5 flex-none rounded-full bg-red-400" />
+                  <span className="text-sm font-medium">
+                    {new Date(s.event_date).toLocaleDateString(dateLocale, {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                  {slot && (
+                    <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-300">
+                      {slot}
+                    </span>
+                  )}
+                  {s.city && <span className="text-xs text-muted">{s.city}</span>}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

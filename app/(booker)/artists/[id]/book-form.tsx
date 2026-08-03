@@ -5,7 +5,14 @@ import Link from "next/link"
 import { createBooking } from "./actions"
 import { useEquipmentSelection } from "./equipment-selection"
 import { AddressAutocomplete } from "@/components/address-autocomplete"
-import { hhmm, rangeHours, withinWindow, formatDuration } from "@/lib/time"
+import {
+  hhmm,
+  rangeHours,
+  withinWindow,
+  formatDuration,
+  rangesOverlap,
+  BOOKING_BUFFER_MIN,
+} from "@/lib/time"
 import { useT } from "@/components/i18n-provider"
 import {
   priceBreakdown,
@@ -25,6 +32,7 @@ export function BookForm({
   emailConfirmed,
   company,
   availability = [],
+  bookedByDate = {},
 }: {
   artistId: string
   baseGage: number
@@ -37,6 +45,7 @@ export function BookForm({
     email: string | null
   }
   availability?: { date: string; start: string | null; end: string | null }[]
+  bookedByDate?: Record<string, { start: string; end: string }[]>
 }) {
   const { locale, t } = useT()
   const b = t.booking
@@ -62,6 +71,7 @@ export function BookForm({
   const [endTime, setEndTime] = useState("")
   const hours = rangeHours(startTime, endTime)
   const durationText = formatDuration(startTime, endTime, b.hoursUnit, b.minUnit)
+  const bookedSlots = date ? (bookedByDate[date] ?? []) : []
   const timeMissing = !startTime || !endTime
   const timeInvalid = !timeMissing && hours <= 0
   const outsideWindow =
@@ -70,7 +80,14 @@ export function BookForm({
     !!dayWindow?.start &&
     !!dayWindow?.end &&
     !withinWindow(startTime, endTime, dayWindow.start, dayWindow.end)
-  const timeBlocked = timeMissing || timeInvalid || outsideWindow
+  // Overlapt met een al bevestigde boeking (incl. reistijd-buffer)?
+  const overlapsBooked =
+    !timeMissing &&
+    !timeInvalid &&
+    bookedSlots.some((s) =>
+      rangesOverlap(startTime, endTime, s.start, s.end, BOOKING_BUFFER_MIN),
+    )
+  const timeBlocked = timeMissing || timeInvalid || outsideWindow || overlapsBooked
 
   // Kies je een dag met een tijdvenster, dan vullen we start/eind alvast voor.
   function chooseDate(dt: string) {
@@ -268,6 +285,17 @@ export function BookForm({
         )}
         {outsideWindow && (
           <span className="text-xs text-red-400">{b.timeOutsideWindow}</span>
+        )}
+        {overlapsBooked && (
+          <span className="text-xs text-red-400">{b.timeOverlap}</span>
+        )}
+        {bookedSlots.length > 0 && (
+          <span className="text-xs text-muted">
+            {b.bookedSlotsLabel}{" "}
+            {bookedSlots
+              .map((s) => `${s.start}–${s.end}`)
+              .join(", ")}
+          </span>
         )}
       </div>
       <input type="hidden" name="start_time" value={startTime} />

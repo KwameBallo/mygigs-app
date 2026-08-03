@@ -68,6 +68,23 @@ export default async function ArtistPage({
     end: r.end_time ?? null,
   }))
 
+  // Reeds bevestigde boekingen (alleen tijden, geen PII) per dag, zodat de boeker
+  // ziet welke tijdvakken al bezet zijn en die niet dubbel boekt.
+  const { data: djBookings } = await supabase
+    .from("bookings")
+    .select("event_date, start_time, end_time")
+    .eq("artist_id", artist.id)
+    .in("status", ["accepted", "paid", "completed"])
+    .gte("event_date", todayStr)
+  const bookedByDate: Record<string, { start: string; end: string }[]> = {}
+  for (const bk of djBookings ?? []) {
+    if (!bk.start_time || !bk.end_time) continue
+    ;(bookedByDate[bk.event_date] ??= []).push({
+      start: bk.start_time.slice(0, 5),
+      end: bk.end_time.slice(0, 5),
+    })
+  }
+
   const errorMessage =
     error === "unavailable"
       ? d.errUnavailable
@@ -287,6 +304,7 @@ export default async function ArtistPage({
               isLoggedIn={!!profile}
               emailConfirmed={emailConfirmed}
               availability={availability}
+              bookedByDate={bookedByDate}
               company={
                 profile
                   ? {

@@ -7,7 +7,12 @@ import { priceBreakdown, VAT_RATE, formatEuro } from "@/lib/utils/pricing"
 import { getI18n } from "@/lib/i18n"
 import { sendNewRequestToDJ, getUserEmail } from "@/lib/email"
 import { pdokLookup } from "@/lib/geo"
-import { rangeHours, withinWindow } from "@/lib/time"
+import {
+  rangeHours,
+  withinWindow,
+  rangesOverlap,
+  BOOKING_BUFFER_MIN,
+} from "@/lib/time"
 import { dict } from "./i18n"
 
 export async function createBooking(formData: FormData) {
@@ -112,6 +117,29 @@ export async function createBooking(formData: FormData) {
     (availWindow &&
       !withinWindow(startTime, endTime, availWindow.start, availWindow.end))
   ) {
+    redirect(`/artists/${artistId}?error=time`)
+  }
+
+  // Geen dubbele boeking op hetzelfde tijdvak: het gekozen tijdvak mag niet
+  // overlappen met een reeds bevestigde boeking op die dag (incl. reistijd-
+  // buffer). Via de service-role, want de boeker mag andermans boekingen niet
+  // lezen; we halen alleen de tijden op, geen persoonsgegevens.
+  const { data: sameDay } = await createAdminClient()
+    .from("bookings")
+    .select("start_time, end_time")
+    .eq("artist_id", artistId)
+    .eq("event_date", eventDate)
+    .in("status", ["accepted", "paid", "completed"])
+  const overlaps = (sameDay ?? []).some((bk) =>
+    rangesOverlap(
+      startTime!,
+      endTime!,
+      String(bk.start_time ?? "").slice(0, 5),
+      String(bk.end_time ?? "").slice(0, 5),
+      BOOKING_BUFFER_MIN,
+    ),
+  )
+  if (overlaps) {
     redirect(`/artists/${artistId}?error=time`)
   }
 
