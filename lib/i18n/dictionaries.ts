@@ -403,7 +403,15 @@ const nl = {
     avgHint:
       "Om privacyredenen (AVG) zie je de naam van de klant pas nadat je accepteert. Verdere afstemming loopt daarna veilig via de chat.",
     locationTitle: "Locatie & navigatie",
-    navigate: "Navigeer",
+    navigate: "Navigatie",
+    navTitle: "Navigatie naar het event",
+    navBack: "← Terug",
+    navEta: "Aankomst ~{eta}",
+    navRemaining: "nog {min} min",
+    navDistanceKm: "{km} km",
+    navLocating: "Locatie bepalen…",
+    navDenied: "Locatie niet beschikbaar. Sta locatietoegang toe en probeer opnieuw.",
+    navNoCoords: "Voor deze boeking zijn geen adrescoördinaten beschikbaar.",
     checkInTitle: "Bewijs van aanwezigheid",
     checkInHint:
       "Deel je locatie bij aankomst. We leggen tijd en afstand tot het adres vast als bewijs dat je er was.",
@@ -1026,7 +1034,15 @@ const en: typeof nl = {
     avgHint:
       "For privacy reasons (GDPR) you only see the client's name after you accept. Further coordination then happens securely via chat.",
     locationTitle: "Location & navigation",
-    navigate: "Navigate",
+    navigate: "Navigation",
+    navTitle: "Navigation to the event",
+    navBack: "← Back",
+    navEta: "Arriving ~{eta}",
+    navRemaining: "{min} min left",
+    navDistanceKm: "{km} km",
+    navLocating: "Getting your location…",
+    navDenied: "Location unavailable. Allow location access and try again.",
+    navNoCoords: "No address coordinates are available for this booking.",
     checkInTitle: "Proof of attendance",
     checkInHint:
       "Share your location on arrival. We record the time and distance to the address as proof you were there.",

@@ -173,6 +173,51 @@ export async function startEnroute(formData: FormData) {
   revalidatePath("/dashboard")
 }
 
+// Live ETA vanuit het in-app navigatiescherm. De kaart berekent de rijtijd en
+// stuurt de verwachte aankomsttijd door; wij bewaren die (en markeren onderweg)
+// zodat de klant een actuele aankomsttijd ziet — nooit de locatie van de DJ.
+export async function setBookingEta(formData: FormData) {
+  const bookingId = String(formData.get("booking_id") ?? "")
+  const etaRaw = String(formData.get("eta") ?? "")
+  const eta = etaRaw ? new Date(etaRaw) : null
+  if (!bookingId || !eta || Number.isNaN(eta.getTime())) return
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data: artist } = await supabase
+    .from("artists")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle()
+  if (!artist) return
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, status, enroute_at, checkin_at")
+    .eq("id", bookingId)
+    .eq("artist_id", artist.id)
+    .maybeSingle()
+  if (!booking) return
+  if (!["accepted", "paid"].includes(booking.status)) return
+  if (booking.checkin_at) return // al aangekomen
+
+  await createAdminClient()
+    .from("bookings")
+    .update({
+      eta: eta.toISOString(),
+      enroute_at: booking.enroute_at ?? new Date().toISOString(),
+    })
+    .eq("id", bookingId)
+    .eq("artist_id", artist.id)
+
+  revalidatePath("/dashboard")
+  revalidatePath("/bookings")
+}
+
 // Aanwezigheidsbewijs: de DJ legt bij aankomst zijn GPS + tijdstip vast. We
 // berekenen de afstand tot het geverifieerde event-adres en bewaren die als
 // bewijs. AVG: locatie is persoonsgegeven — de UI vraagt eerst toestemming en

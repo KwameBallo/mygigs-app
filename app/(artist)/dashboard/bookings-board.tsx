@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import type { Database } from "@/types/database"
@@ -423,14 +424,8 @@ function LocationProof({ b }: { b: DashBooking }) {
       minute: "2-digit",
     })
 
-  const mapsUrl =
-    b.lat != null && b.lng != null
-      ? `https://www.google.com/maps/dir/?api=1&destination=${b.lat},${b.lng}`
-      : b.address
-        ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-            b.address,
-          )}`
-        : null
+  // In-app navigatie is mogelijk zodra we adrescoördinaten hebben.
+  const canNavigate = b.lat != null && b.lng != null
 
   // Deelt eenmalig de locatie en roept een server-actie aan (onderweg of check-in).
   function share(kind: "enroute" | "checkin") {
@@ -472,18 +467,16 @@ function LocationProof({ b }: { b: DashBooking }) {
         {d.locationTitle}
       </p>
       {b.address && <p className="mt-1 text-sm">{b.address}</p>}
-      {mapsUrl && (
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+      {canNavigate && (
+        <Link
+          href={`/dashboard/navigeren/${b.id}`}
           className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
         >
           <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor" aria-hidden>
             <path d="M8 1a5 5 0 0 0-5 5c0 3.5 5 9 5 9s5-5.5 5-9a5 5 0 0 0-5-5Zm0 6.8A1.8 1.8 0 1 1 8 4.2a1.8 1.8 0 0 1 0 3.6Z" />
           </svg>
           {d.navigate}
-        </a>
+        </Link>
       )}
 
       {/* Onderweg + ETA (verdwijnt zodra je bent ingecheckt). */}
