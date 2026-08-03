@@ -5,6 +5,7 @@ import Link from "next/link"
 import { createBooking } from "./actions"
 import { useEquipmentSelection } from "./equipment-selection"
 import { AddressAutocomplete } from "@/components/address-autocomplete"
+import { hhmm, rangeHours, withinWindow } from "@/lib/time"
 import { useT } from "@/components/i18n-provider"
 import {
   priceBreakdown,
@@ -15,9 +16,6 @@ import {
 } from "@/lib/utils/pricing"
 
 type BookingType = "prive" | "zakelijk"
-
-// Boekingsduur in halve uren, van 1 tot 8 uur.
-const HOURS_OPTIONS = Array.from({ length: 15 }, (_, i) => 1 + i * 0.5)
 
 function formatHours(h: number, comma: boolean, unit: string) {
   const s = Number.isInteger(h)
@@ -33,7 +31,7 @@ export function BookForm({
   isLoggedIn,
   emailConfirmed,
   company,
-  availableDates = [],
+  availability = [],
 }: {
   artistId: string
   baseGage: number
@@ -45,23 +43,54 @@ export function BookForm({
     vat: string | null
     email: string | null
   }
-  availableDates?: string[]
+  availability?: { date: string; start: string | null; end: string | null }[]
 }) {
   const { locale, t } = useT()
   const b = t.booking
   const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
   const fmtHours = (h: number) => formatHours(h, locale === "nl", b.hoursUnit)
   const [type, setType] = useState<BookingType>("prive")
-  const [hours, setHours] = useState(2)
   // Agenda-gestuurde datumkeuze. Heeft de DJ beschikbare dagen ingesteld, dan
   // mag de boeker alleen daaruit kiezen; anders is de datum vrij.
-  const hasAgenda = availableDates.length > 0
+  const hasAgenda = availability.length > 0
+  const availableDates = availability.map((a) => a.date)
+  const windowByDate: Record<string, { start: string; end: string }> =
+    Object.fromEntries(
+      availability.map((a) => [
+        a.date,
+        { start: hhmm(a.start), end: hhmm(a.end) },
+      ]),
+    )
   const [date, setDate] = useState("")
   const dateBlocked = hasAgenda && date !== "" && !availableDates.includes(date)
+  const dayWindow = date ? windowByDate[date] : undefined
+
+  // Tijdvak i.p.v. een duur: de gage volgt automatisch uit start- en eindtijd.
+  const [startTime, setStartTime] = useState("")
+  const [endTime, setEndTime] = useState("")
+  const hours = rangeHours(startTime, endTime)
+  const timeMissing = !startTime || !endTime
+  const timeInvalid = !timeMissing && hours <= 0
+  const outsideWindow =
+    !timeMissing &&
+    !timeInvalid &&
+    !!dayWindow?.start &&
+    !!dayWindow?.end &&
+    !withinWindow(startTime, endTime, dayWindow.start, dayWindow.end)
+  const timeBlocked = timeMissing || timeInvalid || outsideWindow
+
+  // Kies je een dag met een tijdvenster, dan vullen we start/eind alvast voor.
+  function chooseDate(dt: string) {
+    setDate(dt)
+    const w = windowByDate[dt]
+    setStartTime(w?.start ?? "")
+    setEndTime(w?.end ?? "")
+  }
+
   // Geverifieerd event-adres (PDOK). Zonder gekozen adres kan er niet geboekt
   // worden — zo weten we zeker dat het adres bestaat.
   const [addressId, setAddressId] = useState<string | null>(null)
-  const cannotSubmit = dateBlocked || !addressId
+  const cannotSubmit = dateBlocked || !addressId || !date || timeBlocked
   const { selected, equipmentCost } = useEquipmentSelection()
   // Basisgage is een uurtarief; langer draaien schaalt de gage automatisch mee.
   const { gage, equipment, total: grossIncl } = priceBreakdown(
@@ -161,7 +190,7 @@ export function BookForm({
           type="date"
           required
           value={date}
-          onChange={(e) => setDate(e.currentTarget.value)}
+          onChange={(e) => chooseDate(e.currentTarget.value)}
           className="input"
         />
         {hasAgenda && (
@@ -172,7 +201,7 @@ export function BookForm({
                 <button
                   key={dt}
                   type="button"
-                  onClick={() => setDate(dt)}
+                  onClick={() => chooseDate(dt)}
                   className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
                     date === dt
                       ? "border-brand bg-brand/20 text-brand"
@@ -191,6 +220,15 @@ export function BookForm({
         {dateBlocked && (
           <span className="text-xs text-red-400">{b.dateUnavailable}</span>
         )}
+        {date && !dateBlocked && (
+          <span className="text-xs text-muted">
+            {dayWindow?.start && dayWindow?.end
+              ? b.availableWindow
+                  .replace("{from}", dayWindow.start)
+                  .replace("{to}", dayWindow.end)
+              : b.availableAllDay}
+          </span>
+        )}
       </label>
       <AddressAutocomplete onSelect={setAddressId} />
       <label className="flex flex-col gap-1.5">
@@ -203,24 +241,44 @@ export function BookForm({
         />
       </label>
 
-      {/* Duur — bepaalt de gage via het uurtarief. */}
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">{b.durationLabel}</span>
-        <select
-          value={hours}
-          onChange={(e) => setHours(Number(e.target.value))}
-          className="input"
-        >
-          {HOURS_OPTIONS.map((h) => (
-            <option key={h} value={h}>
-              {fmtHours(h)}
-            </option>
-          ))}
-        </select>
-        <span className="text-xs text-muted">
-          {b.hourlyNote.replace("{rate}", formatEuro(baseGage))}
-        </span>
-      </label>
+      {/* Tijdvak — de gage volgt automatisch uit start- en eindtijd. */}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium">{b.timeLabel}</span>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex flex-col gap-1">
+            <span className="text-xs text-muted">{b.startTimeLabel}</span>
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.currentTarget.value)}
+              className="input"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs text-muted">{b.endTimeLabel}</span>
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.currentTarget.value)}
+              className="input"
+            />
+          </label>
+        </div>
+        {!timeBlocked && hours > 0 && (
+          <span className="text-xs text-muted">
+            {b.durationComputed.replace("{h}", fmtHours(hours))} ·{" "}
+            {b.hourlyNote.replace("{rate}", formatEuro(baseGage))}
+          </span>
+        )}
+        {timeInvalid && (
+          <span className="text-xs text-red-400">{b.timeInvalid}</span>
+        )}
+        {outsideWindow && (
+          <span className="text-xs text-red-400">{b.timeOutsideWindow}</span>
+        )}
+      </div>
+      <input type="hidden" name="start_time" value={startTime} />
+      <input type="hidden" name="end_time" value={endTime} />
       <input type="hidden" name="hours" value={hours} />
 
       {/* Zakelijke factuurgegevens */}

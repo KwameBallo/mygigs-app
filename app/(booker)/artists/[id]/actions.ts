@@ -7,6 +7,7 @@ import { priceBreakdown, VAT_RATE, formatEuro } from "@/lib/utils/pricing"
 import { getI18n } from "@/lib/i18n"
 import { sendNewRequestToDJ, getUserEmail } from "@/lib/email"
 import { pdokLookup } from "@/lib/geo"
+import { rangeHours, withinWindow } from "@/lib/time"
 import { dict } from "./i18n"
 
 export async function createBooking(formData: FormData) {
@@ -16,11 +17,9 @@ export async function createBooking(formData: FormData) {
   const venue = String(formData.get("venue_name") ?? "").trim() || null
   const message = String(formData.get("message") ?? "").trim() || null
 
-  // Duur in uren (halve uren), begrensd op 1–8. Bepaalt de gage via het uurtarief.
-  const rawHours = Number(formData.get("hours"))
-  const hours = Number.isFinite(rawHours)
-    ? Math.min(8, Math.max(1, Math.round(rawHours * 2) / 2))
-    : 1
+  // Tijdvak van het optreden (HH:MM). De duur — en dus de gage — volgt hieruit.
+  const startTime = String(formData.get("start_time") ?? "").trim() || null
+  const endTime = String(formData.get("end_time") ?? "").trim() || null
 
   const bookingType =
     String(formData.get("booking_type") ?? "prive") === "zakelijk"
@@ -79,10 +78,11 @@ export async function createBooking(formData: FormData) {
   // - Gebruikt de DJ zijn agenda (heeft hij beschikbare dagen) maar staat deze
   //   dag daar niet tussen → blokkeren. Een DJ zonder ingevulde agenda blijft
   //   op elke datum aanvraagbaar.
+  let availWindow: { start: string | null; end: string | null } | null = null
   if (eventDate) {
     const { data: dayRow } = await supabase
       .from("artist_availability")
-      .select("status")
+      .select("status, start_time, end_time")
       .eq("artist_id", artistId)
       .eq("date", eventDate)
       .maybeSingle()
@@ -96,7 +96,23 @@ export async function createBooking(formData: FormData) {
       if (dayRow?.status === "booked" || usesAgenda) {
         redirect(`/artists/${artistId}?error=unavailable`)
       }
+    } else {
+      availWindow = { start: dayRow.start_time, end: dayRow.end_time }
     }
+  }
+
+  // Duur uit het tijdvak (halve uren). Het optreden moet binnen het
+  // beschikbaarheidsvenster van de DJ vallen.
+  if (!startTime || !endTime) {
+    redirect(`/artists/${artistId}?error=time`)
+  }
+  const hours = rangeHours(startTime, endTime)
+  if (
+    hours <= 0 ||
+    (availWindow &&
+      !withinWindow(startTime, endTime, availWindow.start, availWindow.end))
+  ) {
+    redirect(`/artists/${artistId}?error=time`)
   }
 
   // Adresverificatie: het door de boeker gekozen adres opnieuw opzoeken bij
@@ -154,6 +170,8 @@ export async function createBooking(formData: FormData) {
     lat: verified.lat,
     lng: verified.lng,
     address_verified: true,
+    start_time: startTime,
+    end_time: endTime,
     message,
     gage,
     service_fee: commission,

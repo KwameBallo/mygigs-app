@@ -58,6 +58,8 @@ const nl = {
     "Deze DJ is niet beschikbaar op de gekozen datum. Kies een beschikbare dag.",
   errAddress:
     "We konden het adres niet verifiëren. Kies een adres uit de lijst.",
+  errTime:
+    "De gekozen tijd valt buiten de beschikbaarheid van de DJ. Pas de tijd aan.",
 }
 
 const en: typeof nl = {
@@ -120,6 +122,8 @@ const en: typeof nl = {
     "This DJ isn't available on the chosen date. Pick an available day.",
   errAddress:
     "We couldn't verify the address. Please pick an address from the list.",
+  errTime:
+    "The chosen time is outside the DJ's availability. Please adjust the time.",
 }
 
 export const dict = { nl, en }

@@ -57,19 +57,25 @@ export default async function ArtistPage({
   const todayStr = new Date().toISOString().slice(0, 10)
   const { data: availRows } = await supabase
     .from("artist_availability")
-    .select("date")
+    .select("date, start_time, end_time")
     .eq("artist_id", artist.id)
     .eq("status", "available")
     .gte("date", todayStr)
     .order("date", { ascending: true })
-  const availableDates = (availRows ?? []).map((r) => r.date)
+  const availability = (availRows ?? []).map((r) => ({
+    date: r.date,
+    start: r.start_time ?? null,
+    end: r.end_time ?? null,
+  }))
 
   const errorMessage =
     error === "unavailable"
       ? d.errUnavailable
       : error === "address"
         ? d.errAddress
-        : null
+        : error === "time"
+          ? d.errTime
+          : null
 
   // Btw-status van de DJ (via service-role; artist_billing is owner-only). Bepaalt
   // of een zakelijke boeking btw krijgt — nodig voor de juiste prijsweergave.
@@ -280,7 +286,7 @@ export default async function ArtistPage({
               djVatRegistered={djVatRegistered}
               isLoggedIn={!!profile}
               emailConfirmed={emailConfirmed}
-              availableDates={availableDates}
+              availability={availability}
               company={
                 profile
                   ? {
