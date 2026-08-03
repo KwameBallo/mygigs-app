@@ -7,6 +7,7 @@ import { logAudit } from "@/lib/audit"
 import { getI18n } from "@/lib/i18n"
 import { formatEuro } from "@/lib/utils/pricing"
 import { sendAcceptedToBooker, getUserEmail } from "@/lib/email"
+import { haversineMeters } from "@/lib/geo"
 import type { Database } from "@/types/database"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
@@ -104,6 +105,70 @@ export async function updateBookingStatus(formData: FormData) {
   revalidatePath("/dashboard")
   revalidatePath("/availability")
   revalidatePath("/discover")
+}
+
+// Aanwezigheidsbewijs: de DJ legt bij aankomst zijn GPS + tijdstip vast. We
+// berekenen de afstand tot het geverifieerde event-adres en bewaren die als
+// bewijs. AVG: locatie is persoonsgegeven — de UI vraagt eerst toestemming en
+// de gegevens zijn alleen zichtbaar voor de betrokken DJ en boeker.
+export async function checkInBooking(formData: FormData) {
+  const bookingId = String(formData.get("booking_id") ?? "")
+  const lat = Number(formData.get("lat"))
+  const lng = Number(formData.get("lng"))
+  const accuracy = Number(formData.get("accuracy"))
+  if (!bookingId || !Number.isFinite(lat) || !Number.isFinite(lng)) return
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data: artist } = await supabase
+    .from("artists")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle()
+  if (!artist) return
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, status, lat, lng, checkin_at")
+    .eq("id", bookingId)
+    .eq("artist_id", artist.id)
+    .maybeSingle()
+  if (!booking) return
+  // Alleen bij een bevestigde boeking, en niet dubbel inchecken.
+  if (!["accepted", "paid", "completed"].includes(booking.status)) return
+  if (booking.checkin_at) return
+
+  // Afstand tot het event-adres (indien we coördinaten hebben).
+  const distance =
+    booking.lat != null && booking.lng != null
+      ? haversineMeters(lat, lng, Number(booking.lat), Number(booking.lng))
+      : null
+
+  await createAdminClient()
+    .from("bookings")
+    .update({
+      checkin_at: new Date().toISOString(),
+      checkin_lat: lat,
+      checkin_lng: lng,
+      checkin_accuracy_m: Number.isFinite(accuracy) ? Math.round(accuracy) : null,
+      checkin_distance_m: distance,
+    })
+    .eq("id", bookingId)
+    .eq("artist_id", artist.id)
+
+  await logAudit({
+    actorId: user.id,
+    action: "booking.checkin",
+    targetType: "booking",
+    targetId: bookingId,
+    metadata: { distance_m: distance, accuracy_m: accuracy },
+  })
+
+  revalidatePath("/dashboard")
 }
 
 export async function toggleBookingPublic(formData: FormData) {

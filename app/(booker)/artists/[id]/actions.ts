@@ -6,12 +6,13 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { priceBreakdown, VAT_RATE, formatEuro } from "@/lib/utils/pricing"
 import { getI18n } from "@/lib/i18n"
 import { sendNewRequestToDJ, getUserEmail } from "@/lib/email"
+import { pdokLookup } from "@/lib/geo"
 import { dict } from "./i18n"
 
 export async function createBooking(formData: FormData) {
   const artistId = String(formData.get("artist_id") ?? "")
   const eventDate = String(formData.get("event_date") ?? "")
-  const city = String(formData.get("city") ?? "").trim() || null
+  const addressId = String(formData.get("address_id") ?? "").trim()
   const venue = String(formData.get("venue_name") ?? "").trim() || null
   const message = String(formData.get("message") ?? "").trim() || null
 
@@ -98,6 +99,14 @@ export async function createBooking(formData: FormData) {
     }
   }
 
+  // Adresverificatie: het door de boeker gekozen adres opnieuw opzoeken bij
+  // PDOK (server-side, niet te spoofen). Bestaat het niet → boeking blokkeren.
+  const verified = addressId ? await pdokLookup(addressId) : null
+  if (!verified) {
+    redirect(`/artists/${artistId}?error=address`)
+  }
+  const city = verified.city
+
   // Btw-status van de DJ bepaalt of zakelijk btw krijgt (KOR = geen btw). Via de
   // service-role, want artist_billing is owner-only (de boeker mag het niet lezen);
   // deze vlag is geen gevoelige PII, alleen of er btw van toepassing is.
@@ -140,6 +149,11 @@ export async function createBooking(formData: FormData) {
     event_date: eventDate,
     city,
     venue_name: venue,
+    address: verified.address,
+    postal_code: verified.postalCode,
+    lat: verified.lat,
+    lng: verified.lng,
+    address_verified: true,
     message,
     gage,
     service_fee: commission,

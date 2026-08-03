@@ -64,7 +64,12 @@ export default async function ArtistPage({
     .order("date", { ascending: true })
   const availableDates = (availRows ?? []).map((r) => r.date)
 
-  const errorMessage = error === "unavailable" ? d.errUnavailable : null
+  const errorMessage =
+    error === "unavailable"
+      ? d.errUnavailable
+      : error === "address"
+        ? d.errAddress
+        : null
 
   // Btw-status van de DJ (via service-role; artist_billing is owner-only). Bepaalt
   // of een zakelijke boeking btw krijgt — nodig voor de juiste prijsweergave.

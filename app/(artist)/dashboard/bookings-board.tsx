@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import type { Database } from "@/types/database"
-import { updateBookingStatus, toggleBookingPublic } from "./actions"
+import { updateBookingStatus, toggleBookingPublic, checkInBooking } from "./actions"
 import { openBookingChat } from "@/lib/actions/chat"
+import { CHECKIN_RADIUS_M } from "@/lib/geo"
 import { useT } from "@/components/i18n-provider"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
@@ -19,6 +20,9 @@ export type DashBooking = {
   city: string | null
   venue_name: string | null
   address: string | null
+  postal_code: string | null
+  lat: number | null
+  lng: number | null
   message: string | null
   gage: number
   service_fee: number
@@ -32,6 +36,9 @@ export type DashBooking = {
   booker_name: string | null
   is_public: boolean
   created_at: string
+  checkin_at: string | null
+  checkin_distance_m: number | null
+  checkin_accuracy_m: number | null
 }
 
 const PUBLIC_STATUSES = ["accepted", "paid", "completed"]
@@ -285,6 +292,9 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
             </div>
           </div>
 
+          {/* Locatie, navigatie en aanwezigheidsbewijs (na acceptatie). */}
+          {contactUnlocked && <LocationProof b={b} />}
+
           {/* Contactgegevens komen vrij na acceptatie (volgende stap). */}
           {isPending && (
             <p className="mt-4 flex items-center gap-2 text-xs text-muted">
@@ -383,6 +393,127 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
               {b.is_public ? d.visibleFans : d.showPublic}
             </button>
           </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Locatie + navigatie naar het event, plus de check-in als aanwezigheidsbewijs.
+function LocationProof({ b }: { b: DashBooking }) {
+  const { locale, t } = useT()
+  const d = t.dashboard
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState(false)
+  const [, startTransition] = useTransition()
+
+  const mapsUrl =
+    b.lat != null && b.lng != null
+      ? `https://www.google.com/maps/dir/?api=1&destination=${b.lat},${b.lng}`
+      : b.address
+        ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+            b.address,
+          )}`
+        : null
+
+  function checkIn() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setErr(true)
+      return
+    }
+    setErr(false)
+    setBusy(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const fd = new FormData()
+        fd.set("booking_id", b.id)
+        fd.set("lat", String(pos.coords.latitude))
+        fd.set("lng", String(pos.coords.longitude))
+        fd.set("accuracy", String(pos.coords.accuracy ?? ""))
+        startTransition(async () => {
+          await checkInBooking(fd)
+          setBusy(false)
+        })
+      },
+      () => {
+        setBusy(false)
+        setErr(true)
+      },
+      { enableHighAccuracy: true, timeout: 15000 },
+    )
+  }
+
+  const checkedIn = !!b.checkin_at
+  const dist = b.checkin_distance_m
+  const onSite = dist != null && dist <= CHECKIN_RADIUS_M
+
+  return (
+    <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted">
+        {d.locationTitle}
+      </p>
+      {b.address && <p className="mt-1 text-sm">{b.address}</p>}
+      {mapsUrl && (
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
+        >
+          <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor" aria-hidden>
+            <path d="M8 1a5 5 0 0 0-5 5c0 3.5 5 9 5 9s5-5.5 5-9a5 5 0 0 0-5-5Zm0 6.8A1.8 1.8 0 1 1 8 4.2a1.8 1.8 0 0 1 0 3.6Z" />
+          </svg>
+          {d.navigate}
+        </a>
+      )}
+
+      <div className="mt-4 border-t border-border pt-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted">
+          {d.checkInTitle}
+        </p>
+        {checkedIn ? (
+          <div className="mt-2">
+            <p className="text-sm">
+              {d.checkedInAt.replace(
+                "{when}",
+                new Date(b.checkin_at!).toLocaleString(dateLocale, {
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              )}
+            </p>
+            <span
+              className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                dist == null
+                  ? "bg-surface text-muted"
+                  : onSite
+                    ? "bg-brand/15 text-brand"
+                    : "bg-red-500/15 text-red-300"
+              }`}
+            >
+              {dist == null
+                ? d.checkinNoCoords
+                : onSite
+                  ? d.checkinOnSite.replace("{d}", String(dist))
+                  : d.checkinOffSite.replace("{d}", String(dist))}
+            </span>
+          </div>
+        ) : (
+          <>
+            <p className="mt-1 text-xs text-muted">{d.checkInHint}</p>
+            <button
+              type="button"
+              onClick={checkIn}
+              disabled={busy}
+              className="mt-2 inline-flex items-center gap-2 rounded-full border border-brand/50 px-4 py-2 text-sm font-medium text-brand transition hover:bg-brand/10 disabled:opacity-50"
+            >
+              {busy ? d.checkInBusy : d.checkInButton}
+            </button>
+            {err && <p className="mt-1.5 text-xs text-red-400">{d.checkInDenied}</p>}
+          </>
         )}
       </div>
     </div>

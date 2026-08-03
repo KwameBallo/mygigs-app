@@ -680,9 +680,15 @@ export type Database = {
       bookings: {
         Row: {
           address: string | null
+          address_verified: boolean
           artist_id: string
           booker_id: string
           booking_type: Database["public"]["Enums"]["booking_type"]
+          checkin_accuracy_m: number | null
+          checkin_at: string | null
+          checkin_distance_m: number | null
+          checkin_lat: number | null
+          checkin_lng: number | null
           city: string | null
           company_name: string | null
           created_at: string
@@ -694,8 +700,11 @@ export type Database = {
           id: string
           invoice_email: string | null
           is_public: boolean
+          lat: number | null
+          lng: number | null
           message: string | null
           occasion: string | null
+          postal_code: string | null
           review_request_sent_at: string | null
           service_fee: number
           shortlist_id: string | null
@@ -708,9 +717,15 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          address_verified?: boolean
           artist_id: string
           booker_id: string
           booking_type?: Database["public"]["Enums"]["booking_type"]
+          checkin_accuracy_m?: number | null
+          checkin_at?: string | null
+          checkin_distance_m?: number | null
+          checkin_lat?: number | null
+          checkin_lng?: number | null
           city?: string | null
           company_name?: string | null
           created_at?: string
@@ -722,8 +737,11 @@ export type Database = {
           id?: string
           invoice_email?: string | null
           is_public?: boolean
+          lat?: number | null
+          lng?: number | null
           message?: string | null
           occasion?: string | null
+          postal_code?: string | null
           review_request_sent_at?: string | null
           service_fee: number
           shortlist_id?: string | null
@@ -736,9 +754,15 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          address_verified?: boolean
           artist_id?: string
           booker_id?: string
           booking_type?: Database["public"]["Enums"]["booking_type"]
+          checkin_accuracy_m?: number | null
+          checkin_at?: string | null
+          checkin_distance_m?: number | null
+          checkin_lat?: number | null
+          checkin_lng?: number | null
           city?: string | null
           company_name?: string | null
           created_at?: string
@@ -750,8 +774,11 @@ export type Database = {
           id?: string
           invoice_email?: string | null
           is_public?: boolean
+          lat?: number | null
+          lng?: number | null
           message?: string | null
           occasion?: string | null
+          postal_code?: string | null
           review_request_sent_at?: string | null
           service_fee?: number
           shortlist_id?: string | null

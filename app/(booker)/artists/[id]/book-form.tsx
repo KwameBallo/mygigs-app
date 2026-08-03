@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { createBooking } from "./actions"
 import { useEquipmentSelection } from "./equipment-selection"
+import { AddressAutocomplete } from "@/components/address-autocomplete"
 import { useT } from "@/components/i18n-provider"
 import {
   priceBreakdown,
@@ -57,6 +58,10 @@ export function BookForm({
   const hasAgenda = availableDates.length > 0
   const [date, setDate] = useState("")
   const dateBlocked = hasAgenda && date !== "" && !availableDates.includes(date)
+  // Geverifieerd event-adres (PDOK). Zonder gekozen adres kan er niet geboekt
+  // worden — zo weten we zeker dat het adres bestaat.
+  const [addressId, setAddressId] = useState<string | null>(null)
+  const cannotSubmit = dateBlocked || !addressId
   const { selected, equipmentCost } = useEquipmentSelection()
   // Basisgage is een uurtarief; langer draaien schaalt de gage automatisch mee.
   const { gage, equipment, total: grossIncl } = priceBreakdown(
@@ -187,15 +192,7 @@ export function BookForm({
           <span className="text-xs text-red-400">{b.dateUnavailable}</span>
         )}
       </label>
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">{b.cityLabel}</span>
-        <input
-          name="city"
-          type="text"
-          placeholder={b.cityPlaceholder}
-          className="input"
-        />
-      </label>
+      <AddressAutocomplete onSelect={setAddressId} />
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">{b.venueLabel}</span>
         <input
@@ -342,9 +339,12 @@ export function BookForm({
         <p className="mt-2 text-xs text-muted">{b.payAfterAccept}</p>
       </div>
 
+      {!addressId && (
+        <span className="text-xs text-muted">{b.addressRequired}</span>
+      )}
       <button
         type="submit"
-        disabled={dateBlocked}
+        disabled={cannotSubmit}
         className="rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-40"
       >
         {b.submit}

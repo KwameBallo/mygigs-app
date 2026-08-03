@@ -77,6 +77,9 @@ export default async function DashboardPage() {
       city: b.city,
       venue_name: b.venue_name,
       address: b.address,
+      postal_code: b.postal_code,
+      lat: b.lat,
+      lng: b.lng,
       message: b.message,
       gage: b.gage,
       service_fee: b.service_fee,
@@ -90,6 +93,9 @@ export default async function DashboardPage() {
       booker_name: booker?.full_name ?? null,
       is_public: b.is_public,
       created_at: b.created_at,
+      checkin_at: b.checkin_at,
+      checkin_distance_m: b.checkin_distance_m,
+      checkin_accuracy_m: b.checkin_accuracy_m,
     }
   })
 
