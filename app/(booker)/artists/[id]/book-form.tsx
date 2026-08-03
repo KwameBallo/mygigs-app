@@ -5,7 +5,7 @@ import Link from "next/link"
 import { createBooking } from "./actions"
 import { useEquipmentSelection } from "./equipment-selection"
 import { AddressAutocomplete } from "@/components/address-autocomplete"
-import { hhmm, rangeHours, withinWindow } from "@/lib/time"
+import { hhmm, rangeHours, withinWindow, formatDuration } from "@/lib/time"
 import { useT } from "@/components/i18n-provider"
 import {
   priceBreakdown,
@@ -16,13 +16,6 @@ import {
 } from "@/lib/utils/pricing"
 
 type BookingType = "prive" | "zakelijk"
-
-function formatHours(h: number, comma: boolean, unit: string) {
-  const s = Number.isInteger(h)
-    ? String(h)
-    : h.toString().replace(".", comma ? "," : ".")
-  return `${s} ${unit}`
-}
 
 export function BookForm({
   artistId,
@@ -48,7 +41,6 @@ export function BookForm({
   const { locale, t } = useT()
   const b = t.booking
   const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
-  const fmtHours = (h: number) => formatHours(h, locale === "nl", b.hoursUnit)
   const [type, setType] = useState<BookingType>("prive")
   // Agenda-gestuurde datumkeuze. Heeft de DJ beschikbare dagen ingesteld, dan
   // mag de boeker alleen daaruit kiezen; anders is de datum vrij.
@@ -69,6 +61,7 @@ export function BookForm({
   const [startTime, setStartTime] = useState("")
   const [endTime, setEndTime] = useState("")
   const hours = rangeHours(startTime, endTime)
+  const durationText = formatDuration(startTime, endTime, b.hoursUnit, b.minUnit)
   const timeMissing = !startTime || !endTime
   const timeInvalid = !timeMissing && hours <= 0
   const outsideWindow =
@@ -266,7 +259,7 @@ export function BookForm({
         </div>
         {!timeBlocked && hours > 0 && (
           <span className="text-xs text-muted">
-            {b.durationComputed.replace("{h}", fmtHours(hours))} ·{" "}
+            {b.durationComputed.replace("{h}", durationText)} ·{" "}
             {b.hourlyNote.replace("{rate}", formatEuro(baseGage))}
           </span>
         )}
@@ -344,7 +337,7 @@ export function BookForm({
           djVatRegistered ? (
             <>
               <Row
-                label={`${b.gage} · ${fmtHours(hours)} ${b.gageExcl}`}
+                label={`${b.gage} · ${durationText} ${b.gageExcl}`}
                 value={formatEuro(gage)}
               />
               {equipment > 0 && (
@@ -362,7 +355,7 @@ export function BookForm({
           ) : (
             <>
               <Row
-                label={`${b.gage} · ${fmtHours(hours)}`}
+                label={`${b.gage} · ${durationText}`}
                 value={formatEuro(gage)}
               />
               {equipment > 0 && (
@@ -376,7 +369,7 @@ export function BookForm({
         ) : (
           <>
             <Row
-              label={`${b.gage} · ${fmtHours(hours)}`}
+              label={`${b.gage} · ${durationText}`}
               value={formatEuro(gage)}
             />
             {equipment > 0 && (

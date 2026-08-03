@@ -11,14 +11,35 @@ function toMin(t: string): number {
   return (h || 0) * 60 + (m || 0)
 }
 
-// Aantal uren tussen start en eind (halve uren). Eindigt de tijd op of vóór de
-// starttijd, dan telt het als een nacht-overschrijdend optreden (+24 uur).
-export function rangeHours(start: string, end: string): number {
+// Aantal minuten tussen start en eind. Eindigt de tijd op of vóór de starttijd,
+// dan telt het als een nacht-overschrijdend optreden (+24 uur).
+export function rangeMinutes(start: string, end: string): number {
   if (!start || !end) return 0
   let s = toMin(start)
   let e = toMin(end)
   if (e <= s) e += 1440
-  return Math.round(((e - s) / 60) * 2) / 2
+  return e - s
+}
+
+// Exacte duur in uren (pro rata, dus 2u15m = 2,25 uur — geen afronding naar
+// halve uren). Bepaalt de gage: uurtarief × exacte duur.
+export function rangeHours(start: string, end: string): number {
+  return Math.round((rangeMinutes(start, end) / 60) * 100) / 100
+}
+
+// Duur leesbaar maken: "2 uur 15 min", "2 uur", of "45 min".
+export function formatDuration(
+  start: string,
+  end: string,
+  hUnit: string,
+  mUnit: string,
+): string {
+  const total = rangeMinutes(start, end)
+  const h = Math.floor(total / 60)
+  const m = total % 60
+  if (h && m) return `${h} ${hUnit} ${m} ${mUnit}`
+  if (h) return `${h} ${hUnit}`
+  return `${m} ${mUnit}`
 }
 
 // Valt [start,end] binnen het beschikbaarheidsvenster [winStart,winEnd]? Zonder

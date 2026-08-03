@@ -199,6 +199,7 @@ const nl = {
     submit: "Aanvraag versturen",
     escrowNote: "Je betaalt pas na acceptatie. Geld staat veilig in escrow.",
     hoursUnit: "uur",
+    minUnit: "min",
   },
   pay: {
     chooseMethod: "Kies je betaalmethode",
@@ -824,6 +825,7 @@ const en: typeof nl = {
     submit: "Send request",
     escrowNote: "You only pay after acceptance. Money is safely held in escrow.",
     hoursUnit: "hr",
+    minUnit: "min",
   },
   pay: {
     chooseMethod: "Choose your payment method",
