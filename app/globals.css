@@ -175,6 +175,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background-position: center;
 }
 
+/* Tijdveld: de native klok-glyph is standaard donker (onzichtbaar op het
+   donkere thema). Vervang 'm door een oranje merk-icoon. */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ff6a00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
 /* Onboarding coach-mark: dimmen rondom + pulserende rand + bouncende vinger. */
 .onb-spot {
   box-shadow: 0 0 0 9999px rgba(6, 6, 9, 0.62);
