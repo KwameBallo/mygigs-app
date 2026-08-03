@@ -412,6 +412,12 @@ const nl = {
     navLocating: "Locatie bepalen…",
     navDenied: "Locatie niet beschikbaar. Sta locatietoegang toe en probeer opnieuw.",
     navNoCoords: "Voor deze boeking zijn geen adrescoördinaten beschikbaar.",
+    navConsentTitle: "Toestemming voor locatie",
+    navConsentBody:
+      "We gebruiken je locatie om de route en aankomsttijd te berekenen. De klant ziet alleen de aankomsttijd — nooit je locatie. Sluit dit scherm om te stoppen.",
+    navConsentStart: "Locatie delen & starten",
+    enrouteHint:
+      "We gebruiken je locatie eenmalig om de aankomsttijd te berekenen. De klant ziet alleen de tijd, niet je locatie.",
     checkInTitle: "Bewijs van aanwezigheid",
     checkInHint:
       "Deel je locatie bij aankomst. We leggen tijd en afstand tot het adres vast als bewijs dat je er was.",
@@ -1043,6 +1049,12 @@ const en: typeof nl = {
     navLocating: "Getting your location…",
     navDenied: "Location unavailable. Allow location access and try again.",
     navNoCoords: "No address coordinates are available for this booking.",
+    navConsentTitle: "Location permission",
+    navConsentBody:
+      "We use your location to calculate the route and arrival time. The client only sees the arrival time — never your location. Close this screen to stop.",
+    navConsentStart: "Share location & start",
+    enrouteHint:
+      "We use your location once to calculate the arrival time. The client only sees the time, not your location.",
     checkInTitle: "Proof of attendance",
     checkInHint:
       "Share your location on arrival. We record the time and distance to the address as proof you were there.",

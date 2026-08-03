@@ -499,14 +499,17 @@ function LocationProof({ b }: { b: DashBooking }) {
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => share("enroute")}
-              disabled={busy !== null}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand disabled:opacity-50"
-            >
-              {busy === "enroute" ? d.checkInBusy : d.enrouteButton}
-            </button>
+            <>
+              <p className="mb-2 text-xs text-muted">{d.enrouteHint}</p>
+              <button
+                type="button"
+                onClick={() => share("enroute")}
+                disabled={busy !== null}
+                className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand disabled:opacity-50"
+              >
+                {busy === "enroute" ? d.checkInBusy : d.enrouteButton}
+              </button>
+            </>
           )}
         </div>
       )}

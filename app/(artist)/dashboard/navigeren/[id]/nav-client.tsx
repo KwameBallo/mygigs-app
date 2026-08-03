@@ -37,6 +37,7 @@ export function NavClient({
   const d = t.dashboard
   const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
 
+  const [started, setStarted] = useState(false)
   const [dj, setDj] = useState<LatLng | null>(null)
   const [route, setRoute] = useState<LatLng[]>([])
   const [durationS, setDurationS] = useState<number | null>(null)
@@ -84,6 +85,8 @@ export function NavClient({
   }
 
   useEffect(() => {
+    // Pas locatie gebruiken ná expliciete toestemming in de app.
+    if (!started) return
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setDenied(true)
       return
@@ -99,7 +102,7 @@ export function NavClient({
     )
     return () => navigator.geolocation.clearWatch(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [started])
 
   const etaText =
     durationS != null
@@ -127,34 +130,63 @@ export function NavClient({
         </div>
       </div>
 
-      {/* Live reis-info */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-border bg-surface-2 px-4 py-2.5 text-sm">
-        {denied ? (
-          <span className="text-red-400">{d.navDenied}</span>
-        ) : etaText ? (
-          <>
-            <span className="font-semibold text-brand">
-              {d.navEta.replace("{eta}", etaText)}
-            </span>
-            {remainingMin != null && (
-              <span className="text-muted">
-                {d.navRemaining.replace("{min}", String(remainingMin))}
-              </span>
+      {started ? (
+        <>
+          {/* Live reis-info */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-border bg-surface-2 px-4 py-2.5 text-sm">
+            {denied ? (
+              <span className="text-red-400">{d.navDenied}</span>
+            ) : etaText ? (
+              <>
+                <span className="font-semibold text-brand">
+                  {d.navEta.replace("{eta}", etaText)}
+                </span>
+                {remainingMin != null && (
+                  <span className="text-muted">
+                    {d.navRemaining.replace("{min}", String(remainingMin))}
+                  </span>
+                )}
+                {distanceKm != null && (
+                  <span className="text-muted">
+                    {d.navDistanceKm.replace(
+                      "{km}",
+                      distanceKm.replace(".", locale === "nl" ? "," : "."),
+                    )}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-muted">{d.navLocating}</span>
             )}
-            {distanceKm != null && (
-              <span className="text-muted">
-                {d.navDistanceKm.replace("{km}", distanceKm.replace(".", locale === "nl" ? "," : "."))}
-              </span>
-            )}
-          </>
-        ) : (
-          <span className="text-muted">{d.navLocating}</span>
-        )}
-      </div>
+          </div>
 
-      <div className="min-h-0 flex-1">
-        <RouteMap dj={dj} venue={venue} route={route} />
-      </div>
+          <div className="min-h-0 flex-1">
+            <RouteMap dj={dj} venue={venue} route={route} />
+          </div>
+        </>
+      ) : (
+        // Toestemming-gate: locatie wordt pas gebruikt na een expliciete keuze.
+        <div className="flex min-h-0 flex-1 items-center justify-center p-6">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand/15 text-brand">
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden>
+                <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" />
+              </svg>
+            </div>
+            <h2 className="mt-4 text-lg font-semibold tracking-tight">
+              {d.navConsentTitle}
+            </h2>
+            <p className="mt-2 text-sm text-muted">{d.navConsentBody}</p>
+            <button
+              type="button"
+              onClick={() => setStarted(true)}
+              className="mt-5 w-full rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong"
+            >
+              {d.navConsentStart}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
