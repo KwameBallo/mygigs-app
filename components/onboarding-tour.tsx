@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type CSSProperties } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { useHideOnScroll } from "@/lib/use-hide-on-scroll"
 
 // Coach-mark rondleiding: licht het echte element uit (spotlight), wijst ernaar
 // met een vinger en een callout, en leidt de gebruiker stap voor stap door de
@@ -94,6 +95,7 @@ export function OnboardingTour({
   const [step, setStep] = useState(0)
   const [rect, setRect] = useState<Rect | null>(null)
   const [above, setAbove] = useState(false)
+  const scrolling = useHideOnScroll()
 
   const isDj = role === "artist" || role === "both"
   const steps = isDj ? d.djSteps : d.bookerSteps
@@ -199,11 +201,16 @@ export function OnboardingTour({
     return (
       <button
         onClick={reopen}
+        aria-label={d.reopen}
         style={{ zIndex: 99999 }}
-        className="fixed bottom-24 right-5 flex items-center gap-2 rounded-full border border-border bg-surface/90 px-4 py-2 text-sm font-medium text-muted shadow-lg backdrop-blur transition hover:border-brand/50 hover:text-foreground lg:bottom-6 lg:right-44"
+        className={`fixed bottom-36 right-4 flex items-center gap-2 rounded-full border border-border bg-surface/90 p-2.5 text-sm font-medium text-muted shadow-lg backdrop-blur transition-all hover:border-brand/50 hover:text-foreground lg:bottom-6 lg:right-44 lg:px-4 lg:py-2 ${
+          scrolling
+            ? "max-lg:pointer-events-none max-lg:translate-y-6 max-lg:opacity-0"
+            : ""
+        }`}
       >
         <span aria-hidden>❔</span>
-        {d.reopen}
+        <span className="hidden lg:inline">{d.reopen}</span>
       </button>
     )
   }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useHideOnScroll } from "@/lib/use-hide-on-scroll"
 
 type Mode = "dj" | "consument"
 type Msg = { role: "user" | "assistant"; content: string }
@@ -75,17 +76,23 @@ export function AiAssistant({ defaultMode }: { defaultMode: Mode }) {
     }
   }
 
+  const scrolling = useHideOnScroll()
+
   return (
     <>
-      {/* Launcher */}
+      {/* Launcher — op mobiel alleen het icoon en weg tijdens het scrollen. */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
           aria-label="AI-hulp openen"
-          className="fixed bottom-20 right-4 z-[1200] flex items-center gap-2 rounded-full bg-brand px-4 py-3 font-medium text-black shadow-lg transition hover:bg-brand-strong lg:bottom-6 lg:right-6"
+          className={`fixed bottom-20 right-4 z-[1200] flex items-center gap-2 rounded-full bg-brand p-3.5 font-medium text-black shadow-lg transition-all hover:bg-brand-strong lg:bottom-6 lg:right-6 lg:px-4 lg:py-3 ${
+            scrolling
+              ? "max-lg:pointer-events-none max-lg:translate-y-6 max-lg:opacity-0"
+              : ""
+          }`}
         >
           <SparkleIcon className="h-5 w-5" />
-          AI-hulp
+          <span className="hidden lg:inline">AI-hulp</span>
         </button>
       )}
 
