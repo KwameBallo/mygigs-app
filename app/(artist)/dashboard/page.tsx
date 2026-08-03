@@ -110,26 +110,6 @@ export default async function DashboardPage() {
   const booked = list.filter((b) => ["paid", "completed"].includes(b.status))
   const earnings = booked.reduce((sum, b) => sum + b.gage, 0)
 
-  // Profielvolledigheid: elke ontbrekende stap kost boekingen.
-  const hasSocial = !!(
-    artist.instagram_url ||
-    artist.tiktok_url ||
-    artist.spotify_url ||
-    artist.soundcloud_url ||
-    artist.mixcloud_url
-  )
-  const checks = [
-    { label: d.checkPhoto, done: !!artist.avatar_url, href: "/profile" },
-    { label: d.checkBio, done: !!artist.bio, href: "/profile" },
-    { label: d.checkGage, done: artist.base_gage > 0, href: "/profile" },
-    { label: d.checkGenre, done: artist.genre_id != null, href: "/profile" },
-    { label: d.checkCity, done: !!artist.home_city, href: "/profile" },
-    { label: d.checkSocial, done: hasSocial, href: "/profile" },
-  ]
-  const doneCount = checks.filter((c) => c.done).length
-  const pct = Math.round((doneCount / checks.length) * 100)
-  const missing = checks.filter((c) => !c.done)
-
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -148,44 +128,6 @@ export default async function DashboardPage() {
           {d.viewPublic}
         </Link>
       </div>
-
-      {/* Profielvolledigheid: alleen tonen als nog niet 100%. */}
-      {pct < 100 && (
-        <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/5 p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-semibold">{d.completeTitle}</p>
-              <p className="mt-0.5 text-sm text-muted">
-                {d.completeBody.replace("{pct}", String(pct))}
-              </p>
-            </div>
-            <Link
-              href="/profile"
-              className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
-            >
-              {d.finishProfile}
-            </Link>
-          </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2">
-            <div
-              className="h-full rounded-full bg-brand transition-all"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          {missing.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {missing.map((c) => (
-                <span
-                  key={c.label}
-                  className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted"
-                >
-                  + {c.label}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Kerncijfers */}
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">

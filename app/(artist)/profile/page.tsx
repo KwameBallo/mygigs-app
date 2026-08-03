@@ -36,6 +36,7 @@ export default async function ProfilePage({
 
   const { t } = await getI18n()
   const p = t.profile
+  const d = t.dashboard
 
   const [{ data: artist }, genres] = await Promise.all([
     supabase.from("artists").select("*").eq("user_id", user.id).maybeSingle(),
@@ -82,6 +83,32 @@ export default async function ProfilePage({
   }
   const equipmentPrices: Record<string, number> =
     (artist?.equipment_prices as Record<string, number> | null) ?? {}
+
+  // Profielvolledigheid: elke ontbrekende stap kost boekingen. (Verplaatst van
+  // het dashboard naar hier, zodat de checklist bij het profiel zelf staat.)
+  const hasSocial = !!(
+    artist?.instagram_url ||
+    artist?.tiktok_url ||
+    artist?.spotify_url ||
+    artist?.soundcloud_url ||
+    artist?.mixcloud_url
+  )
+  const checks = artist
+    ? [
+        { label: d.checkPhoto, done: !!artist.avatar_url },
+        { label: d.checkBio, done: !!artist.bio },
+        { label: d.checkGage, done: artist.base_gage > 0 },
+        { label: d.checkGenre, done: selectedGenres.length > 0 },
+        { label: d.checkCity, done: !!artist.home_city },
+        { label: d.checkSocial, done: hasSocial },
+      ]
+    : []
+  const doneCount = checks.filter((c) => c.done).length
+  const completePct = checks.length
+    ? Math.round((doneCount / checks.length) * 100)
+    : 0
+  const missingChecks = checks.filter((c) => !c.done)
+
   const initials = (artist?.stage_name ?? "?")
     .split(" ")
     .map((w) => w[0])
@@ -108,6 +135,34 @@ export default async function ProfilePage({
           >
             {p.viewPublic}
           </Link>
+        </div>
+      )}
+
+      {/* Profielvolledigheid: alleen tonen als nog niet 100%. */}
+      {artist && completePct < 100 && (
+        <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/5 p-5">
+          <p className="font-semibold">{d.completeTitle}</p>
+          <p className="mt-0.5 text-sm text-muted">
+            {d.completeBody.replace("{pct}", String(completePct))}
+          </p>
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2">
+            <div
+              className="h-full rounded-full bg-brand transition-all"
+              style={{ width: `${completePct}%` }}
+            />
+          </div>
+          {missingChecks.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {missingChecks.map((c) => (
+                <span
+                  key={c.label}
+                  className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted"
+                >
+                  + {c.label}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
