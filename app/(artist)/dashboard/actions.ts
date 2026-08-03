@@ -7,7 +7,11 @@ import { logAudit } from "@/lib/audit"
 import { getI18n } from "@/lib/i18n"
 import { formatEuro } from "@/lib/utils/pricing"
 import { sendAcceptedToBooker, getUserEmail } from "@/lib/email"
-import { haversineMeters } from "@/lib/geo"
+import {
+  haversineMeters,
+  estimateTravelSeconds,
+  CHECKIN_RADIUS_M,
+} from "@/lib/geo"
 import type { Database } from "@/types/database"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
@@ -107,6 +111,68 @@ export async function updateBookingStatus(formData: FormData) {
   revalidatePath("/discover")
 }
 
+// "Ik ben onderweg": de DJ deelt eenmalig zijn locatie zodat wij de rijtijd
+// naar het event-adres berekenen. De klant ziet alleen de status "onderweg" +
+// de verwachte aankomsttijd — nooit de locatie van de DJ (privacy/AVG).
+export async function startEnroute(formData: FormData) {
+  const bookingId = String(formData.get("booking_id") ?? "")
+  const lat = Number(formData.get("lat"))
+  const lng = Number(formData.get("lng"))
+  if (!bookingId || !Number.isFinite(lat) || !Number.isFinite(lng)) return
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data: artist } = await supabase
+    .from("artists")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle()
+  if (!artist) return
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, status, lat, lng, checkin_at")
+    .eq("id", bookingId)
+    .eq("artist_id", artist.id)
+    .maybeSingle()
+  if (!booking) return
+  if (!["accepted", "paid"].includes(booking.status)) return
+  if (booking.checkin_at) return // al aangekomen
+
+  // Verwachte aankomsttijd = nu + geschatte rijtijd (indien we het event-adres
+  // met coördinaten kennen).
+  let eta: string | null = null
+  if (booking.lat != null && booking.lng != null) {
+    const seconds = await estimateTravelSeconds(
+      lat,
+      lng,
+      Number(booking.lat),
+      Number(booking.lng),
+    )
+    eta = new Date(Date.now() + seconds * 1000).toISOString()
+  }
+
+  await createAdminClient()
+    .from("bookings")
+    .update({ enroute_at: new Date().toISOString(), eta })
+    .eq("id", bookingId)
+    .eq("artist_id", artist.id)
+
+  await logAudit({
+    actorId: user.id,
+    action: "booking.enroute",
+    targetType: "booking",
+    targetId: bookingId,
+    metadata: { eta },
+  })
+
+  revalidatePath("/dashboard")
+}
+
 // Aanwezigheidsbewijs: de DJ legt bij aankomst zijn GPS + tijdstip vast. We
 // berekenen de afstand tot het geverifieerde event-adres en bewaren die als
 // bewijs. AVG: locatie is persoonsgegeven — de UI vraagt eerst toestemming en
@@ -133,7 +199,7 @@ export async function checkInBooking(formData: FormData) {
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id, status, lat, lng, checkin_at")
+    .select("id, status, lat, lng, checkin_at, event_date, start_time, end_time")
     .eq("id", bookingId)
     .eq("artist_id", artist.id)
     .maybeSingle()
@@ -148,6 +214,22 @@ export async function checkInBooking(formData: FormData) {
       ? haversineMeters(lat, lng, Number(booking.lat), Number(booking.lng))
       : null
 
+  // Anti-fraude: een geldige (onvervalsbare) check-in moet op locatie zijn,
+  // binnen het tijdvenster van het event, met een redelijke GPS-nauwkeurigheid.
+  // Het tijdstip zetten we server-side, dus dat is niet te vervalsen.
+  const now = Date.now()
+  const startAt = new Date(
+    `${booking.event_date}T${(booking.start_time ?? "00:00").slice(0, 5)}:00`,
+  ).getTime()
+  // Venster: vanaf 4 uur vóór de starttijd tot 12 uur erna (dekt lange/nacht-gigs).
+  const inWindow =
+    Number.isFinite(startAt) &&
+    now >= startAt - 4 * 3600_000 &&
+    now <= startAt + 12 * 3600_000
+  const accOk = Number.isFinite(accuracy) ? accuracy <= 200 : false
+  const onSite = distance != null && distance <= CHECKIN_RADIUS_M
+  const verified = onSite && inWindow && accOk
+
   await createAdminClient()
     .from("bookings")
     .update({
@@ -156,6 +238,7 @@ export async function checkInBooking(formData: FormData) {
       checkin_lng: lng,
       checkin_accuracy_m: Number.isFinite(accuracy) ? Math.round(accuracy) : null,
       checkin_distance_m: distance,
+      checkin_verified: verified,
     })
     .eq("id", bookingId)
     .eq("artist_id", artist.id)
@@ -165,7 +248,7 @@ export async function checkInBooking(formData: FormData) {
     action: "booking.checkin",
     targetType: "booking",
     targetId: bookingId,
-    metadata: { distance_m: distance, accuracy_m: accuracy },
+    metadata: { distance_m: distance, accuracy_m: accuracy, inWindow, verified },
   })
 
   revalidatePath("/dashboard")

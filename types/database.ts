@@ -682,6 +682,7 @@ export type Database = {
           address: string | null
           address_verified: boolean
           artist_id: string
+          booker_confirmed_at: string | null
           booker_id: string
           booking_type: Database["public"]["Enums"]["booking_type"]
           checkin_accuracy_m: number | null
@@ -689,11 +690,14 @@ export type Database = {
           checkin_distance_m: number | null
           checkin_lat: number | null
           checkin_lng: number | null
+          checkin_verified: boolean
           city: string | null
           company_name: string | null
           created_at: string
           end_time: string | null
+          enroute_at: string | null
           equipment_items: Json
+          eta: string | null
           event_date: string
           gage: number
           hours: number
@@ -719,6 +723,7 @@ export type Database = {
           address?: string | null
           address_verified?: boolean
           artist_id: string
+          booker_confirmed_at?: string | null
           booker_id: string
           booking_type?: Database["public"]["Enums"]["booking_type"]
           checkin_accuracy_m?: number | null
@@ -726,11 +731,14 @@ export type Database = {
           checkin_distance_m?: number | null
           checkin_lat?: number | null
           checkin_lng?: number | null
+          checkin_verified?: boolean
           city?: string | null
           company_name?: string | null
           created_at?: string
           end_time?: string | null
+          enroute_at?: string | null
           equipment_items?: Json
+          eta?: string | null
           event_date: string
           gage: number
           hours?: number
@@ -756,6 +764,7 @@ export type Database = {
           address?: string | null
           address_verified?: boolean
           artist_id?: string
+          booker_confirmed_at?: string | null
           booker_id?: string
           booking_type?: Database["public"]["Enums"]["booking_type"]
           checkin_accuracy_m?: number | null
@@ -763,11 +772,14 @@ export type Database = {
           checkin_distance_m?: number | null
           checkin_lat?: number | null
           checkin_lng?: number | null
+          checkin_verified?: boolean
           city?: string | null
           company_name?: string | null
           created_at?: string
           end_time?: string | null
+          enroute_at?: string | null
           equipment_items?: Json
+          eta?: string | null
           event_date?: string
           gage?: number
           hours?: number

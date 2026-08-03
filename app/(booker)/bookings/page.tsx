@@ -4,7 +4,7 @@ import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
-import { cancelBooking } from "./actions"
+import { cancelBooking, confirmDjAttendance } from "./actions"
 import { openBookingChat } from "@/lib/actions/chat"
 
 export default async function BookingsPage({
@@ -149,6 +149,26 @@ export default async function BookingsPage({
                       {b.city ? ` · ${b.city}` : ""}
                       {b.venue_name ? ` · ${b.venue_name}` : ""}
                     </p>
+                    {/* DJ onderweg → verwachte aankomst (nooit de locatie). */}
+                    {b.enroute_at && !b.checkin_at && (
+                      <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-brand/15 px-2.5 py-1 text-xs font-medium text-brand">
+                        {b.eta
+                          ? m.djEnroute.replace(
+                              "{eta}",
+                              new Date(b.eta).toLocaleTimeString(dateLocale, {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }),
+                            )
+                          : m.djEnrouteNoEta}
+                      </p>
+                    )}
+                    {/* DJ geverifieerd op locatie geweest (bewijs, geruststelling). */}
+                    {b.checkin_verified && (
+                      <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-300">
+                        {m.djOnSite}
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-col items-end gap-1.5">
                     <span className="text-lg font-semibold text-brand">
@@ -171,6 +191,23 @@ export default async function BookingsPage({
                           {m.djInvoice}
                         </Link>
                       )}
+                      {/* Tweezijdig bewijs: klant bevestigt dat de DJ er was. */}
+                      {(b.status === "paid" || b.status === "completed") &&
+                        (b.booker_confirmed_at ? (
+                          <span className="rounded-full border border-green-500/40 bg-green-500/10 px-3 py-1 text-xs font-medium text-green-300">
+                            {m.attendanceConfirmed}
+                          </span>
+                        ) : (
+                          <form action={confirmDjAttendance}>
+                            <input type="hidden" name="booking_id" value={b.id} />
+                            <button
+                              type="submit"
+                              className="rounded-full border border-brand/40 bg-brand/15 px-3 py-1 text-xs font-medium text-brand transition hover:bg-brand/25"
+                            >
+                              {m.confirmAttendanceCta}
+                            </button>
+                          </form>
+                        ))}
                       {needsReview && (
                         <Link
                           href={`/bookings/${b.id}/review`}

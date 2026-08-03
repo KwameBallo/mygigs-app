@@ -4,9 +4,13 @@ import { useState, useTransition } from "react"
 import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro } from "@/lib/utils/pricing"
 import type { Database } from "@/types/database"
-import { updateBookingStatus, toggleBookingPublic, checkInBooking } from "./actions"
+import {
+  updateBookingStatus,
+  toggleBookingPublic,
+  checkInBooking,
+  startEnroute,
+} from "./actions"
 import { openBookingChat } from "@/lib/actions/chat"
-import { CHECKIN_RADIUS_M } from "@/lib/geo"
 import { useT } from "@/components/i18n-provider"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
@@ -36,9 +40,13 @@ export type DashBooking = {
   booker_name: string | null
   is_public: boolean
   created_at: string
+  enroute_at: string | null
+  eta: string | null
   checkin_at: string | null
   checkin_distance_m: number | null
   checkin_accuracy_m: number | null
+  checkin_verified: boolean
+  booker_confirmed_at: string | null
 }
 
 const PUBLIC_STATUSES = ["accepted", "paid", "completed"]
@@ -399,14 +407,21 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
   )
 }
 
-// Locatie + navigatie naar het event, plus de check-in als aanwezigheidsbewijs.
+// Locatie + navigatie naar het event, "onderweg"-melding met ETA, en de
+// GPS-check-in als onvervalsbaar aanwezigheidsbewijs (server-side geverifieerd).
 function LocationProof({ b }: { b: DashBooking }) {
   const { locale, t } = useT()
   const d = t.dashboard
   const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<null | "enroute" | "checkin">(null)
   const [err, setErr] = useState(false)
   const [, startTransition] = useTransition()
+
+  const timeFmt = (iso: string) =>
+    new Date(iso).toLocaleTimeString(dateLocale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
 
   const mapsUrl =
     b.lat != null && b.lng != null
@@ -417,13 +432,14 @@ function LocationProof({ b }: { b: DashBooking }) {
           )}`
         : null
 
-  function checkIn() {
+  // Deelt eenmalig de locatie en roept een server-actie aan (onderweg of check-in).
+  function share(kind: "enroute" | "checkin") {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setErr(true)
       return
     }
     setErr(false)
-    setBusy(true)
+    setBusy(kind)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const fd = new FormData()
@@ -432,12 +448,13 @@ function LocationProof({ b }: { b: DashBooking }) {
         fd.set("lng", String(pos.coords.longitude))
         fd.set("accuracy", String(pos.coords.accuracy ?? ""))
         startTransition(async () => {
-          await checkInBooking(fd)
-          setBusy(false)
+          if (kind === "enroute") await startEnroute(fd)
+          else await checkInBooking(fd)
+          setBusy(null)
         })
       },
       () => {
-        setBusy(false)
+        setBusy(null)
         setErr(true)
       },
       { enableHighAccuracy: true, timeout: 15000 },
@@ -445,8 +462,9 @@ function LocationProof({ b }: { b: DashBooking }) {
   }
 
   const checkedIn = !!b.checkin_at
+  const enroute = !!b.enroute_at && !checkedIn
   const dist = b.checkin_distance_m
-  const onSite = dist != null && dist <= CHECKIN_RADIUS_M
+  const bookerConfirmed = !!b.booker_confirmed_at
 
   return (
     <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4">
@@ -468,12 +486,45 @@ function LocationProof({ b }: { b: DashBooking }) {
         </a>
       )}
 
+      {/* Onderweg + ETA (verdwijnt zodra je bent ingecheckt). */}
+      {!checkedIn && (
+        <div className="mt-4 border-t border-border pt-3">
+          {enroute ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/15 px-2.5 py-1 text-xs font-medium text-brand">
+                {b.eta
+                  ? d.enrouteEta.replace("{eta}", timeFmt(b.eta))
+                  : d.enrouteNoEta}
+              </span>
+              <button
+                type="button"
+                onClick={() => share("enroute")}
+                disabled={busy !== null}
+                className="text-xs text-muted underline transition hover:text-foreground disabled:opacity-50"
+              >
+                {busy === "enroute" ? d.checkInBusy : d.enrouteUpdate}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => share("enroute")}
+              disabled={busy !== null}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand disabled:opacity-50"
+            >
+              {busy === "enroute" ? d.checkInBusy : d.enrouteButton}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Aanwezigheidsbewijs (GPS-check-in, server-side geverifieerd). */}
       <div className="mt-4 border-t border-border pt-3">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           {d.checkInTitle}
         </p>
         {checkedIn ? (
-          <div className="mt-2">
+          <div className="mt-2 flex flex-col gap-1.5">
             <p className="text-sm">
               {d.checkedInAt.replace(
                 "{when}",
@@ -485,36 +536,39 @@ function LocationProof({ b }: { b: DashBooking }) {
                 }),
               )}
             </p>
-            <span
-              className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                dist == null
-                  ? "bg-surface text-muted"
-                  : onSite
+            <div className="flex flex-wrap gap-1.5">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                  b.checkin_verified
                     ? "bg-brand/15 text-brand"
                     : "bg-red-500/15 text-red-300"
-              }`}
-            >
-              {dist == null
-                ? d.checkinNoCoords
-                : onSite
-                  ? d.checkinOnSite.replace("{d}", String(dist))
-                  : d.checkinOffSite.replace("{d}", String(dist))}
-            </span>
+                }`}
+              >
+                {b.checkin_verified
+                  ? d.checkinVerified.replace("{d}", String(dist ?? 0))
+                  : d.checkinUnverified}
+              </span>
+              {bookerConfirmed && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-300">
+                  {d.bookerConfirmed}
+                </span>
+              )}
+            </div>
           </div>
         ) : (
           <>
             <p className="mt-1 text-xs text-muted">{d.checkInHint}</p>
             <button
               type="button"
-              onClick={checkIn}
-              disabled={busy}
+              onClick={() => share("checkin")}
+              disabled={busy !== null}
               className="mt-2 inline-flex items-center gap-2 rounded-full border border-brand/50 px-4 py-2 text-sm font-medium text-brand transition hover:bg-brand/10 disabled:opacity-50"
             >
-              {busy ? d.checkInBusy : d.checkInButton}
+              {busy === "checkin" ? d.checkInBusy : d.checkInButton}
             </button>
-            {err && <p className="mt-1.5 text-xs text-red-400">{d.checkInDenied}</p>}
           </>
         )}
+        {err && <p className="mt-1.5 text-xs text-red-400">{d.checkInDenied}</p>}
       </div>
     </div>
   )

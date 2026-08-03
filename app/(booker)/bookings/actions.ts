@@ -48,6 +48,41 @@ export async function cancelBooking(formData: FormData) {
   revalidatePath("/bookings")
 }
 
+// Tweezijdig aanwezigheidsbewijs: de klant bevestigt dat de DJ er was. Samen
+// met de GPS-check-in van de DJ maakt dit een gefakete no-show onmogelijk —
+// van beide kanten. Kan alleen bij een betaalde/afgeronde eigen boeking.
+export async function confirmDjAttendance(formData: FormData) {
+  const bookingId = String(formData.get("booking_id") ?? "")
+  if (!bookingId) return
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data: confirmed } = await createAdminClient()
+    .from("bookings")
+    .update({ booker_confirmed_at: new Date().toISOString() })
+    .eq("id", bookingId)
+    .eq("booker_id", user.id)
+    .in("status", ["paid", "completed"])
+    .is("booker_confirmed_at", null)
+    .select("id")
+
+  if (confirmed && confirmed.length > 0) {
+    await logAudit({
+      actorId: user.id,
+      action: "booking.attendance_confirmed",
+      targetType: "booking",
+      targetId: bookingId,
+    })
+  }
+
+  revalidatePath("/bookings")
+  revalidatePath("/dashboard")
+}
+
 // De boeker betaalt een geaccepteerde boeking. Het geld wordt bij MyGigs
 // vastgehouden (escrow) en binnen 5 werkdagen na het optreden uitbetaald aan
 // de DJ. Simulatie: er is nog geen echte betaalprovider gekoppeld.

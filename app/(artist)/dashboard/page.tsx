@@ -93,9 +93,13 @@ export default async function DashboardPage() {
       booker_name: booker?.full_name ?? null,
       is_public: b.is_public,
       created_at: b.created_at,
+      enroute_at: b.enroute_at,
+      eta: b.eta,
       checkin_at: b.checkin_at,
       checkin_distance_m: b.checkin_distance_m,
       checkin_accuracy_m: b.checkin_accuracy_m,
+      checkin_verified: b.checkin_verified,
+      booker_confirmed_at: b.booker_confirmed_at,
     }
   })
 

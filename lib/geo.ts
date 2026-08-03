@@ -72,3 +72,29 @@ export function haversineMeters(
 
 // Binnen deze straal (meter) telt een check-in als "op locatie".
 export const CHECKIN_RADIUS_M = 300
+
+// Geschatte reistijd (auto) in seconden van vertrekpunt naar bestemming.
+// Probeert OSRM (gratis, geen key); lukt dat niet, dan een schatting op basis
+// van hemelsbrede afstand bij ~50 km/u. Geeft altijd een getal terug zolang de
+// coördinaten geldig zijn.
+export async function estimateTravelSeconds(
+  fromLat: number,
+  fromLng: number,
+  toLat: number,
+  toLng: number,
+): Promise<number> {
+  const fallback = () =>
+    Math.round(haversineMeters(fromLat, fromLng, toLat, toLng) / (50_000 / 3600))
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=false`
+    const res = await fetch(url, { headers: { Accept: "application/json" } })
+    if (!res.ok) return fallback()
+    const json = await res.json()
+    const dur = json?.routes?.[0]?.duration
+    return typeof dur === "number" && Number.isFinite(dur)
+      ? Math.round(dur)
+      : fallback()
+  } catch {
+    return fallback()
+  }
+}
