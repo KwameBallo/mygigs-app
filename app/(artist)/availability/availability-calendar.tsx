@@ -290,10 +290,12 @@ export function AvailabilityCalendar({
                     disabled={isPast}
                     onClick={() => onDayClick(dateStr)}
                     className={`aspect-square rounded-lg border text-sm font-medium transition ${cls} ${
-                      isToday ? "ring-1 ring-brand" : ""
-                    } ${isSelected ? "ring-2 ring-brand" : ""} ${
-                      busyDate === dateStr ? "opacity-60" : ""
-                    }`}
+                      isSelected
+                        ? "ring-2 ring-inset ring-foreground"
+                        : isToday
+                          ? "ring-1 ring-inset ring-foreground/40"
+                          : ""
+                    } ${busyDate === dateStr ? "opacity-60" : ""}`}
                   >
                     {Number(dateStr.slice(8))}
                   </button>
