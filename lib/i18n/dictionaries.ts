@@ -419,6 +419,7 @@ const nl = {
     navConsentBody:
       "We gebruiken je locatie om de route en aankomsttijd te berekenen. De klant ziet alleen de aankomsttijd — nooit je locatie. Sluit dit scherm om te stoppen.",
     navConsentStart: "Locatie delen & starten",
+    navRetry: "Opnieuw proberen",
     enrouteHint:
       "We gebruiken je locatie eenmalig om de aankomsttijd te berekenen. De klant ziet alleen de tijd, niet je locatie.",
     checkInTitle: "Bewijs van aanwezigheid",
@@ -1059,6 +1060,7 @@ const en: typeof nl = {
     navConsentBody:
       "We use your location to calculate the route and arrival time. The client only sees the arrival time — never your location. Close this screen to stop.",
     navConsentStart: "Share location & start",
+    navRetry: "Try again",
     enrouteHint:
       "We use your location once to calculate the arrival time. The client only sees the time, not your location.",
     checkInTitle: "Proof of attendance",

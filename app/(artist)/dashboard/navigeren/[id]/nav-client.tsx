@@ -84,8 +84,33 @@ export function NavClient({
     }
   }
 
+  // Vraag de locatie direct vanuit de tik aan (sommige mobiele browsers eisen
+  // dat de aanvraag uit een gebruikersgebaar komt, anders weigeren ze meteen).
+  function requestAndStart() {
+    setDenied(false)
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setDenied(true)
+      setStarted(true)
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const p = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        setDj(p)
+        void refreshRoute(p)
+        setStarted(true)
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) setDenied(true)
+        // Timeout/onbeschikbaar: toch starten; de watch probeert het opnieuw.
+        setStarted(true)
+      },
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 },
+    )
+  }
+
   useEffect(() => {
-    // Pas locatie gebruiken ná expliciete toestemming in de app.
+    // De doorlopende watch start pas ná de eerste toestemming/tik.
     if (!started) return
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setDenied(true)
@@ -154,7 +179,16 @@ export function NavClient({
           {/* Live reis-info */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-border bg-surface-2 px-4 py-2.5 text-sm">
             {denied ? (
-              <span className="text-red-400">{d.navDenied}</span>
+              <span className="flex items-center gap-3">
+                <span className="text-red-400">{d.navDenied}</span>
+                <button
+                  type="button"
+                  onClick={requestAndStart}
+                  className="rounded-full border border-brand/50 px-3 py-1 text-xs font-medium text-brand transition hover:bg-brand/10"
+                >
+                  {d.navRetry}
+                </button>
+              </span>
             ) : etaText ? (
               <>
                 <span className="font-semibold text-brand">
@@ -198,7 +232,7 @@ export function NavClient({
             <p className="mt-2 text-sm text-muted">{d.navConsentBody}</p>
             <button
               type="button"
-              onClick={() => setStarted(true)}
+              onClick={requestAndStart}
               className="mt-5 w-full rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong"
             >
               {d.navConsentStart}
