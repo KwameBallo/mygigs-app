@@ -25,20 +25,20 @@ function hhmm(t: string | null | undefined) {
 export function AvailabilityCalendar({
   slots,
   today,
+  bookedDates,
 }: {
   slots: Slot[]
   today: string
+  bookedDates: string[]
 }) {
   const router = useRouter()
   const { locale, t } = useT()
   const a = t.agenda
   const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
 
-  // Geboekte dagen zijn niet te wijzigen; beschikbare dagen wél (optimistisch).
-  const booked = useMemo(
-    () => new Set(slots.filter((s) => s.status === "booked").map((s) => s.date)),
-    [slots],
-  )
+  // Dagen met een geboekt optreden (uit de boekingen) — groen gemarkeerd. Je
+  // blijft er op andere tijden beschikbaar, dus de dag is nog aan te tikken.
+  const booked = useMemo(() => new Set(bookedDates), [bookedDates])
   const [available, setAvailable] = useState<Set<string>>(
     () =>
       new Set(
@@ -106,7 +106,7 @@ export function AvailabilityCalendar({
   }
 
   function onDayClick(dateStr: string) {
-    if (booked.has(dateStr) || dateStr < today) return
+    if (dateStr < today) return
     if (available.has(dateStr)) {
       // Al beschikbaar: editor openen (of sluiten als je 'm nogmaals aantikt).
       setSelected((cur) => (cur === dateStr ? null : dateStr))
@@ -276,7 +276,7 @@ export function AvailabilityCalendar({
                   "border-border bg-surface-2 text-foreground hover:border-brand/50"
                 if (isBooked) {
                   cls =
-                    "border-red-500/40 bg-red-500/15 text-red-300 cursor-not-allowed"
+                    "border-green-500/50 bg-green-500/20 text-green-300 hover:bg-green-500/30"
                 } else if (isAvailable) {
                   cls = "border-brand bg-brand/20 text-brand hover:bg-brand/30"
                 } else if (isPast) {
@@ -287,7 +287,7 @@ export function AvailabilityCalendar({
                   <button
                     key={dateStr}
                     type="button"
-                    disabled={isPast || isBooked}
+                    disabled={isPast}
                     onClick={() => onDayClick(dateStr)}
                     className={`aspect-square rounded-lg border text-sm font-medium transition ${cls} ${
                       isToday ? "ring-1 ring-brand" : ""
@@ -310,7 +310,7 @@ export function AvailabilityCalendar({
           <span className="h-2.5 w-2.5 rounded-full bg-brand" /> {a.available}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-400" /> {a.booked}
+          <span className="h-2.5 w-2.5 rounded-full bg-green-500" /> {a.booked}
         </span>
         <span className="ml-auto">
           {availableCount} {a.daysAvailable}

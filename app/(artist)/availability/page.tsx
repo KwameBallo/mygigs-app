@@ -59,6 +59,7 @@ export default async function AvailabilityPage() {
     .gte("event_date", today)
     .order("event_date", { ascending: true })
   const booked = bookedGigs ?? []
+  const bookedDates = [...new Set(booked.map((g) => g.event_date))]
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
@@ -66,7 +67,11 @@ export default async function AvailabilityPage() {
       <p className="mt-2 text-sm text-muted">{a.intro}</p>
 
       <div className="mt-6">
-        <AvailabilityCalendar slots={list} today={today} />
+        <AvailabilityCalendar
+          slots={list}
+          today={today}
+          bookedDates={bookedDates}
+        />
       </div>
 
       {booked.length > 0 && (
