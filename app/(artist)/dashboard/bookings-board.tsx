@@ -122,11 +122,61 @@ function EmptyLine({ text }: { text: string }) {
   )
 }
 
+// Inklapbare sectie (Open / Afgerond) — kop met teller + chevron om te
+// minimaliseren; onthoudt open/dicht lokaal.
+function CollapsibleSection({
+  title,
+  emptyText,
+  items,
+  defaultOpen,
+}: {
+  title: string
+  emptyText: string
+  items: DashBooking[]
+  defaultOpen: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <section>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2"
+      >
+        <SectionHeader title={title} count={items.length} />
+        <svg
+          viewBox="0 0 12 12"
+          className={`ml-auto h-3.5 w-3.5 text-muted transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden="true"
+        >
+          <path d="M2.5 4.5 L6 8 L9.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {open &&
+        (items.length === 0 ? (
+          <EmptyLine text={emptyText} />
+        ) : (
+          <div className="mt-3 flex flex-col gap-3">
+            {items.map((b) => (
+              <BookingCard key={b.id} booking={b} />
+            ))}
+          </div>
+        ))}
+    </section>
+  )
+}
+
 export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
   const { t } = useT()
   const d = t.dashboard
   // Aanvragen bovenaan (oudste eerst = meest urgent), dan aankomende gigs op
-  // datum, en als laatst de afgeronde (ingeklapt).
+  // datum, en als laatst de afgeronde (standaard ingeklapt).
   const pending = bookings
     .filter((b) => b.status === "pending")
     .sort(
@@ -140,11 +190,10 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
         new Date(a.event_date).getTime() - new Date(b.event_date).getTime(),
     )
   const done = bookings.filter((b) => DONE.includes(b.status))
-  const [showDone, setShowDone] = useState(false)
 
   return (
     <div className="mt-8 flex flex-col gap-8">
-      {/* Aanvragen — belangrijkst, altijd bovenaan */}
+      {/* Aanvragen — belangrijkst, altijd zichtbaar */}
       <section>
         <SectionHeader
           title={d.secRequests}
@@ -162,53 +211,19 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
         )}
       </section>
 
-      {/* Open — bevestigde, aankomende optredens */}
-      <section>
-        <SectionHeader title={d.secUpcoming} count={upcoming.length} />
-        {upcoming.length === 0 ? (
-          <EmptyLine text={d.emptyConfirmed} />
-        ) : (
-          <div className="mt-3 flex flex-col gap-3">
-            {upcoming.map((b) => (
-              <BookingCard key={b.id} booking={b} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Afgerond — inklapbaar, minst belangrijk */}
-      <section>
-        <button
-          type="button"
-          onClick={() => setShowDone((s) => !s)}
-          aria-expanded={showDone}
-          className="flex w-full items-center gap-2"
-        >
-          <SectionHeader title={d.secDone} count={done.length} />
-          <svg
-            viewBox="0 0 12 12"
-            className={`h-3 w-3 text-muted transition-transform ${
-              showDone ? "rotate-180" : ""
-            }`}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            aria-hidden="true"
-          >
-            <path d="M2.5 4.5 L6 8 L9.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        {showDone &&
-          (done.length === 0 ? (
-            <EmptyLine text={d.emptyDone} />
-          ) : (
-            <div className="mt-3 flex flex-col gap-2">
-              {done.map((b) => (
-                <BookingCard key={b.id} booking={b} />
-              ))}
-            </div>
-          ))}
-      </section>
+      {/* Open en Afgerond — beide in/uit te klappen */}
+      <CollapsibleSection
+        title={d.secUpcoming}
+        emptyText={d.emptyConfirmed}
+        items={upcoming}
+        defaultOpen
+      />
+      <CollapsibleSection
+        title={d.secDone}
+        emptyText={d.emptyDone}
+        items={done}
+        defaultOpen={false}
+      />
     </div>
   )
 }
