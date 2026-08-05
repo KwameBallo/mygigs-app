@@ -428,6 +428,8 @@ function LocationProof({ b }: { b: DashBooking }) {
   const canNavigate = b.lat != null && b.lng != null
 
   // Deelt eenmalig de locatie en roept een server-actie aan (onderweg of check-in).
+  // Lukt een hoge-nauwkeurigheid GPS-fix niet (vaak binnenshuis), dan valt hij
+  // één keer terug op netwerk-locatie; alleen bij geweigerde toestemming faalt hij.
   function share(kind: "enroute" | "checkin") {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setErr(true)
@@ -435,25 +437,32 @@ function LocationProof({ b }: { b: DashBooking }) {
     }
     setErr(false)
     setBusy(kind)
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const fd = new FormData()
-        fd.set("booking_id", b.id)
-        fd.set("lat", String(pos.coords.latitude))
-        fd.set("lng", String(pos.coords.longitude))
-        fd.set("accuracy", String(pos.coords.accuracy ?? ""))
-        startTransition(async () => {
-          if (kind === "enroute") await startEnroute(fd)
-          else await checkInBooking(fd)
+    const attempt = (highAccuracy: boolean) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const fd = new FormData()
+          fd.set("booking_id", b.id)
+          fd.set("lat", String(pos.coords.latitude))
+          fd.set("lng", String(pos.coords.longitude))
+          fd.set("accuracy", String(pos.coords.accuracy ?? ""))
+          startTransition(async () => {
+            if (kind === "enroute") await startEnroute(fd)
+            else await checkInBooking(fd)
+            setBusy(null)
+          })
+        },
+        (err) => {
+          if (err.code !== err.PERMISSION_DENIED && highAccuracy) {
+            attempt(false) // val terug op netwerk-locatie
+            return
+          }
           setBusy(null)
-        })
-      },
-      () => {
-        setBusy(null)
-        setErr(true)
-      },
-      { enableHighAccuracy: true, timeout: 15000 },
-    )
+          setErr(true)
+        },
+        { enableHighAccuracy: highAccuracy, timeout: 20000, maximumAge: 10000 },
+      )
+    }
+    attempt(true)
   }
 
   const checkedIn = !!b.checkin_at

@@ -91,16 +91,35 @@ export function NavClient({
       setDenied(true)
       return
     }
-    const id = navigator.geolocation.watchPosition(
-      (pos) => {
-        const p = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-        setDj(p)
-        void refreshRoute(p)
-      },
-      () => setDenied(true),
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
-    )
-    return () => navigator.geolocation.clearWatch(id)
+    let watchId = 0
+    let highAccuracy = true
+    const startWatch = () => {
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          setDenied(false)
+          const p = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+          setDj(p)
+          void refreshRoute(p)
+        },
+        (err) => {
+          // Alleen bij écht geweigerde toestemming stoppen.
+          if (err.code === err.PERMISSION_DENIED) {
+            setDenied(true)
+            return
+          }
+          // Timeout/onbeschikbaar (vaak binnenshuis): val één keer terug op
+          // netwerk-locatie i.p.v. hoge-nauwkeurigheid GPS.
+          if (highAccuracy) {
+            highAccuracy = false
+            navigator.geolocation.clearWatch(watchId)
+            startWatch()
+          }
+        },
+        { enableHighAccuracy: highAccuracy, maximumAge: 10000, timeout: 30000 },
+      )
+    }
+    startWatch()
+    return () => navigator.geolocation.clearWatch(watchId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started])
 
