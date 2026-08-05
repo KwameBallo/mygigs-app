@@ -264,26 +264,32 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
   const time = timeRange(b.start_time, b.end_time)
   const place = [b.city, b.venue_name].filter(Boolean).join(" · ")
 
+  const hasActions =
+    isPending || b.status === "accepted" || b.status === "paid"
+
   return (
     <div
       className={`overflow-hidden rounded-2xl border bg-surface ${
         u?.urgent ? "border-brand/50" : "border-border"
       }`}
     >
-      {/* Kop: datum-chip · status · tijd/plaats · bedrag */}
-      <div className="flex items-start gap-3 p-4">
-        <div className="flex h-14 w-14 flex-none flex-col items-center justify-center rounded-xl bg-surface-2">
-          <span className="text-lg font-semibold leading-none">{dayNum}</span>
-          <span className="mt-0.5 text-[10px] uppercase text-muted">
-            {monthShort}
-          </span>
+      {/* Compacte rij — tik om te openen voor acties + details */}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 p-3 text-left"
+      >
+        <div className="flex h-11 w-11 flex-none flex-col items-center justify-center rounded-lg bg-surface-2">
+          <span className="text-base font-semibold leading-none">{dayNum}</span>
+          <span className="text-[9px] uppercase text-muted">{monthShort}</span>
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             <StatusBadge status={b.status} />
             {u && (
               <span
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
                   u.urgent ? "bg-brand/15 text-brand" : "bg-surface-2 text-muted"
                 }`}
               >
@@ -291,77 +297,22 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
               </span>
             )}
           </div>
-          <p className="mt-1 truncate font-medium">
+          <p className="mt-0.5 truncate text-sm font-medium">
             {b.occasion ?? typeLabel}
           </p>
-          <p className="truncate text-sm text-muted">
+          <p className="truncate text-xs text-muted">
             {[time, place].filter(Boolean).join(" · ") || eventDate}
           </p>
         </div>
-        <span className="flex-none text-right font-semibold text-brand">
-          {formatEuro(b.gage)}
-        </span>
-      </div>
-
-      {/* Acties — contextueel per status */}
-      <div className="flex flex-wrap items-center gap-2 px-4 pb-4">
-        {isPending && (
-          <>
-            <form action={updateBookingStatus}>
-              <input type="hidden" name="booking_id" value={b.id} />
-              <input type="hidden" name="status" value="accepted" />
-              <button
-                type="submit"
-                className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
-              >
-                {d.accept}
-              </button>
-            </form>
-            <form action={updateBookingStatus}>
-              <input type="hidden" name="booking_id" value={b.id} />
-              <input type="hidden" name="status" value="declined" />
-              <button
-                type="submit"
-                className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-red-500/50"
-              >
-                {d.decline}
-              </button>
-            </form>
-          </>
-        )}
-        {b.status === "accepted" && (
-          <>
-            <span className="rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium text-muted">
-              {d.awaitPayment}
-            </span>
-            <ChatButton id={b.id} label={d.chatClient} />
-          </>
-        )}
-        {b.status === "paid" && (
-          <>
-            <ChatButton id={b.id} label={d.chatClient} />
-            <form action={updateBookingStatus}>
-              <input type="hidden" name="booking_id" value={b.id} />
-              <input type="hidden" name="status" value="completed" />
-              <button
-                type="submit"
-                className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
-              >
-                {d.markDone}
-              </button>
-            </form>
-          </>
-        )}
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          className="ml-auto flex items-center gap-1 rounded-full px-3 py-2 text-xs font-medium text-muted transition hover:text-foreground"
-        >
-          {open ? d.less : d.details}
+        <div className="flex flex-none items-center gap-2">
+          <span className="text-sm font-semibold text-brand">
+            {formatEuro(b.gage)}
+          </span>
           <svg
             viewBox="0 0 12 12"
-            className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
+            className={`h-3.5 w-3.5 text-muted transition-transform ${
+              open ? "rotate-180" : ""
+            }`}
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
@@ -369,12 +320,64 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
           >
             <path d="M2.5 4.5 L6 8 L9.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </button>
-      </div>
+        </div>
+      </button>
 
-      {/* Detailpaneel */}
+      {/* Uitgevouwen: acties bovenaan, dan details */}
       {open && (
-        <div className="border-t border-border px-4 pb-4 pt-3">
+        <div className="border-t border-border px-3 pb-3 pt-3">
+          {hasActions && (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              {isPending && (
+                <>
+                  <form action={updateBookingStatus}>
+                    <input type="hidden" name="booking_id" value={b.id} />
+                    <input type="hidden" name="status" value="accepted" />
+                    <button
+                      type="submit"
+                      className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
+                    >
+                      {d.accept}
+                    </button>
+                  </form>
+                  <form action={updateBookingStatus}>
+                    <input type="hidden" name="booking_id" value={b.id} />
+                    <input type="hidden" name="status" value="declined" />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-red-500/50"
+                    >
+                      {d.decline}
+                    </button>
+                  </form>
+                </>
+              )}
+              {b.status === "accepted" && (
+                <>
+                  <span className="rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium text-muted">
+                    {d.awaitPayment}
+                  </span>
+                  <ChatButton id={b.id} label={d.chatClient} />
+                </>
+              )}
+              {b.status === "paid" && (
+                <>
+                  <ChatButton id={b.id} label={d.chatClient} />
+                  <form action={updateBookingStatus}>
+                    <input type="hidden" name="booking_id" value={b.id} />
+                    <input type="hidden" name="status" value="completed" />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+                    >
+                      {d.markDone}
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          )}
+
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             <DetailRow label={d.rowType} value={typeLabel} />
             <DetailRow label={d.rowOccasion} value={b.occasion} />
