@@ -380,6 +380,10 @@ const nl = {
     tabOpen: "Open",
     tabConfirmed: "Bevestigd",
     tabDone: "Afgerond",
+    secRequests: "Aanvragen",
+    secUpcoming: "Open",
+    secDone: "Afgerond",
+    awaitPayment: "Wacht op betaling",
     emptyOpen:
       "Geen openstaande aanvragen. Zodra een boeker je boekt, verschijnt het hier.",
     emptyConfirmed: "Nog geen bevestigde boekingen.",
@@ -1021,6 +1025,10 @@ const en: typeof nl = {
     tabOpen: "Open",
     tabConfirmed: "Confirmed",
     tabDone: "Completed",
+    secRequests: "Requests",
+    secUpcoming: "Upcoming",
+    secDone: "Completed",
+    awaitPayment: "Awaiting payment",
     emptyOpen:
       "No open requests. As soon as a booker books you, it will appear here.",
     emptyConfirmed: "No confirmed bookings yet.",

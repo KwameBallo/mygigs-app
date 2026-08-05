@@ -51,11 +51,8 @@ export type DashBooking = {
 }
 
 const PUBLIC_STATUSES = ["accepted", "paid", "completed"]
-const OPEN = ["pending"]
 const CONFIRMED = ["accepted", "paid"]
 const DONE = ["completed", "declined", "cancelled"]
-
-type Tab = "open" | "confirmed" | "done"
 
 // Hoeveel dagen geleden de aanvraag binnenkwam, voor urgentie-weergave.
 function daysAgo(iso: string) {
@@ -88,70 +85,146 @@ function timeRange(start: string | null, end: string | null) {
   return s ?? e
 }
 
+function SectionHeader({
+  title,
+  count,
+  accent,
+}: {
+  title: string
+  count: number
+  accent?: boolean
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <h2
+        className={`text-xs font-semibold uppercase tracking-wider ${
+          accent ? "text-brand" : "text-muted"
+        }`}
+      >
+        {title}
+      </h2>
+      <span
+        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+          accent ? "bg-brand/15 text-brand" : "bg-surface-2 text-muted"
+        }`}
+      >
+        {count}
+      </span>
+    </div>
+  )
+}
+
+function EmptyLine({ text }: { text: string }) {
+  return (
+    <p className="mt-3 rounded-2xl border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
+      {text}
+    </p>
+  )
+}
+
 export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
   const { t } = useT()
   const d = t.dashboard
-  const open = bookings
-    .filter((b) => OPEN.includes(b.status))
+  // Aanvragen bovenaan (oudste eerst = meest urgent), dan aankomende gigs op
+  // datum, en als laatst de afgeronde (ingeklapt).
+  const pending = bookings
+    .filter((b) => b.status === "pending")
     .sort(
       (a, b) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     )
-  const confirmed = bookings.filter((b) => CONFIRMED.includes(b.status))
+  const upcoming = bookings
+    .filter((b) => CONFIRMED.includes(b.status))
+    .sort(
+      (a, b) =>
+        new Date(a.event_date).getTime() - new Date(b.event_date).getTime(),
+    )
   const done = bookings.filter((b) => DONE.includes(b.status))
-
-  const [tab, setTab] = useState<Tab>(open.length > 0 ? "open" : "confirmed")
-
-  const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: "open", label: d.tabOpen, count: open.length },
-    { key: "confirmed", label: d.tabConfirmed, count: confirmed.length },
-    { key: "done", label: d.tabDone, count: done.length },
-  ]
-
-  const list = tab === "open" ? open : tab === "confirmed" ? confirmed : done
+  const [showDone, setShowDone] = useState(false)
 
   return (
-    <section className="mt-10">
-      <div className="flex flex-wrap items-center gap-2">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setTab(t.key)}
-            className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium transition ${
-              tab === t.key
-                ? "border-brand bg-brand/10 text-brand"
-                : "border-border text-muted hover:text-foreground"
-            }`}
-          >
-            {t.label}
-            <span
-              className={`rounded-full px-1.5 text-xs ${
-                tab === t.key ? "bg-brand/20" : "bg-surface-2"
-              }`}
-            >
-              {t.count}
-            </span>
-          </button>
-        ))}
-      </div>
+    <div className="mt-8 flex flex-col gap-8">
+      {/* Aanvragen — belangrijkst, altijd bovenaan */}
+      <section>
+        <SectionHeader
+          title={d.secRequests}
+          count={pending.length}
+          accent={pending.length > 0}
+        />
+        {pending.length === 0 ? (
+          <EmptyLine text={d.emptyOpen} />
+        ) : (
+          <div className="mt-3 flex flex-col gap-3">
+            {pending.map((b) => (
+              <BookingCard key={b.id} booking={b} />
+            ))}
+          </div>
+        )}
+      </section>
 
-      {list.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-dashed border-border bg-surface p-10 text-center text-sm text-muted">
-          {tab === "open"
-            ? d.emptyOpen
-            : tab === "confirmed"
-              ? d.emptyConfirmed
-              : d.emptyDone}
-        </p>
-      ) : (
-        <div className="mt-4 flex flex-col gap-3">
-          {list.map((b) => (
-            <BookingCard key={b.id} booking={b} />
+      {/* Open — bevestigde, aankomende optredens */}
+      <section>
+        <SectionHeader title={d.secUpcoming} count={upcoming.length} />
+        {upcoming.length === 0 ? (
+          <EmptyLine text={d.emptyConfirmed} />
+        ) : (
+          <div className="mt-3 flex flex-col gap-3">
+            {upcoming.map((b) => (
+              <BookingCard key={b.id} booking={b} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Afgerond — inklapbaar, minst belangrijk */}
+      <section>
+        <button
+          type="button"
+          onClick={() => setShowDone((s) => !s)}
+          aria-expanded={showDone}
+          className="flex w-full items-center gap-2"
+        >
+          <SectionHeader title={d.secDone} count={done.length} />
+          <svg
+            viewBox="0 0 12 12"
+            className={`h-3 w-3 text-muted transition-transform ${
+              showDone ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            aria-hidden="true"
+          >
+            <path d="M2.5 4.5 L6 8 L9.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        {showDone &&
+          (done.length === 0 ? (
+            <EmptyLine text={d.emptyDone} />
+          ) : (
+            <div className="mt-3 flex flex-col gap-2">
+              {done.map((b) => (
+                <BookingCard key={b.id} booking={b} />
+              ))}
+            </div>
           ))}
-        </div>
-      )}
-    </section>
+      </section>
+    </div>
+  )
+}
+
+// Chat-knop met de klant (na acceptatie).
+function ChatButton({ id, label }: { id: string; label: string }) {
+  return (
+    <form action={openBookingChat}>
+      <input type="hidden" name="booking_id" value={id} />
+      <button
+        type="submit"
+        className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+      >
+        {label}
+      </button>
+    </form>
   )
 }
 
@@ -184,69 +257,124 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
     locale === "nl" ? "," : ".",
   )} ${d.hoursUnit}`
 
+  const dayNum = new Date(b.event_date).getDate()
+  const monthShort = new Date(b.event_date).toLocaleDateString(dateLocale, {
+    month: "short",
+  })
+  const time = timeRange(b.start_time, b.end_time)
+  const place = [b.city, b.venue_name].filter(Boolean).join(" · ")
+
   return (
     <div
-      className={`rounded-2xl border bg-surface ${
+      className={`overflow-hidden rounded-2xl border bg-surface ${
         u?.urgent ? "border-brand/50" : "border-border"
       }`}
     >
-      {/* Kop: klikbaar om details uit/in te klappen */}
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex w-full items-start justify-between gap-3 p-5 text-left"
-      >
-        <div className="min-w-0">
+      {/* Kop: datum-chip · status · tijd/plaats · bedrag */}
+      <div className="flex items-start gap-3 p-4">
+        <div className="flex h-14 w-14 flex-none flex-col items-center justify-center rounded-xl bg-surface-2">
+          <span className="text-lg font-semibold leading-none">{dayNum}</span>
+          <span className="mt-0.5 text-[10px] uppercase text-muted">
+            {monthShort}
+          </span>
+        </div>
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={b.status} />
-            <span className="rounded-full border border-border bg-surface-2 px-2 py-0.5 text-xs text-muted">
-              {typeLabel}
-            </span>
             {u && (
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  u.urgent
-                    ? "bg-brand/15 text-brand"
-                    : "bg-surface-2 text-muted"
+                  u.urgent ? "bg-brand/15 text-brand" : "bg-surface-2 text-muted"
                 }`}
               >
                 {u.text}
               </span>
             )}
           </div>
-          <p className="mt-2 text-sm text-muted">
-            {eventDate}
-            {b.city ? ` · ${b.city}` : ""}
-            {b.venue_name ? ` · ${b.venue_name}` : ""}
+          <p className="mt-1 truncate font-medium">
+            {b.occasion ?? typeLabel}
           </p>
-          {b.occasion && (
-            <p className="mt-1 truncate text-sm font-medium">{b.occasion}</p>
-          )}
+          <p className="truncate text-sm text-muted">
+            {[time, place].filter(Boolean).join(" · ") || eventDate}
+          </p>
         </div>
-        <div className="flex flex-none flex-col items-end gap-1">
-          <span className="text-lg font-semibold text-brand">
-            {formatEuro(b.gage)}
-          </span>
-          <span className="flex items-center gap-1 text-xs text-muted">
-            {open ? d.less : d.details}
-            <svg
-              viewBox="0 0 12 12"
-              className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              aria-hidden="true"
-            >
-              <path d="M2.5 4.5 L6 8 L9.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-        </div>
-      </button>
+        <span className="flex-none text-right font-semibold text-brand">
+          {formatEuro(b.gage)}
+        </span>
+      </div>
+
+      {/* Acties — contextueel per status */}
+      <div className="flex flex-wrap items-center gap-2 px-4 pb-4">
+        {isPending && (
+          <>
+            <form action={updateBookingStatus}>
+              <input type="hidden" name="booking_id" value={b.id} />
+              <input type="hidden" name="status" value="accepted" />
+              <button
+                type="submit"
+                className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
+              >
+                {d.accept}
+              </button>
+            </form>
+            <form action={updateBookingStatus}>
+              <input type="hidden" name="booking_id" value={b.id} />
+              <input type="hidden" name="status" value="declined" />
+              <button
+                type="submit"
+                className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-red-500/50"
+              >
+                {d.decline}
+              </button>
+            </form>
+          </>
+        )}
+        {b.status === "accepted" && (
+          <>
+            <span className="rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium text-muted">
+              {d.awaitPayment}
+            </span>
+            <ChatButton id={b.id} label={d.chatClient} />
+          </>
+        )}
+        {b.status === "paid" && (
+          <>
+            <ChatButton id={b.id} label={d.chatClient} />
+            <form action={updateBookingStatus}>
+              <input type="hidden" name="booking_id" value={b.id} />
+              <input type="hidden" name="status" value="completed" />
+              <button
+                type="submit"
+                className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+              >
+                {d.markDone}
+              </button>
+            </form>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="ml-auto flex items-center gap-1 rounded-full px-3 py-2 text-xs font-medium text-muted transition hover:text-foreground"
+        >
+          {open ? d.less : d.details}
+          <svg
+            viewBox="0 0 12 12"
+            className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            aria-hidden="true"
+          >
+            <path d="M2.5 4.5 L6 8 L9.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
 
       {/* Detailpaneel */}
       {open && (
-        <div className="border-t border-border px-5 pb-5 pt-4">
+        <div className="border-t border-border px-4 pb-4 pt-3">
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             <DetailRow label={d.rowType} value={typeLabel} />
             <DetailRow label={d.rowOccasion} value={b.occasion} />
@@ -304,6 +432,29 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
           {/* Locatie, navigatie en aanwezigheidsbewijs (na acceptatie). */}
           {contactUnlocked && <LocationProof b={b} />}
 
+          {/* Zichtbaar op je publieke profiel (na acceptatie). */}
+          {PUBLIC_STATUSES.includes(b.status) && (
+            <form action={toggleBookingPublic} className="mt-4">
+              <input type="hidden" name="booking_id" value={b.id} />
+              <input type="hidden" name="is_public" value={String(!b.is_public)} />
+              <button
+                type="submit"
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  b.is_public
+                    ? "border-brand/50 bg-brand/10 text-brand"
+                    : "border-border text-muted hover:border-brand/50"
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    b.is_public ? "bg-brand" : "bg-muted"
+                  }`}
+                />
+                {b.is_public ? d.visibleFans : d.showPublic}
+              </button>
+            </form>
+          )}
+
           {/* Contactgegevens komen vrij na acceptatie (volgende stap). */}
           {isPending && (
             <p className="mt-4 flex items-center gap-2 text-xs text-muted">
@@ -323,87 +474,6 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
           )}
         </div>
       )}
-
-      {/* Acties */}
-      <div
-        className={`flex flex-wrap items-center gap-2 px-5 pb-5 ${
-          open ? "border-t border-border pt-4" : ""
-        }`}
-      >
-        {isPending && (
-          <>
-            <form action={updateBookingStatus}>
-              <input type="hidden" name="booking_id" value={b.id} />
-              <input type="hidden" name="status" value="accepted" />
-              <button
-                type="submit"
-                className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
-              >
-                {d.accept}
-              </button>
-            </form>
-            <form action={updateBookingStatus}>
-              <input type="hidden" name="booking_id" value={b.id} />
-              <input type="hidden" name="status" value="declined" />
-              <button
-                type="submit"
-                className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-red-500/50"
-              >
-                {d.decline}
-              </button>
-            </form>
-          </>
-        )}
-
-        {CONFIRMED.includes(b.status) && (
-          <form action={openBookingChat}>
-            <input type="hidden" name="booking_id" value={b.id} />
-            <button
-              type="submit"
-              className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
-            >
-              {d.chatClient}
-            </button>
-          </form>
-        )}
-
-        {/* Na het optreden: markeer als afgerond → de boeker krijgt een
-            review-verzoek (mail + in-app). Alleen bij een betaalde boeking. */}
-        {b.status === "paid" && (
-          <form action={updateBookingStatus}>
-            <input type="hidden" name="booking_id" value={b.id} />
-            <input type="hidden" name="status" value="completed" />
-            <button
-              type="submit"
-              className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
-            >
-              {d.markDone}
-            </button>
-          </form>
-        )}
-
-        {PUBLIC_STATUSES.includes(b.status) && (
-          <form action={toggleBookingPublic}>
-            <input type="hidden" name="booking_id" value={b.id} />
-            <input type="hidden" name="is_public" value={String(!b.is_public)} />
-            <button
-              type="submit"
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                b.is_public
-                  ? "border-brand/50 bg-brand/10 text-brand"
-                  : "border-border text-muted hover:border-brand/50"
-              }`}
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  b.is_public ? "bg-brand" : "bg-muted"
-                }`}
-              />
-              {b.is_public ? d.visibleFans : d.showPublic}
-            </button>
-          </form>
-        )}
-      </div>
     </div>
   )
 }

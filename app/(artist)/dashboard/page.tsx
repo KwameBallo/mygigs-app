@@ -1,22 +1,10 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { Stars } from "@/components/stars"
-import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
 import { BookingsBoard, type DashBooking } from "./bookings-board"
 import { BookingsMapSection } from "./bookings-map-section"
-
-// Responstijd menselijk leesbaar.
-function formatResponse(
-  minutes: number,
-  u: { min: string; hour: string; day: string; days: string },
-) {
-  if (minutes < 60) return `${minutes} ${u.min}`
-  if (minutes < 60 * 24) return `${Math.round(minutes / 60)} ${u.hour}`
-  const d = Math.round(minutes / (60 * 24))
-  return `${d} ${d === 1 ? u.day : u.days}`
-}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -106,15 +94,8 @@ export default async function DashboardPage() {
     }
   })
 
-  const pending = list.filter((b) => b.status === "pending")
-  const accepted = list.filter((b) =>
-    ["accepted", "paid", "completed"].includes(b.status),
-  )
-  const booked = list.filter((b) => ["paid", "completed"].includes(b.status))
-  const earnings = booked.reduce((sum, b) => sum + b.gage, 0)
-
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+    <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
@@ -132,75 +113,22 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {/* Kerncijfers */}
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Stat label={d.statEarned} value={formatEuro(earnings)} />
-        <Stat
-          label={d.statOpen}
-          value={String(pending.length)}
-          accent={pending.length > 0}
-        />
-        <Stat label={d.statBookings30} value={String(artist.bookings_30d)} />
-        <Stat
-          label={d.statResponse}
-          value={
-            artist.response_minutes != null
-              ? formatResponse(artist.response_minutes, {
-                  min: d.respMin,
-                  hour: d.respHour,
-                  day: d.respDay,
-                  days: d.respDays,
-                })
-              : "—"
-          }
-        />
-      </div>
-
-      {/* Funnel: aanvragen → geaccepteerd → geboekt */}
-      <div className="mt-4 rounded-2xl border border-border bg-surface p-5">
-        <p className="text-sm font-semibold text-muted">{d.conversion}</p>
-        <div className="mt-3 flex items-center justify-between gap-2 text-center">
-          <FunnelStep label={d.funnelRequests} value={list.length} />
-          <Arrow />
-          <FunnelStep label={d.funnelAccepted} value={accepted.length} />
-          <Arrow />
-          <FunnelStep label={d.funnelBooked} value={booked.length} accent />
-        </div>
-        {list.length > 0 && (
-          <p className="mt-3 text-xs text-muted">
-            {d.conversionText.replace(
-              "{pct}",
-              String(Math.round((booked.length / list.length) * 100)),
-            )}
-          </p>
-        )}
-      </div>
-
-      {/* Nudges: agenda + adverteren */}
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {(openDays ?? 0) === 0 ? (
-          <NudgeCard
-            title={d.nudgeAgendaEmptyTitle}
-            body={d.nudgeAgendaEmptyBody}
-            cta={d.nudgeAgendaCta}
-            href="/availability"
-          />
-        ) : (
-          <NudgeCard
-            title={d.nudgeAgendaFullTitle.replace("{n}", String(openDays))}
-            body={d.nudgeAgendaFullBody}
-            cta={d.nudgeAgendaManage}
-            href="/availability"
-            soft
-          />
-        )}
-        <NudgeCard
-          title={d.nudgeAdTitle}
-          body={d.nudgeAdBody}
-          cta={d.nudgeAdCta}
-          href="/advertise"
-        />
-      </div>
+      {/* Slanke aansporing: alleen als de agenda nog dicht staat (dan kom je
+          niet in beeld bij boekers). Verdiensten en cijfers staan bij Verdiensten. */}
+      {(openDays ?? 0) === 0 && (
+        <Link
+          href="/availability"
+          className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-brand/40 bg-brand/5 p-4 transition hover:border-brand/60"
+        >
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">{d.nudgeAgendaEmptyTitle}</p>
+            <p className="mt-0.5 text-xs text-muted">{d.nudgeAgendaEmptyBody}</p>
+          </div>
+          <span className="flex-none rounded-full bg-brand px-4 py-2 text-sm font-medium text-black">
+            {d.nudgeAgendaCta}
+          </span>
+        </Link>
+      )}
 
       <BookingsBoard bookings={dashBookings} />
 
@@ -228,84 +156,5 @@ export default async function DashboardPage() {
         }}
       />
     </main>
-  )
-}
-
-function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string
-  value: string
-  accent?: boolean
-}) {
-  return (
-    <div
-      className={`rounded-2xl border bg-surface p-5 ${
-        accent ? "border-brand/50" : "border-border"
-      }`}
-    >
-      <p className="text-sm text-muted">{label}</p>
-      <p
-        className={`mt-1 text-2xl font-semibold ${accent ? "text-brand" : ""}`}
-      >
-        {value}
-      </p>
-    </div>
-  )
-}
-
-function FunnelStep({
-  label,
-  value,
-  accent,
-}: {
-  label: string
-  value: number
-  accent?: boolean
-}) {
-  return (
-    <div className="flex-1">
-      <p className={`text-2xl font-semibold ${accent ? "text-brand" : ""}`}>
-        {value}
-      </p>
-      <p className="text-xs text-muted">{label}</p>
-    </div>
-  )
-}
-
-function Arrow() {
-  return <span className="flex-none text-muted">→</span>
-}
-
-function NudgeCard({
-  title,
-  body,
-  cta,
-  href,
-  soft,
-}: {
-  title: string
-  body: string
-  cta: string
-  href: string
-  soft?: boolean
-}) {
-  return (
-    <div className="flex flex-col rounded-2xl border border-border bg-surface p-5">
-      <p className="font-semibold">{title}</p>
-      <p className="mt-1 flex-1 text-sm text-muted">{body}</p>
-      <Link
-        href={href}
-        className={`mt-4 inline-block self-start rounded-full px-4 py-2 text-sm font-medium transition ${
-          soft
-            ? "border border-border hover:border-brand/50"
-            : "bg-brand text-black hover:bg-brand-strong"
-        }`}
-      >
-        {cta}
-      </Link>
-    </div>
   )
 }
