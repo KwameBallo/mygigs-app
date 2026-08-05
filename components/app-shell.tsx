@@ -116,7 +116,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       items: [
         items.dashboard,
         items.availability,
-        items.kaart,
         items.earnings,
         items.profile,
       ],

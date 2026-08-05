@@ -5,6 +5,7 @@ import { formatEuro } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
 import { BookingsBoard, type DashBooking } from "./bookings-board"
+import { BookingsMapSection } from "./bookings-map-section"
 
 // Responstijd menselijk leesbaar.
 function formatResponse(
@@ -25,8 +26,10 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login?next=/dashboard")
 
-  const { t } = await getI18n()
+  const { locale, t } = await getI18n()
   const d = t.dashboard
+  const mp = t.map
+  const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
 
   const { data: artist } = await supabase
     .from("artists")
@@ -200,6 +203,30 @@ export default async function DashboardPage() {
       </div>
 
       <BookingsBoard bookings={dashBookings} />
+
+      <BookingsMapSection
+        bookings={list.map((b) => ({
+          id: b.id,
+          city: b.city,
+          venue_name: b.venue_name,
+          event_date: b.event_date,
+          status: b.status,
+          lat: b.lat,
+          lng: b.lng,
+        }))}
+        dateLocale={dateLocale}
+        labels={{
+          title: mp.title,
+          legendPending: mp.legendPending,
+          legendAccepted: mp.legendAccepted,
+          legendPaid: mp.legendPaid,
+          empty: mp.empty,
+          statusPending: mp.statusPending,
+          statusAccepted: mp.statusAccepted,
+          statusPaid: mp.statusPaid,
+          statusCompleted: mp.statusCompleted,
+        }}
+      />
     </main>
   )
 }
