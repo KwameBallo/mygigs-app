@@ -264,219 +264,254 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
   const time = timeRange(b.start_time, b.end_time)
   const place = [b.city, b.venue_name].filter(Boolean).join(" · ")
 
-  const hasActions =
-    isPending || b.status === "accepted" || b.status === "paid"
+  const stripe = isPending
+    ? "var(--brand)"
+    : b.status === "accepted"
+      ? "#f59e0b"
+      : ["paid", "completed"].includes(b.status)
+        ? "#22c55e"
+        : "var(--border)"
 
-  return (
-    <div
-      className={`overflow-hidden rounded-2xl border bg-surface ${
-        u?.urgent ? "border-brand/50" : "border-border"
+  const chevron = (
+    <svg
+      viewBox="0 0 12 12"
+      className={`h-3.5 w-3.5 text-muted transition-transform ${
+        open ? "rotate-180" : ""
       }`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden="true"
     >
-      {/* Compacte rij — tik om te openen voor acties + details */}
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-3 p-3 text-left"
-      >
-        <div className="flex h-11 w-11 flex-none flex-col items-center justify-center rounded-lg bg-surface-2">
-          <span className="text-base font-semibold leading-none">{dayNum}</span>
-          <span className="text-[9px] uppercase text-muted">{monthShort}</span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <StatusBadge status={b.status} />
-            {u && (
-              <span
-                className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
-                  u.urgent ? "bg-brand/15 text-brand" : "bg-surface-2 text-muted"
-                }`}
-              >
-                {u.text}
-              </span>
-            )}
+      <path d="M2.5 4.5 L6 8 L9.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+
+  // Gedeeld detailpaneel (gegevens, bericht, uitbetaling, navigatie/bewijs).
+  const details = (
+    <div className="mt-3 border-t border-border pt-3">
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+        <DetailRow label={d.rowType} value={typeLabel} />
+        <DetailRow label={d.rowOccasion} value={b.occasion} />
+        <DetailRow label={d.rowDate} value={eventDate} />
+        <DetailRow label={d.rowDuration} value={durationVal} />
+        <DetailRow label={d.rowTime} value={timeRange(b.start_time, b.end_time)} />
+        <DetailRow label={d.rowCity} value={b.city} />
+        <DetailRow label={d.rowVenue} value={b.venue_name} />
+        <DetailRow label={d.rowAddress} value={b.address} />
+        {contactUnlocked ? (
+          <DetailRow
+            label={b.booking_type === "zakelijk" ? d.rowCompany : d.rowClient}
+            value={b.company_name ?? b.booker_name}
+          />
+        ) : (
+          <div>
+            <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+              {d.rowClient}
+            </dt>
+            <dd className="mt-0.5 text-sm text-muted">{d.nameAfterAccept}</dd>
           </div>
-          <p className="mt-0.5 truncate text-sm font-medium">
-            {b.occasion ?? typeLabel}
+        )}
+      </dl>
+
+      {b.message && (
+        <div className="mt-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">
+            {d.clientMessage}
           </p>
-          <p className="truncate text-xs text-muted">
-            {[time, place].filter(Boolean).join(" · ") || eventDate}
+          <p className="mt-1 rounded-xl border border-border bg-surface-2 p-3 text-sm">
+            “{b.message}”
           </p>
         </div>
-        <div className="flex flex-none items-center gap-2">
-          <span className="text-sm font-semibold text-brand">
-            {formatEuro(b.gage)}
-          </span>
-          <svg
-            viewBox="0 0 12 12"
-            className={`h-3.5 w-3.5 text-muted transition-transform ${
-              open ? "rotate-180" : ""
+      )}
+
+      <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4 text-sm">
+        <div className="flex items-center justify-between py-0.5">
+          <span className="font-medium">{d.yourGage}</span>
+          <span className="font-semibold text-brand">{formatEuro(b.gage)}</span>
+        </div>
+        <div className="flex items-center justify-between py-0.5 text-muted">
+          <span>{d.clientPays}</span>
+          <span>{formatEuro(b.total)}</span>
+        </div>
+      </div>
+
+      {contactUnlocked && <LocationProof b={b} />}
+
+      {PUBLIC_STATUSES.includes(b.status) && (
+        <form action={toggleBookingPublic} className="mt-4">
+          <input type="hidden" name="booking_id" value={b.id} />
+          <input type="hidden" name="is_public" value={String(!b.is_public)} />
+          <button
+            type="submit"
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+              b.is_public
+                ? "border-brand/50 bg-brand/10 text-brand"
+                : "border-border text-muted hover:border-brand/50"
             }`}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                b.is_public ? "bg-brand" : "bg-muted"
+              }`}
+            />
+            {b.is_public ? d.visibleFans : d.showPublic}
+          </button>
+        </form>
+      )}
+
+      {isPending && (
+        <p className="mt-4 flex items-center gap-2 text-xs text-muted">
+          <svg
+            viewBox="0 0 16 16"
+            className="h-3.5 w-3.5 flex-none"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
             aria-hidden="true"
           >
-            <path d="M2.5 4.5 L6 8 L9.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+            <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
+            <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" strokeLinecap="round" />
           </svg>
+          {d.avgHint}
+        </p>
+      )}
+    </div>
+  )
+
+  // Aanvraag = spotlight: oranje omrande kaart met acties direct zichtbaar.
+  if (isPending) {
+    return (
+      <div className="rounded-2xl border border-brand/60 bg-brand/5 p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium uppercase tracking-wider text-brand">
+            {d.secRequests}
+            {u ? ` · ${u.text}` : ""}
+          </span>
+          <span className="font-semibold text-brand">{formatEuro(b.gage)}</span>
         </div>
-      </button>
+        <p className="mt-2 text-2xl font-semibold leading-none">
+          {dayNum}
+          <span className="ml-1.5 text-sm font-normal text-muted">
+            {monthShort}
+            {time ? ` · ${time}` : ""}
+          </span>
+        </p>
+        <p className="mt-2 font-medium">{b.occasion ?? typeLabel}</p>
+        {place && <p className="text-sm text-muted">{place}</p>}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <form action={updateBookingStatus}>
+            <input type="hidden" name="booking_id" value={b.id} />
+            <input type="hidden" name="status" value="accepted" />
+            <button
+              type="submit"
+              className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
+            >
+              {d.accept}
+            </button>
+          </form>
+          <form action={updateBookingStatus}>
+            <input type="hidden" name="booking_id" value={b.id} />
+            <input type="hidden" name="status" value="declined" />
+            <button
+              type="submit"
+              className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-red-500/50"
+            >
+              {d.decline}
+            </button>
+          </form>
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="ml-auto flex items-center gap-1 rounded-full px-3 py-2 text-xs font-medium text-muted transition hover:text-foreground"
+          >
+            {open ? d.less : d.details}
+            {chevron}
+          </button>
+        </div>
+        {open && details}
+      </div>
+    )
+  }
 
-      {/* Uitgevouwen: acties bovenaan, dan details */}
-      {open && (
-        <div className="border-t border-border px-3 pb-3 pt-3">
-          {hasActions && (
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              {isPending && (
-                <>
-                  <form action={updateBookingStatus}>
-                    <input type="hidden" name="booking_id" value={b.id} />
-                    <input type="hidden" name="status" value="accepted" />
-                    <button
-                      type="submit"
-                      className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
-                    >
-                      {d.accept}
-                    </button>
-                  </form>
-                  <form action={updateBookingStatus}>
-                    <input type="hidden" name="booking_id" value={b.id} />
-                    <input type="hidden" name="status" value="declined" />
-                    <button
-                      type="submit"
-                      className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-red-500/50"
-                    >
-                      {d.decline}
-                    </button>
-                  </form>
-                </>
-              )}
-              {b.status === "accepted" && (
-                <>
-                  <span className="rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium text-muted">
-                    {d.awaitPayment}
-                  </span>
-                  <ChatButton id={b.id} label={d.chatClient} />
-                </>
-              )}
-              {b.status === "paid" && (
-                <>
-                  <ChatButton id={b.id} label={d.chatClient} />
-                  <form action={updateBookingStatus}>
-                    <input type="hidden" name="booking_id" value={b.id} />
-                    <input type="hidden" name="status" value="completed" />
-                    <button
-                      type="submit"
-                      className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
-                    >
-                      {d.markDone}
-                    </button>
-                  </form>
-                </>
-              )}
-            </div>
-          )}
-
-          <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-            <DetailRow label={d.rowType} value={typeLabel} />
-            <DetailRow label={d.rowOccasion} value={b.occasion} />
-            <DetailRow label={d.rowDate} value={eventDate} />
-            <DetailRow label={d.rowDuration} value={durationVal} />
-            <DetailRow
-              label={d.rowTime}
-              value={timeRange(b.start_time, b.end_time)}
-            />
-            <DetailRow label={d.rowCity} value={b.city} />
-            <DetailRow label={d.rowVenue} value={b.venue_name} />
-            <DetailRow label={d.rowAddress} value={b.address} />
-            {contactUnlocked ? (
-              <DetailRow
-                label={b.booking_type === "zakelijk" ? d.rowCompany : d.rowClient}
-                value={b.company_name ?? b.booker_name}
-              />
-            ) : (
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-muted">
-                  {d.rowClient}
-                </dt>
-                <dd className="mt-0.5 text-sm text-muted">
-                  {d.nameAfterAccept}
-                </dd>
-              </div>
-            )}
-          </dl>
-
-          {b.message && (
-            <div className="mt-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">
-                {d.clientMessage}
-              </p>
-              <p className="mt-1 rounded-xl border border-border bg-surface-2 p-3 text-sm">
-                “{b.message}”
-              </p>
-            </div>
-          )}
-
-          {/* Uitbetaling: wat de DJ overhoudt (gage) vs. wat de klant betaalt. */}
-          <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4 text-sm">
-            <div className="flex items-center justify-between py-0.5">
-              <span className="font-medium">{d.yourGage}</span>
-              <span className="font-semibold text-brand">
-                {formatEuro(b.gage)}
+  // Overige boekingen = kaart met status-kleurstreep, compact en inklapbaar.
+  return (
+    <div className="flex overflow-hidden rounded-2xl border border-border bg-surface">
+      <div className="w-1 flex-none" style={{ background: stripe }} />
+      <div className="min-w-0 flex-1">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex w-full items-center gap-3 p-3 text-left"
+        >
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-semibold leading-none">
+                {dayNum}
+                <span className="ml-1 text-[11px] uppercase text-muted">
+                  {monthShort}
+                </span>
               </span>
+              <StatusBadge status={b.status} />
             </div>
-            <div className="flex items-center justify-between py-0.5 text-muted">
-              <span>{d.clientPays}</span>
-              <span>{formatEuro(b.total)}</span>
+            <p className="mt-1 truncate text-sm font-medium">
+              {b.occasion ?? typeLabel}
+            </p>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {time && (
+                <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[11px] text-muted">
+                  {time}
+                </span>
+              )}
+              {place && (
+                <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[11px] text-muted">
+                  {place}
+                </span>
+              )}
             </div>
           </div>
-
-          {/* Locatie, navigatie en aanwezigheidsbewijs (na acceptatie). */}
-          {contactUnlocked && <LocationProof b={b} />}
-
-          {/* Zichtbaar op je publieke profiel (na acceptatie). */}
-          {PUBLIC_STATUSES.includes(b.status) && (
-            <form action={toggleBookingPublic} className="mt-4">
-              <input type="hidden" name="booking_id" value={b.id} />
-              <input type="hidden" name="is_public" value={String(!b.is_public)} />
-              <button
-                type="submit"
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                  b.is_public
-                    ? "border-brand/50 bg-brand/10 text-brand"
-                    : "border-border text-muted hover:border-brand/50"
-                }`}
-              >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    b.is_public ? "bg-brand" : "bg-muted"
-                  }`}
-                />
-                {b.is_public ? d.visibleFans : d.showPublic}
-              </button>
-            </form>
-          )}
-
-          {/* Contactgegevens komen vrij na acceptatie (volgende stap). */}
-          {isPending && (
-            <p className="mt-4 flex items-center gap-2 text-xs text-muted">
-              <svg
-                viewBox="0 0 16 16"
-                className="h-3.5 w-3.5 flex-none"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                aria-hidden="true"
-              >
-                <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
-                <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" strokeLinecap="round" />
-              </svg>
-              {d.avgHint}
-            </p>
-          )}
-        </div>
-      )}
+          <div className="flex flex-none items-center gap-2">
+            <span className="text-sm font-semibold text-brand">
+              {formatEuro(b.gage)}
+            </span>
+            {chevron}
+          </div>
+        </button>
+        {open && (
+          <div className="px-3 pb-3">
+            {(b.status === "accepted" || b.status === "paid") && (
+              <div className="flex flex-wrap items-center gap-2">
+                {b.status === "accepted" && (
+                  <>
+                    <span className="rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium text-muted">
+                      {d.awaitPayment}
+                    </span>
+                    <ChatButton id={b.id} label={d.chatClient} />
+                  </>
+                )}
+                {b.status === "paid" && (
+                  <>
+                    <ChatButton id={b.id} label={d.chatClient} />
+                    <form action={updateBookingStatus}>
+                      <input type="hidden" name="booking_id" value={b.id} />
+                      <input type="hidden" name="status" value="completed" />
+                      <button
+                        type="submit"
+                        className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50 hover:text-brand"
+                      >
+                        {d.markDone}
+                      </button>
+                    </form>
+                  </>
+                )}
+              </div>
+            )}
+            {details}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
