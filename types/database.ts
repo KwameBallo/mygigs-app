@@ -709,6 +709,7 @@ export type Database = {
           message: string | null
           occasion: string | null
           postal_code: string | null
+          reminder_sent_at: string | null
           review_request_sent_at: string | null
           service_fee: number
           shortlist_id: string | null
@@ -750,6 +751,7 @@ export type Database = {
           message?: string | null
           occasion?: string | null
           postal_code?: string | null
+          reminder_sent_at?: string | null
           review_request_sent_at?: string | null
           service_fee: number
           shortlist_id?: string | null
@@ -791,6 +793,7 @@ export type Database = {
           message?: string | null
           occasion?: string | null
           postal_code?: string | null
+          reminder_sent_at?: string | null
           review_request_sent_at?: string | null
           service_fee?: number
           shortlist_id?: string | null
@@ -812,6 +815,41 @@ export type Database = {
           {
             foreignKeyName: "bookings_booker_id_fkey"
             columns: ["booker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1329,6 +1367,10 @@ export type Database = {
     Functions: {
       is_artist_owner: { Args: { a_id: string }; Returns: boolean }
       bookings_due_for_review: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Tables"]["bookings"]["Row"][]
+      }
+      bookings_due_for_reminder: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Tables"]["bookings"]["Row"][]
       }

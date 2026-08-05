@@ -54,6 +54,24 @@ const PUBLIC_STATUSES = ["accepted", "paid", "completed"]
 const CONFIRMED = ["accepted", "paid"]
 const DONE = ["completed", "declined", "cancelled"]
 
+// Is het optreden voorbij? Gebruikt de eindtijd (of het einde van de dag als er
+// geen tijd is), inclusief optredens die middernacht overschrijden.
+function eventEnded(b: DashBooking): boolean {
+  const [y, m, day] = b.event_date.split("-").map(Number)
+  let endMinutes = 24 * 60
+  if (b.start_time && b.end_time) {
+    const [sh, sm] = b.start_time.split(":").map(Number)
+    const [eh, em] = b.end_time.split(":").map(Number)
+    let s = sh * 60 + sm
+    let e = eh * 60 + em
+    if (e <= s) e += 1440 // nacht-overschrijdend
+    endMinutes = e
+  }
+  const end = new Date(y, m - 1, day, 0, 0, 0, 0)
+  end.setMinutes(endMinutes)
+  return end.getTime() < Date.now()
+}
+
 // Hoeveel dagen geleden de aanvraag binnenkwam, voor urgentie-weergave.
 function daysAgo(iso: string) {
   const ms = Date.now() - new Date(iso).getTime()
@@ -183,13 +201,22 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
       (a, b) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     )
-  const upcoming = bookings
-    .filter((b) => CONFIRMED.includes(b.status))
+  const confirmed = bookings.filter((b) => CONFIRMED.includes(b.status))
+  // Open = bevestigde optredens die nog moeten komen. Verstreken optredens
+  // schuiven naar Afgerond zodra hun eindtijd voorbij is.
+  const upcoming = confirmed
+    .filter((b) => !eventEnded(b))
     .sort(
       (a, b) =>
         new Date(a.event_date).getTime() - new Date(b.event_date).getTime(),
     )
-  const done = bookings.filter((b) => DONE.includes(b.status))
+  const done = [
+    ...bookings.filter((b) => DONE.includes(b.status)),
+    ...confirmed.filter((b) => eventEnded(b)),
+  ].sort(
+    (a, b) =>
+      new Date(b.event_date).getTime() - new Date(a.event_date).getTime(),
+  )
 
   return (
     <div className="mt-8 flex flex-col gap-8">

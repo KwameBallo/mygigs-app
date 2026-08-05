@@ -9,6 +9,7 @@ import {
 import { LogoutIcon, Icon } from "@/components/icons"
 import { AiAssistant } from "@/components/ai-assistant"
 import { OnboardingTour } from "@/components/onboarding-tour"
+import { PushOptin } from "@/components/push-optin"
 import { getProfile } from "@/lib/auth"
 import { getUnreadCount } from "@/lib/data/messages"
 import { getPendingBookingCount } from "@/lib/data/bookings"
@@ -259,7 +260,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto">
+          {profile && <PushOptin />}
+          {children}
+        </main>
 
         {/* Mobile bottom nav */}
         <div className="safe-bottom border-t border-border bg-surface lg:hidden">

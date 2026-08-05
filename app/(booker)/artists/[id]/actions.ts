@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { priceBreakdown, VAT_RATE, formatEuro } from "@/lib/utils/pricing"
 import { getI18n } from "@/lib/i18n"
 import { sendNewRequestToDJ, getUserEmail } from "@/lib/email"
+import { sendPushToUser } from "@/lib/push"
 import { pdokLookup } from "@/lib/geo"
 import {
   rangeHours,
@@ -245,6 +246,27 @@ export async function createBooking(formData: FormData) {
     }
   } catch (e) {
     console.error("new-request email failed:", e)
+  }
+
+  // Push-melding op het moment van boeken — naar de DJ én de organisator.
+  // Best-effort: mag de boeking nooit blokkeren.
+  try {
+    await Promise.all([
+      artist.user_id
+        ? sendPushToUser(artist.user_id, {
+            title: "Je hebt een boeking! 🎧",
+            body: "Check je informatie en stuur een berichtje.",
+            url: "/dashboard",
+          })
+        : null,
+      sendPushToUser(user.id, {
+        title: "Je boeking staat klaar!",
+        body: "Check je informatie en stuur de DJ een berichtje.",
+        url: "/bookings",
+      }),
+    ])
+  } catch (e) {
+    console.error("new-request push failed:", e)
   }
 
   redirect("/bookings?created=1")

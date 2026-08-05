@@ -11,6 +11,12 @@ const nl = {
     dashboard: "Dashboard",
     bookings: "Boekingen",
   },
+  push: {
+    title: "Meldingen aanzetten",
+    body: "Krijg een seintje bij nieuwe boekingen en herinneringen.",
+    enable: "Aanzetten",
+    dismiss: "Niet nu",
+  },
   home: {
     brandTagline: "Het nummer 1 boekingsplatform.",
     bookDj: "Boek een DJ",
@@ -665,6 +671,12 @@ const en: typeof nl = {
     logout: "Log out",
     dashboard: "Dashboard",
     bookings: "Bookings",
+  },
+  push: {
+    title: "Turn on notifications",
+    body: "Get a ping for new bookings and reminders.",
+    enable: "Turn on",
+    dismiss: "Not now",
   },
   home: {
     brandTagline: "The number 1 booking platform.",
