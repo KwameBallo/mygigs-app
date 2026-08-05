@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
 import { AvailabilityCalendar } from "./availability-calendar"
+import { GigSchedule } from "./gig-schedule"
 
 export default async function AvailabilityPage() {
   const supabase = await createClient()
@@ -52,7 +53,7 @@ export default async function AvailabilityPage() {
   // uit een 'hele dag'-blokkade. Zo blijft de DJ op andere tijden boekbaar.
   const { data: bookedGigs } = await supabase
     .from("bookings")
-    .select("id, event_date, start_time, end_time, city")
+    .select("id, event_date, start_time, end_time, city, venue_name, address, status")
     .eq("artist_id", artist.id)
     .in("status", ["accepted", "paid", "completed"])
     .gte("event_date", today)
@@ -69,38 +70,21 @@ export default async function AvailabilityPage() {
       </div>
 
       {booked.length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-sm font-semibold text-muted">{a.bookedDays}</h2>
-          <div className="mt-2 flex flex-col gap-2">
-            {booked.map((s) => {
-              const slot =
-                s.start_time && s.end_time
-                  ? `${s.start_time.slice(0, 5)}–${s.end_time.slice(0, 5)}`
-                  : null
-              return (
-                <div
-                  key={s.id}
-                  className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-border bg-surface p-3"
-                >
-                  <span className="h-2.5 w-2.5 flex-none rounded-full bg-red-400" />
-                  <span className="text-sm font-medium">
-                    {new Date(s.event_date).toLocaleDateString(dateLocale, {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </span>
-                  {slot && (
-                    <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-300">
-                      {slot}
-                    </span>
-                  )}
-                  {s.city && <span className="text-xs text-muted">{s.city}</span>}
-                </div>
-              )
-            })}
-          </div>
+        <div className="mt-10">
+          <h2 className="text-xl font-semibold tracking-tight">
+            {a.scheduleTitle}
+          </h2>
+          <p className="mt-1 text-sm text-muted">{a.scheduleIntro}</p>
+          <GigSchedule
+            gigs={booked}
+            dateLocale={dateLocale}
+            labels={{
+              timeTbd: a.scheduleTimeTbd,
+              accepted: a.gigAccepted,
+              paid: a.gigPaid,
+              done: a.gigDone,
+            }}
+          />
         </div>
       )}
     </main>
