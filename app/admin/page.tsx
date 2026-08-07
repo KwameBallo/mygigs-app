@@ -7,15 +7,26 @@ import { LogoutIcon } from "@/components/icons"
 import { formatEuro } from "@/lib/utils/pricing"
 import { roleLabel } from "@/lib/roles"
 import { getI18n } from "@/lib/i18n"
-import { approveDjApplication, rejectDjApplication } from "./actions"
+import {
+  approveDjApplication,
+  rejectDjApplication,
+  promoteToAdmin,
+  revokeAdmin,
+} from "./actions"
+import { startOfMonthISO } from "@/lib/dj-tier"
 import { dict } from "./i18n"
 
 export const dynamic = "force-dynamic"
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ admin?: string }>
+}) {
   const profile = await getProfile()
   if (!profile || profile.role !== "admin") redirect("/")
 
+  const { admin: adminMsg } = await searchParams
   const { locale } = await getI18n()
   const d = dict[locale]
   const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
@@ -26,35 +37,47 @@ export default async function AdminPage() {
     })
 
   const admin = createAdminClient()
-  const [uRes, aRes, bRes, fRes, logRes, appRes] = await Promise.all([
-    admin
-      .from("profiles")
-      .select("id, full_name, email, role, created_at")
-      .order("created_at", { ascending: false }),
-    admin
-      .from("artists")
-      .select("id, stage_name, home_city, rating, reviews_count, base_gage, verified")
-      .order("rating", { ascending: false }),
-    admin
-      .from("bookings")
-      .select("id, status, total, service_fee, event_date, city, created_at")
-      .order("created_at", { ascending: false }),
-    admin
-      .from("chat_flags")
-      .select("id, reason, created_at")
-      .order("created_at", { ascending: false })
-      .limit(15),
-    admin
-      .from("audit_log")
-      .select("id, action, actor_id, target_type, target_id, created_at")
-      .order("created_at", { ascending: false })
-      .limit(25),
-    admin
-      .from("dj_applications")
-      .select("user_id, motivation, created_at")
-      .eq("status", "pending")
-      .order("created_at", { ascending: true }),
-  ])
+  const monthStart = startOfMonthISO()
+  const [uRes, aRes, bRes, fRes, logRes, appRes, revRes, payRes] =
+    await Promise.all([
+      admin
+        .from("profiles")
+        .select("id, full_name, email, role, created_at")
+        .order("created_at", { ascending: false }),
+      admin
+        .from("artists")
+        .select(
+          "id, stage_name, home_city, rating, reviews_count, base_gage, verified",
+        )
+        .order("rating", { ascending: false }),
+      admin
+        .from("bookings")
+        .select(
+          "id, status, total, service_fee, event_date, start_time, end_time, city, venue_name, created_at",
+        )
+        .order("created_at", { ascending: false }),
+      admin
+        .from("chat_flags")
+        .select("id, reason, created_at")
+        .order("created_at", { ascending: false })
+        .limit(15),
+      admin
+        .from("audit_log")
+        .select("id, action, actor_id, target_type, target_id, created_at")
+        .order("created_at", { ascending: false })
+        .limit(25),
+      admin
+        .from("dj_applications")
+        .select("user_id, motivation, created_at")
+        .eq("status", "pending")
+        .order("created_at", { ascending: true }),
+      admin
+        .from("reviews")
+        .select("id, artist_id, rating, comment, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20),
+      admin.from("payouts").select("amount, status"),
+    ])
 
   const users = uRes.data ?? []
   const artists = aRes.data ?? []
@@ -62,6 +85,8 @@ export default async function AdminPage() {
   const flags = fRes.data ?? []
   const auditLogs = logRes.data ?? []
   const pendingApps = appRes.data ?? []
+  const reviews = revRes.data ?? []
+  const payouts = payRes.data ?? []
 
   const byRole = (r: string) => users.filter((u) => u.role === r).length
   const avgRating =
@@ -79,6 +104,20 @@ export default async function AdminPage() {
     "paid",
   ] as const
   const byStatus = (st: string) => bookings.filter((b) => b.status === st).length
+  const monthBookings = bookings.filter((b) => b.created_at >= monthStart).length
+  const paidOut = payouts
+    .filter((p) => p.status === "paid")
+    .reduce((s, p) => s + (p.amount ?? 0), 0)
+  const reviewsCount = artists.reduce((s, a) => s + (a.reviews_count ?? 0), 0)
+  const admins = users.filter((u) => u.role === "admin")
+  const fmtTime = (t: string | null) => (t ? t.slice(0, 5) : null)
+  const timeRange = (s: string | null, e: string | null) => {
+    const a = fmtTime(s)
+    const b = fmtTime(e)
+    return a && b ? `${a}–${b}` : (a ?? b ?? "—")
+  }
+  const artistName = (id: string) =>
+    artists.find((a) => a.id === id)?.stage_name ?? "—"
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -114,13 +153,28 @@ export default async function AdminPage() {
           {d.subtitle}
         </p>
 
+        {(adminMsg === "added" || adminMsg === "notfound") && (
+          <div
+            className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+              adminMsg === "added"
+                ? "border-green-500/40 bg-green-500/10 text-green-300"
+                : "border-red-500/40 bg-red-500/10 text-red-300"
+            }`}
+          >
+            {adminMsg === "added" ? d.adminAdded : d.adminNotFound}
+          </div>
+        )}
+
         {/* Metric-kaarten */}
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <Metric label={d.metricUsers} value={String(users.length)} />
           <Metric label={d.metricDjs} value={String(artists.length)} />
           <Metric label={d.metricBookings} value={String(bookings.length)} />
+          <Metric label={d.metricMonth} value={String(monthBookings)} />
           <Metric label={d.metricRevenue} value={formatEuro(omzet)} />
           <Metric label={d.metricFee} value={formatEuro(fee)} />
+          <Metric label={d.metricPayouts} value={formatEuro(paidOut)} />
+          <Metric label={d.metricReviews} value={String(reviewsCount)} />
           <Metric label={d.metricFlags} value={String(flags.length)} />
         </div>
 
@@ -170,21 +224,90 @@ export default async function AdminPage() {
           />
         </Panel>
 
-        {/* Recente boekingen */}
+        {/* Recente boekingen (met tijd) */}
         <Panel title={d.recentBookings} className="mt-4">
           <Table
-            head={[d.colDate, d.colCity, d.colStatus, d.colTotal, d.colFee]}
+            head={[d.colDate, d.colTime, d.colCity, d.colStatus, d.colTotal, d.colFee]}
             rows={bookings
-              .slice(0, 15)
+              .slice(0, 20)
               .map((b) => [
                 b.event_date ?? "—",
-                b.city ?? "—",
+                timeRange(b.start_time, b.end_time),
+                b.city ?? b.venue_name ?? "—",
                 b.status,
                 formatEuro(b.total ?? 0),
                 formatEuro(b.service_fee ?? 0),
               ])}
             empty={d.emptyBookings}
           />
+        </Panel>
+
+        {/* Recente reviews */}
+        <Panel title={d.reviewsTitle} className="mt-4">
+          <Table
+            head={[d.colDj, d.colRating, d.colReview, d.colWhen]}
+            rows={reviews.map((r) => [
+              artistName(r.artist_id),
+              `${rating1(r.rating ?? 0)} ★`,
+              r.comment ?? "—",
+              r.created_at
+                ? new Date(r.created_at).toLocaleDateString(dateLocale)
+                : "—",
+            ])}
+            empty={d.emptyReviews}
+          />
+        </Panel>
+
+        {/* Beheerders */}
+        <Panel title={`${d.adminsTitle} (${admins.length})`} className="mt-4">
+          <form
+            action={promoteToAdmin}
+            className="mb-4 flex flex-wrap items-center gap-2"
+          >
+            <input
+              name="email"
+              type="email"
+              required
+              placeholder={d.addAdminLabel}
+              className="input h-9 flex-1"
+            />
+            <button
+              type="submit"
+              className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
+            >
+              {d.addAdminBtn}
+            </button>
+          </form>
+          <div className="flex flex-col gap-2">
+            {admins.map((u) => (
+              <div
+                key={u.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-2 p-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">
+                    {u.full_name ?? u.email ?? u.id.slice(0, 8)}
+                  </p>
+                  <p className="truncate text-xs text-muted">{u.email}</p>
+                </div>
+                {u.id === profile.id ? (
+                  <span className="rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
+                    {d.you}
+                  </span>
+                ) : (
+                  <form action={revokeAdmin}>
+                    <input type="hidden" name="user_id" value={u.id} />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-border px-3 py-1 text-xs text-muted transition hover:border-red-400/50 hover:text-red-400"
+                    >
+                      {d.revoke}
+                    </button>
+                  </form>
+                )}
+              </div>
+            ))}
+          </div>
         </Panel>
 
         {/* Gebruikers */}
