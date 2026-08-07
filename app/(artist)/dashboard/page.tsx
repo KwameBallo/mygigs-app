@@ -117,7 +117,9 @@ export default async function DashboardPage() {
             <h1 className="text-3xl font-semibold tracking-tight">
               {artist.stage_name}
             </h1>
-            <DjTierBadge tier={myTier} label={t.djTier[myTier.key]} />
+            {myTier && (
+              <DjTierBadge tier={myTier} label={t.djTier[myTier.key]} />
+            )}
           </div>
           <div className="mt-2">
             <Stars rating={artist.rating} count={artist.reviews_count} />

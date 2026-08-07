@@ -3,7 +3,8 @@
 // - per 14 aaneengesloten dagen zonder nieuwe boeking zak je één rang.
 //
 // Drempels (boekingen deze maand):
-//   0–5   → actief  (blauw)
+//   0     → geen badge (niet actief)
+//   1–5   → actief  (blauw)
 //   6–14  → gewild  (geel)
 //   15+   → hot     (rood)
 
@@ -34,7 +35,9 @@ export function computeDjTier(
   countMonth: number,
   lastBookingISO: string | null,
   now: number = Date.now(),
-): DjTier {
+): DjTier | null {
+  // Geen boekingen deze maand → geen badge (niet actief).
+  if (countMonth <= 0) return null
   let level = countMonth >= 15 ? 2 : countMonth >= 6 ? 1 : 0
 
   // Degradatie bij inactiviteit: per 14 dagen zonder boeking één rang omlaag.

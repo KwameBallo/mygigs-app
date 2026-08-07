@@ -1,6 +1,7 @@
 import type { DjTier } from "@/lib/dj-tier"
 
-// Statusbadge (sterretje in de rang-kleur) naast de DJ-naam. Puur display.
+// Statusbadge: alleen een gekleurd sterretje naast de DJ-naam (blauw/geel/rood).
+// De rang-naam komt als tooltip mee voor toegankelijkheid.
 export function DjTierBadge({
   tier,
   label,
@@ -12,13 +13,18 @@ export function DjTierBadge({
 }) {
   return (
     <span
-      className={`inline-flex flex-none items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${className}`}
-      style={{ background: `${tier.color}22`, color: tier.color }}
+      className={`inline-flex flex-none items-center ${className}`}
+      title={label}
+      aria-label={label}
     >
-      <svg viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill={tier.color}
+        aria-hidden="true"
+      >
         <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 18.9 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9L12 2.5z" />
       </svg>
-      {label}
     </span>
   )
 }
