@@ -151,9 +151,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const bottomItems: NavItem[] = isArtist
     ? [
         items.dashboard,
-        items.events,
-        items.messages,
+        items.availability,
         items.earnings,
+        items.messages,
         items.profile,
       ]
     : profile?.role === "admin"
