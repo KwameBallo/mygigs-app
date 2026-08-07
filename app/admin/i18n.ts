@@ -1,5 +1,13 @@
 const nl = {
   badge: "Beheer",
+  loginTitle: "Beheer-login",
+  loginSubtitle: "Alleen voor beheerders.",
+  emailLabel: "E-mail",
+  passwordLabel: "Wachtwoord",
+  loginBtn: "Inloggen",
+  loginErrSignin: "Inloggen mislukt. Controleer je gegevens.",
+  loginErrNotAdmin: "Dit account heeft geen beheerdersrechten.",
+  loginErrTooMany: "Te veel pogingen. Probeer het later opnieuw.",
   toApp: "Naar de app",
   logout: "Uitloggen",
   dashboard: "Dashboard",
@@ -63,6 +71,14 @@ const nl = {
 
 const en: typeof nl = {
   badge: "Admin",
+  loginTitle: "Admin login",
+  loginSubtitle: "Admins only.",
+  emailLabel: "Email",
+  passwordLabel: "Password",
+  loginBtn: "Log in",
+  loginErrSignin: "Login failed. Check your details.",
+  loginErrNotAdmin: "This account is not an admin.",
+  loginErrTooMany: "Too many attempts. Try again later.",
   toApp: "To the app",
   logout: "Log out",
   dashboard: "Dashboard",

@@ -24,7 +24,7 @@ export default async function AdminPage({
   searchParams: Promise<{ admin?: string }>
 }) {
   const profile = await getProfile()
-  if (!profile || profile.role !== "admin") redirect("/")
+  if (!profile || profile.role !== "admin") redirect("/admin/login")
 
   const { admin: adminMsg } = await searchParams
   const { locale } = await getI18n()
