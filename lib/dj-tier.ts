@@ -1,10 +1,10 @@
 // DJ-activiteitsrang. Puur berekend (geen opgeslagen staat / cron nodig):
-// - op basis van het aantal bevestigde boekingen in de laatste 30 dagen;
+// - op basis van het aantal bevestigde boekingen in de huidige kalendermaand;
 // - per 14 aaneengesloten dagen zonder nieuwe boeking zak je één rang.
 //
-// Drempels (boekingen / 30 dagen):
-//   0–4   → actief  (blauw)
-//   5–14  → gewild  (geel)
+// Drempels (boekingen deze maand):
+//   0–5   → actief  (blauw)
+//   6–14  → gewild  (geel)
 //   15+   → hot     (rood)
 
 export type TierKey = "actief" | "gewild" | "hot"
@@ -24,12 +24,18 @@ const TIERS: DjTier[] = [
 // Dagen zonder boeking voordat je een rang zakt.
 export const DECAY_DAYS = 14
 
+// Begin van de huidige kalendermaand (ISO), voor de maand-telling.
+export function startOfMonthISO(now: number = Date.now()): string {
+  const d = new Date(now)
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString()
+}
+
 export function computeDjTier(
-  count30d: number,
+  countMonth: number,
   lastBookingISO: string | null,
   now: number = Date.now(),
 ): DjTier {
-  let level = count30d >= 15 ? 2 : count30d >= 5 ? 1 : 0
+  let level = countMonth >= 15 ? 2 : countMonth >= 6 ? 1 : 0
 
   // Degradatie bij inactiviteit: per 14 dagen zonder boeking één rang omlaag.
   if (level > 0 && lastBookingISO) {

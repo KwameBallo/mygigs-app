@@ -6,7 +6,7 @@ import { getI18n } from "@/lib/i18n"
 import { BookingsBoard, type DashBooking } from "./bookings-board"
 import { BookingsMapSection } from "./bookings-map-section"
 import { DjTierBadge } from "@/components/dj-tier-badge"
-import { computeDjTier } from "@/lib/dj-tier"
+import { computeDjTier, startOfMonthISO } from "@/lib/dj-tier"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -96,12 +96,12 @@ export default async function DashboardPage() {
     }
   })
 
-  // Eigen activiteitsrang (bevestigde boekingen laatste 30 dagen + degradatie).
-  const since30 = Date.now() - 30 * 86_400_000
+  // Eigen activiteitsrang (bevestigde boekingen deze kalendermaand + degradatie).
+  const monthStart = new Date(startOfMonthISO()).getTime()
   const recentConfirmed = list.filter(
     (b) =>
       ["accepted", "paid", "completed"].includes(b.status) &&
-      new Date(b.created_at).getTime() >= since30,
+      new Date(b.created_at).getTime() >= monthStart,
   )
   const lastBooking = recentConfirmed.reduce(
     (m, b) => (b.created_at > m ? b.created_at : m),

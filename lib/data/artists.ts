@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { computeDjTier, type DjTier } from "@/lib/dj-tier"
+import { computeDjTier, startOfMonthISO, type DjTier } from "@/lib/dj-tier"
 import type { Tables, Enums } from "@/types/database"
 
 export type Genre = Tables<"genres">
@@ -14,18 +14,17 @@ export type Artist = Tables<"artists"> & {
 }
 
 // Rekent per DJ de activiteitsrang uit op basis van bevestigde boekingen in de
-// laatste 30 dagen (+ degradatie bij inactiviteit). Via de service-role: alleen
-// tellingen/datums, geen persoonsgegevens.
+// huidige kalendermaand (+ degradatie bij inactiviteit). Via de service-role:
+// alleen tellingen/datums, geen persoonsgegevens.
 async function attachTiers(artists: Artist[]) {
   if (artists.length === 0) return
   const ids = artists.map((a) => a.id)
-  const since = new Date(Date.now() - 30 * 86_400_000).toISOString()
   const { data: bk } = await createAdminClient()
     .from("bookings")
     .select("artist_id, created_at")
     .in("artist_id", ids)
     .in("status", ["accepted", "paid", "completed"])
-    .gte("created_at", since)
+    .gte("created_at", startOfMonthISO())
 
   const agg = new Map<string, { count: number; last: string }>()
   for (const b of bk ?? []) {
