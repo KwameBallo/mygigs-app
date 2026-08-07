@@ -5,6 +5,7 @@ import { BookForm } from "./book-form"
 import { EquipmentPlanner, type MiniSupplier } from "./equipment-planner"
 import { EquipmentSelectionProvider } from "./equipment-selection"
 import { getArtist, getArtistReviews, getPublicShows } from "@/lib/data/artists"
+import { DjTierBadge } from "@/components/dj-tier-badge"
 import { getSuppliers, type Supplier } from "@/lib/data/suppliers"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getViewer } from "@/lib/auth"
@@ -40,7 +41,7 @@ export default async function ArtistPage({
 }) {
   const { id } = await params
   const { error } = await searchParams
-  const { locale } = await getI18n()
+  const { locale, t } = await getI18n()
   const d = dict[locale]
   const [artist, reviews, shows, viewer] = await Promise.all([
     getArtist(id),
@@ -187,6 +188,12 @@ export default async function ArtistPage({
                   <h1 className="text-3xl font-semibold tracking-tight">
                     {artist.stage_name}
                   </h1>
+                  {artist.tier && (
+                    <DjTierBadge
+                      tier={artist.tier}
+                      label={t.djTier[artist.tier.key]}
+                    />
+                  )}
                   {artist.verified && (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 text-xs font-medium text-black">
                       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">

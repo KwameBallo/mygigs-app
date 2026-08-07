@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { computeDjTier, type DjTier } from "@/lib/dj-tier"
 import type { Tables, Enums } from "@/types/database"
 
 export type Genre = Tables<"genres">
@@ -7,6 +9,37 @@ export type Artist = Tables<"artists"> & {
   // Prijs in de gekozen provincie (incl. reiskosten); alleen gevuld als er
   // op provincie gefilterd wordt.
   province_gage?: number | null
+  // Activiteitsrang (actief/gewild/hot) — organisatoren zien wie in trek is.
+  tier?: DjTier | null
+}
+
+// Rekent per DJ de activiteitsrang uit op basis van bevestigde boekingen in de
+// laatste 30 dagen (+ degradatie bij inactiviteit). Via de service-role: alleen
+// tellingen/datums, geen persoonsgegevens.
+async function attachTiers(artists: Artist[]) {
+  if (artists.length === 0) return
+  const ids = artists.map((a) => a.id)
+  const since = new Date(Date.now() - 30 * 86_400_000).toISOString()
+  const { data: bk } = await createAdminClient()
+    .from("bookings")
+    .select("artist_id, created_at")
+    .in("artist_id", ids)
+    .in("status", ["accepted", "paid", "completed"])
+    .gte("created_at", since)
+
+  const agg = new Map<string, { count: number; last: string }>()
+  for (const b of bk ?? []) {
+    const cur = agg.get(b.artist_id)
+    if (!cur) agg.set(b.artist_id, { count: 1, last: b.created_at })
+    else {
+      cur.count++
+      if (b.created_at > cur.last) cur.last = b.created_at
+    }
+  }
+  for (const a of artists) {
+    const info = agg.get(a.id)
+    a.tier = computeDjTier(info?.count ?? 0, info?.last ?? null)
+  }
 }
 
 export type ArtistFilters = {
@@ -133,6 +166,7 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
     // secundair; we laten de reviews-sortering leidend.
   }
 
+  await attachTiers(rows)
   return rows
 }
 
@@ -143,7 +177,9 @@ export async function getArtist(id: string): Promise<Artist | null> {
     .select("*, genres!artists_genre_id_fkey(*)")
     .eq("id", id)
     .maybeSingle()
-  return (data as Artist | null) ?? null
+  const artist = (data as Artist | null) ?? null
+  if (artist) await attachTiers([artist])
+  return artist
 }
 
 // Public upcoming shows for an artist (privacy: no booker, no price).

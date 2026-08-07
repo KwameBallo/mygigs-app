@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
 import { BookingsBoard, type DashBooking } from "./bookings-board"
 import { BookingsMapSection } from "./bookings-map-section"
+import { DjTierBadge } from "@/components/dj-tier-badge"
+import { computeDjTier } from "@/lib/dj-tier"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -94,13 +96,29 @@ export default async function DashboardPage() {
     }
   })
 
+  // Eigen activiteitsrang (bevestigde boekingen laatste 30 dagen + degradatie).
+  const since30 = Date.now() - 30 * 86_400_000
+  const recentConfirmed = list.filter(
+    (b) =>
+      ["accepted", "paid", "completed"].includes(b.status) &&
+      new Date(b.created_at).getTime() >= since30,
+  )
+  const lastBooking = recentConfirmed.reduce(
+    (m, b) => (b.created_at > m ? b.created_at : m),
+    "",
+  )
+  const myTier = computeDjTier(recentConfirmed.length, lastBooking || null)
+
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            {artist.stage_name}
-          </h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-3xl font-semibold tracking-tight">
+              {artist.stage_name}
+            </h1>
+            <DjTierBadge tier={myTier} label={t.djTier[myTier.key]} />
+          </div>
           <div className="mt-2">
             <Stars rating={artist.rating} count={artist.reviews_count} />
           </div>

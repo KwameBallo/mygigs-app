@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { Stars } from "@/components/stars"
+import { DjTierBadge } from "@/components/dj-tier-badge"
 import { formatEuro } from "@/lib/utils/pricing"
 import { formatFollowers } from "@/lib/utils/format"
 import { haversineKm } from "@/lib/utils/geo"
@@ -588,6 +589,12 @@ function ListCard({
             <h3 className="flex min-w-0 items-center gap-1.5 font-semibold">
               <span className="truncate">{artist.stage_name}</span>
               {artist.verified && <VerifiedBadge />}
+              {artist.tier && (
+                <DjTierBadge
+                  tier={artist.tier}
+                  label={t.djTier[artist.tier.key]}
+                />
+              )}
             </h3>
             {artist.online && (
               <span className="mt-1 h-2 w-2 flex-none rounded-full bg-green-400" />

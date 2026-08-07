@@ -17,6 +17,11 @@ const nl = {
     enable: "Aanzetten",
     dismiss: "Niet nu",
   },
+  djTier: {
+    actief: "Actief",
+    gewild: "Gewild",
+    hot: "Hot",
+  },
   home: {
     brandTagline: "Het nummer 1 boekingsplatform.",
     bookDj: "Boek een DJ",
@@ -677,6 +682,11 @@ const en: typeof nl = {
     body: "Get a ping for new bookings and reminders.",
     enable: "Turn on",
     dismiss: "Not now",
+  },
+  djTier: {
+    actief: "Active",
+    gewild: "In demand",
+    hot: "Hot",
   },
   home: {
     brandTagline: "The number 1 booking platform.",
