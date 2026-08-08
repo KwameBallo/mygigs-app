@@ -1,14 +1,23 @@
-import sharp from "sharp"
-import { readFileSync } from "node:fs"
+import { Resvg } from "@resvg/resvg-js"
+import { readFileSync, writeFileSync } from "node:fs"
 
-const svg = readFileSync("app/icon.svg")
+const svg = readFileSync("app/icon.svg", "utf8")
+const font = readFileSync("scripts/geist-bold.ttf")
 
-async function make(size, out) {
-  await sharp(svg, { density: 384 }).resize(size, size).png().toFile(out)
+function make(size, out) {
+  const r = new Resvg(svg, {
+    fitTo: { mode: "width", value: size },
+    font: {
+      fontBuffers: [font],
+      defaultFontFamily: "Geist",
+      loadSystemFonts: false,
+    },
+  })
+  writeFileSync(out, r.render().asPng())
   console.log("wrote", out, size)
 }
 
-await make(512, "public/icon-512.png")
-await make(192, "public/icon-192.png")
-await make(180, "app/apple-icon.png")
+make(512, "public/icon-512.png")
+make(192, "public/icon-192.png")
+make(180, "app/apple-icon.png")
 console.log("done")
