@@ -80,6 +80,7 @@ export function AvailabilityCalendar({
   const [draftEnd, setDraftEnd] = useState("")
   const [draftAllDay, setDraftAllDay] = useState(true)
   const [confirming, setConfirming] = useState(false)
+  const [removeConfirming, setRemoveConfirming] = useState(false)
   const [timeErr, setTimeErr] = useState(false)
 
   // Zet het concept klaar zodra je een dag kiest (of verse serverdata binnenkomt).
@@ -90,6 +91,7 @@ export function AvailabilityCalendar({
     setDraftStart(tm.start)
     setDraftEnd(tm.end)
     setConfirming(false)
+    setRemoveConfirming(false)
     setTimeErr(false)
   }, [selected, times])
 
@@ -290,11 +292,31 @@ export function AvailabilityCalendar({
               </button>
             </div>
           </div>
+        ) : removeConfirming ? (
+          <div className="mt-4 rounded-xl border border-red-500/40 bg-surface p-3">
+            <p className="text-sm font-medium">{a.removeDayQ}</p>
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => removeDay(dateStr)}
+                className="rounded-full bg-red-500 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-red-600"
+              >
+                {a.removeYes}
+              </button>
+              <button
+                type="button"
+                onClick={() => setRemoveConfirming(false)}
+                className="rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted transition hover:text-foreground"
+              >
+                {a.confirmBack}
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="mt-4 flex items-center justify-between gap-3">
             <button
               type="button"
-              onClick={() => removeDay(dateStr)}
+              onClick={() => setRemoveConfirming(true)}
               className="rounded-full border border-red-500/40 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-500/10"
             >
               {a.setUnavailable}

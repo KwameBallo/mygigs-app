@@ -328,6 +328,8 @@ const nl = {
     confirmBack: "Terug",
     timeError: "Kies een begintijd én eindtijd (begin vóór eind).",
     scheduleApplied: "Doorgevoerd ✓",
+    removeDayQ: "Weet je zeker dat je deze dag wilt verwijderen?",
+    removeYes: "Ja, verwijderen",
     setUnavailable: "Niet meer beschikbaar",
     weekdays: ["ma", "di", "wo", "do", "vr", "za", "zo"],
     months: [
@@ -998,6 +1000,8 @@ const en: typeof nl = {
     confirmBack: "Back",
     timeError: "Pick a start and end time (start before end).",
     scheduleApplied: "Applied ✓",
+    removeDayQ: "Are you sure you want to remove this day?",
+    removeYes: "Yes, remove",
     setUnavailable: "Mark unavailable",
     weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     months: [
