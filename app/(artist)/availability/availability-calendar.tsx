@@ -75,6 +75,44 @@ export function AvailabilityCalendar({
 
   const [selected, setSelected] = useState<string | null>(null)
 
+  // Concept-schema voor de gekozen dag — pas na bevestiging doorvoeren.
+  const [draftStart, setDraftStart] = useState("")
+  const [draftEnd, setDraftEnd] = useState("")
+  const [draftAllDay, setDraftAllDay] = useState(true)
+  const [confirming, setConfirming] = useState(false)
+  const [timeErr, setTimeErr] = useState(false)
+
+  // Zet het concept klaar zodra je een dag kiest (of verse serverdata binnenkomt).
+  useEffect(() => {
+    if (!selected) return
+    const tm = times[selected] ?? { start: "", end: "" }
+    setDraftAllDay(!tm.start && !tm.end)
+    setDraftStart(tm.start)
+    setDraftEnd(tm.end)
+    setConfirming(false)
+    setTimeErr(false)
+  }, [selected, times])
+
+  // Stap 1: klik op 'Schema doorvoeren' — valideer en vraag om bevestiging.
+  function requestApply() {
+    if (!draftAllDay && (!draftStart || !draftEnd || draftStart >= draftEnd)) {
+      setTimeErr(true)
+      return
+    }
+    setTimeErr(false)
+    setConfirming(true)
+  }
+  // Stap 2: bevestigd — nu pas opslaan.
+  function applySchedule(dateStr: string) {
+    persistTimes(
+      dateStr,
+      draftAllDay
+        ? { start: "", end: "" }
+        : { start: draftStart, end: draftEnd },
+    )
+    setSelected(null)
+  }
+
   const [ty, tmonth] = today.split("-").map(Number) // jaar, maand (1-12)
   const [view, setView] = useState({ y: ty, m: tmonth - 1 }) // m = 0-11
   const [, startTransition] = useTransition()
@@ -153,8 +191,6 @@ export function AvailabilityCalendar({
   }
 
   function renderEditor(dateStr: string) {
-    const tm = times[dateStr] ?? { start: "", end: "" }
-    const allDay = !tm.start && !tm.end
     return (
       <div className="col-span-7 mt-1 rounded-xl border border-brand/40 bg-surface-2 p-4">
         <div className="flex items-start justify-between gap-3">
@@ -175,52 +211,103 @@ export function AvailabilityCalendar({
           </button>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => persistTimes(dateStr, { start: "", end: "" })}
-            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-              allDay
-                ? "border-brand bg-brand/20 text-brand"
-                : "border-border text-muted hover:text-foreground"
-            }`}
-          >
-            {a.allDay}
-          </button>
+        {/* 1) Van / tot bovenaan */}
+        <div className="mt-3 flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-1.5 text-xs text-muted">
             {a.from}
             <input
               type="time"
-              value={tm.start}
-              onChange={(e) =>
-                persistTimes(dateStr, { ...tm, start: e.currentTarget.value })
-              }
-              className="input h-9 w-28"
+              value={draftStart}
+              disabled={draftAllDay}
+              onChange={(e) => {
+                setDraftStart(e.currentTarget.value)
+                setDraftAllDay(false)
+                setTimeErr(false)
+              }}
+              className="input h-9 w-28 disabled:opacity-40"
             />
           </label>
           <label className="flex items-center gap-1.5 text-xs text-muted">
             {a.to}
             <input
               type="time"
-              value={tm.end}
-              onChange={(e) =>
-                persistTimes(dateStr, { ...tm, end: e.currentTarget.value })
-              }
-              className="input h-9 w-28"
+              value={draftEnd}
+              disabled={draftAllDay}
+              onChange={(e) => {
+                setDraftEnd(e.currentTarget.value)
+                setDraftAllDay(false)
+                setTimeErr(false)
+              }}
+              className="input h-9 w-28 disabled:opacity-40"
             />
           </label>
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <span className="text-xs text-muted">{a.editHint}</span>
-          <button
-            type="button"
-            onClick={() => removeDay(dateStr)}
-            className="rounded-full border border-red-500/40 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-500/10"
-          >
-            {a.setUnavailable}
-          </button>
-        </div>
+        {/* 2) Hele dag eronder */}
+        <label className="mt-3 flex w-fit cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={draftAllDay}
+            onChange={(e) => {
+              const c = e.currentTarget.checked
+              setDraftAllDay(c)
+              setTimeErr(false)
+              if (c) {
+                setDraftStart("")
+                setDraftEnd("")
+              }
+            }}
+            className="h-4 w-4 accent-[#ff6a00]"
+          />
+          {a.allDayLabel}
+        </label>
+
+        {timeErr && <p className="mt-2 text-xs text-red-400">{a.timeError}</p>}
+
+        {/* 3) Bevestiging vóór doorvoeren — extra controle */}
+        {confirming ? (
+          <div className="mt-4 rounded-xl border border-brand/40 bg-surface p-3">
+            <p className="text-sm font-medium">{a.confirmScheduleQ}</p>
+            <p className="mt-1 text-xs text-muted">
+              {draftAllDay
+                ? a.allDay
+                : `${a.from} ${draftStart} ${a.to} ${draftEnd}`}
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => applySchedule(dateStr)}
+                className="rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-black transition hover:bg-brand-strong"
+              >
+                {a.confirmYes}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirming(false)}
+                className="rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted transition hover:text-foreground"
+              >
+                {a.confirmBack}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => removeDay(dateStr)}
+              className="rounded-full border border-red-500/40 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-500/10"
+            >
+              {a.setUnavailable}
+            </button>
+            <button
+              type="button"
+              onClick={requestApply}
+              className="rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-black transition hover:bg-brand-strong"
+            >
+              {a.applySchedule}
+            </button>
+          </div>
+        )}
       </div>
     )
   }
