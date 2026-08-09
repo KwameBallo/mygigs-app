@@ -5,7 +5,6 @@ import { getI18n } from "@/lib/i18n"
 import { getGenres } from "@/lib/data/artists"
 import { PROVINCES } from "@/lib/utils/provinces"
 import { saveArtistProfile, saveArtistBilling } from "./actions"
-import { SyncSocials } from "./sync-button"
 import { GenrePicker } from "./genre-picker"
 import { MediaManager } from "./media-manager"
 import { AvatarUploader } from "./avatar-uploader"
@@ -163,16 +162,6 @@ export default async function ProfilePage({
               ))}
             </div>
           )}
-        </div>
-      )}
-
-      {artist && (
-        <div className="mt-6">
-          <SyncSocials
-            instagramFollowers={artist.instagram_followers ?? 0}
-            spotifyFollowers={artist.spotify_followers ?? 0}
-            tiktokFollowers={artist.tiktok_followers ?? 0}
-          />
         </div>
       )}
 
