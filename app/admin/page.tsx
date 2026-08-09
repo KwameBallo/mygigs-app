@@ -220,7 +220,21 @@ export default async function AdminPage({
         {/* Grafieken: groei per maand, met jaar-schakelaar */}
         <Panel title={d.chartsTitle} className="mt-4">
           <p className="-mt-1 mb-4 text-xs text-muted">{d.chartsIntro}</p>
-          <AdminCharts data={chartData} locale={locale} t={d} />
+          <AdminCharts
+            data={chartData}
+            locale={locale}
+            t={{
+              chartBookings: d.chartBookings,
+              chartRevenue: d.chartRevenue,
+              chartUsers: d.chartUsers,
+              chartDjs: d.chartDjs,
+              chartYearTotal: d.chartYearTotal,
+              chartVsPrev: d.chartVsPrev,
+              chartNoData: d.chartNoData,
+              chartCompare: d.chartCompare,
+              chartCompareNone: d.chartCompareNone,
+            }}
+          />
         </Panel>
 
         {/* Rollen + boekingstatus */}
@@ -244,7 +258,8 @@ export default async function AdminPage({
                   key={st}
                   className="rounded-full bg-surface-2 px-3 py-1 text-muted"
                 >
-                  {st}: <b className="text-foreground">{byStatus(st)}</b>
+                  {d.statusLabels[st] ?? st}:{" "}
+                  <b className="text-foreground">{byStatus(st)}</b>
                 </span>
               ))}
             </div>
