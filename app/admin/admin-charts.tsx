@@ -17,6 +17,25 @@ const METRICS = [
   { key: "djs", labelKey: "chartDjs", euro: false },
 ] as const
 
+// Assen-bovengrens afronden op een net getal (1/2/5 × 10^n).
+function niceMax(v: number) {
+  if (v <= 0) return 1
+  const pow = Math.pow(10, Math.floor(Math.log10(v)))
+  const n = v / pow
+  const m = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10
+  return m * pow
+}
+
+const W = 340
+const H = 150
+const PAD_L = 38
+const PAD_R = 10
+const PAD_T = 12
+const PAD_B = 22
+const PLOT_W = W - PAD_L - PAD_R
+const PLOT_H = H - PAD_T - PAD_B
+const TICKS = [0, 0.25, 0.5, 0.75, 1]
+
 export function AdminCharts({
   data,
   locale,
@@ -55,6 +74,8 @@ export function AdminCharts({
     })
   const fmt = (n: number, isEuro: boolean) =>
     isEuro ? euro(n) : n.toLocaleString(dateLocale)
+
+  const xAt = (i: number) => PAD_L + (i / 11) * PLOT_W
 
   return (
     <div>
@@ -110,7 +131,24 @@ export function AdminCharts({
             cmpTotal && cmpTotal > 0
               ? Math.round(((total - cmpTotal) / cmpTotal) * 100)
               : null
-          const max = Math.max(1, ...curVals, ...(cmpVals ?? []))
+          const nm = niceMax(Math.max(...curVals, ...(cmpVals ?? [])))
+          const yAt = (v: number) => PAD_T + PLOT_H - (v / nm) * PLOT_H
+          const linePath = (vals: number[]) =>
+            vals
+              .map(
+                (v, i) =>
+                  `${i === 0 ? "M" : "L"}${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`,
+              )
+              .join(" ")
+          const axisFmt = (v: number) => {
+            const k = v >= 1000
+            const num = k
+              ? (v / 1000).toLocaleString(dateLocale, {
+                  maximumFractionDigits: 1,
+                }) + "k"
+              : String(Math.round(v))
+            return m.euro ? "€" + num : num
+          }
 
           return (
             <div
@@ -143,46 +181,104 @@ export function AdminCharts({
                 )}
               </div>
 
-              <div className="mt-4 flex h-28 items-end gap-1">
-                {monthLabels.map((ml, i) => (
-                  <div
-                    key={i}
-                    className="flex flex-1 items-end justify-center gap-0.5"
-                  >
-                    {cmpVals && (
-                      <div
-                        title={`${ml} ${compareData!.year}: ${fmt(cmpVals[i], m.euro)}`}
-                        className="w-1/2 rounded-t bg-foreground/25"
-                        style={{ height: `${(cmpVals[i] / max) * 100}%` }}
+              <svg
+                viewBox={`0 0 ${W} ${H}`}
+                width="100%"
+                preserveAspectRatio="xMidYMid meet"
+                style={{ height: "auto", display: "block" }}
+                className="mt-3"
+                role="img"
+                aria-label={`${t[m.labelKey]} ${current.year}`}
+              >
+                {TICKS.map((f, ti) => {
+                  const gy = PAD_T + PLOT_H * (1 - f)
+                  return (
+                    <g key={ti}>
+                      <line
+                        x1={PAD_L}
+                        y1={gy}
+                        x2={PAD_L + PLOT_W}
+                        y2={gy}
+                        stroke="var(--border)"
+                        strokeWidth={1}
+                        opacity={0.6}
                       />
-                    )}
-                    <div
-                      title={`${ml} ${current.year}: ${fmt(curVals[i], m.euro)}`}
-                      className={`${cmpVals ? "w-1/2" : "w-full"} rounded-t bg-brand/70 transition-all hover:bg-brand`}
-                      style={{ height: `${(curVals[i] / max) * 100}%` }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="mt-1 flex gap-1">
+                      <text
+                        x={PAD_L - 6}
+                        y={gy + 3}
+                        textAnchor="end"
+                        fontSize={9}
+                        fill="var(--muted)"
+                      >
+                        {axisFmt(nm * f)}
+                      </text>
+                    </g>
+                  )
+                })}
                 {monthLabels.map((ml, i) => (
-                  <span
+                  <text
                     key={i}
-                    className="flex-1 text-center text-[9px] uppercase text-muted"
+                    x={xAt(i)}
+                    y={H - 6}
+                    textAnchor="middle"
+                    fontSize={9}
+                    fill="var(--muted)"
                   >
                     {ml.slice(0, 1)}
-                  </span>
+                  </text>
                 ))}
-              </div>
+                {cmpVals && (
+                  <>
+                    <path
+                      d={linePath(cmpVals)}
+                      fill="none"
+                      stroke="var(--muted)"
+                      strokeWidth={2}
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                    />
+                    {cmpVals.map((v, i) => (
+                      <circle
+                        key={i}
+                        cx={xAt(i)}
+                        cy={yAt(v)}
+                        r={2}
+                        fill="var(--muted)"
+                      >
+                        <title>{`${monthLabels[i]} ${compareData!.year}: ${fmt(v, m.euro)}`}</title>
+                      </circle>
+                    ))}
+                  </>
+                )}
+                <path
+                  d={linePath(curVals)}
+                  fill="none"
+                  stroke="var(--brand)"
+                  strokeWidth={2}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+                {curVals.map((v, i) => (
+                  <circle
+                    key={i}
+                    cx={xAt(i)}
+                    cy={yAt(v)}
+                    r={2.5}
+                    fill="var(--brand)"
+                  >
+                    <title>{`${monthLabels[i]} ${current.year}: ${fmt(v, m.euro)}`}</title>
+                  </circle>
+                ))}
+              </svg>
 
               {cmpVals && (
-                <div className="mt-2 flex items-center gap-3 text-[10px] text-muted">
+                <div className="mt-1 flex items-center gap-3 text-[10px] text-muted">
                   <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-sm bg-brand/70" />
+                    <span className="h-2 w-3 rounded-sm bg-brand" />
                     {current.year}
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-sm bg-foreground/25" />
+                    <span className="h-2 w-3 rounded-sm bg-muted" />
                     {compareData!.year}
                   </span>
                 </div>
