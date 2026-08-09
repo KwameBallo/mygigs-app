@@ -68,7 +68,7 @@ function ResetPasswordForm() {
   return (
     <main className="relative flex flex-1 flex-col">
       <div className="brand-glow pointer-events-none absolute inset-x-0 top-0 h-[420px]" />
-      <div className="relative z-10 mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-16">
+      <div className="safe-py relative z-10 mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6">
         <div className="mb-8 text-center">
           <Logo />
           <h1 className="mt-6 text-3xl font-semibold tracking-tight">

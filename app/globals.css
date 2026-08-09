@@ -44,6 +44,12 @@ body {
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
+/* Verticale padding voor volledig-scherm pagina's zonder app-shell (bijv. login):
+   houdt inhoud onder de notch/Dynamic Island én boven de home-indicator vandaan. */
+.safe-py {
+  padding-top: calc(env(safe-area-inset-top) + 4rem);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
+}
 
 /* Subtle brand glow used on hero/feature surfaces. */
 .brand-glow {
