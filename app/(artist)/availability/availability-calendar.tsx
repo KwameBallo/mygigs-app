@@ -317,7 +317,7 @@ export function AvailabilityCalendar({
             <button
               type="button"
               onClick={() => setRemoveConfirming(true)}
-              className="rounded-full border border-brand/50 px-3 py-1.5 text-xs font-medium text-brand transition hover:bg-brand/10"
+              className="rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-black transition hover:bg-brand-strong"
             >
               {a.setUnavailable}
             </button>
