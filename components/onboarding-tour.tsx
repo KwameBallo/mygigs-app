@@ -35,6 +35,7 @@ const nl: Dict = {
     { sel: 'a[href="/discover"]', title: "Ontdek DJ's", body: "Tik op Ontdek en scroll door de DJ's op de kaart." },
     { sel: '[data-tour="discover-search"]', page: "/discover", title: "Zoek & filter", body: "Zoek op naam of stad, of via filter." },
     { sel: 'a[href="/bookings"]', page: "/bookings", title: "Je boekingen", body: "Boekingen, facturen én reviews." },
+    { title: "Het DJ-sterretje ⭐", body: "Bij DJ's zie je soms een gekleurd sterretje: het laat zien hoe gevraagd een DJ deze maand is — blauw = actief, geel = gewild, rood = hot. Handig om snel een populaire, betrouwbare DJ te kiezen." },
     { title: "Je bent klaar 🎉", body: "Boom. Klaar om je DJ te vinden." },
   ],
   djSteps: [
@@ -42,6 +43,7 @@ const nl: Dict = {
     { sel: '[data-tour="profile-billing"]', page: "/profile", title: "Facturatie & KVK", body: "Regel je zaakjes: KVK en btw-status. Zonder dit geen facturen." },
     { sel: 'a[href="/availability"]', page: "/availability", title: "Beschikbaarheid", body: "Wanneer kun je? Vul je beschikbaarheid in." },
     { sel: 'a[href="/dashboard"]', page: "/dashboard", title: "Aanvragen", body: "Boekingen landen op je dashboard. Controleer en accepteer." },
+    { title: "Je DJ-rang ⭐", body: "Je krijgt een gekleurd sterretje op basis van je boekingen deze maand: blauw = actief (1–5), geel = gewild (6–14), rood = hot (15+). 14 dagen geen boeking? Dan zak je een rang. Dus blijf knallen om te stijgen." },
     { title: "Je bent set 🔥", body: "Klaar om gigs binnen te halen. Go." },
   ],
 }
@@ -57,6 +59,7 @@ const en: Dict = {
     { sel: 'a[href="/discover"]', title: "Discover DJs", body: "Tap Discover and scroll the DJs on the map." },
     { sel: '[data-tour="discover-search"]', page: "/discover", title: "Search & filter", body: "Search by name or city, or use a filter." },
     { sel: 'a[href="/bookings"]', page: "/bookings", title: "Your bookings", body: "Bookings, invoices and reviews." },
+    { title: "The DJ star ⭐", body: "Some DJs show a colored star — it shows how in-demand a DJ is this month: blue = active, yellow = in demand, red = hot. A quick way to pick a popular, reliable DJ." },
     { title: "You're set 🎉", body: "Boom. Ready to find your DJ." },
   ],
   djSteps: [
@@ -64,11 +67,12 @@ const en: Dict = {
     { sel: '[data-tour="profile-billing"]', page: "/profile", title: "Billing & registration", body: "Sort the essentials: Chamber of Commerce and VAT. No invoices without it." },
     { sel: 'a[href="/availability"]', page: "/availability", title: "Availability", body: "When are you free? Set your availability." },
     { sel: 'a[href="/dashboard"]', page: "/dashboard", title: "Requests", body: "Bookings land on your dashboard. Check and accept." },
+    { title: "Your DJ rank ⭐", body: "You get a colored star based on your bookings this month: blue = active (1–5), yellow = in demand (6–14), red = hot (15+). No booking for 14 days? You drop a rank. So keep playing to climb." },
     { title: "You're set 🔥", body: "Ready to pull in gigs. Go." },
   ],
 }
 
-const KEY = "mygigs_onboarding_v2"
+const KEY = "mygigs_onboarding_v3"
 
 function visibleEl(sel: string): HTMLElement | null {
   const els = Array.from(document.querySelectorAll<HTMLElement>(sel))
