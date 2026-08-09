@@ -111,6 +111,32 @@ export async function sendSupportMessage(opts: {
   })
 }
 
+// Alert naar support: een gebruiker heeft de flag-drempel bereikt (herhaald
+// contactgegevens delen in de chat = mogelijk misbruik / off-platform lokken).
+export async function sendFlagAlertToSupport(opts: {
+  name: string
+  email: string
+  count: number
+  reason: string
+  snippet: string
+}) {
+  const to = process.env.SUPPORT_EMAIL || "support@mygigs.nl"
+  const rows =
+    row("Gebruiker", opts.name) +
+    row("E-mail", opts.email) +
+    row("Aantal flags", String(opts.count), true) +
+    row("Reden", opts.reason) +
+    row("Fragment", opts.snippet)
+  return sendEmail({
+    to,
+    subject: `Flag-alert: ${opts.name} (${opts.count}×)`,
+    html: shell("Gebruiker bereikte de flag-drempel", rows, {
+      href: `${siteUrl()}/admin`,
+      label: "Bekijk in admin",
+    }),
+  })
+}
+
 // Betaalbewijs naar de (hoofd)boeker na een geslaagde betaling.
 export async function sendPaymentReceipt(opts: {
   to: string

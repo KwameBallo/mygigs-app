@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { scanForContactInfo } from "@/lib/utils/contact-guard"
 import { rateLimit } from "@/lib/ratelimit"
+import { sendFlagAlertToSupport } from "@/lib/email"
+import { logAudit } from "@/lib/audit"
 
 // Flag het gesprek én beide partijen wanneer iemand contactgegevens deelt.
 // Gebruikt de service-role omdat we ook het profiel van de tegenpartij bijwerken.
@@ -52,13 +54,39 @@ async function flagConversation(
   // wordt niet gepenaliseerd — die deed niets (voorheen een misbruik-vector).
   const { data: prof } = await admin
     .from("profiles")
-    .select("flag_count")
+    .select("flag_count, full_name, email")
     .eq("id", senderId)
     .maybeSingle()
+  const newCount = (prof?.flag_count ?? 0) + 1
   await admin
     .from("profiles")
-    .update({ flagged: true, flag_count: (prof?.flag_count ?? 0) + 1 })
+    .update({ flagged: true, flag_count: newCount })
     .eq("id", senderId)
+
+  // Alerting: waarschuw support één keer bij het bereiken van de drempel
+  // (herhaald contactgegevens delen). Voorkomt spam; admin ziet de volledige
+  // lijst in /admin. Best-effort — mag het flaggen nooit blokkeren.
+  const ALERT_THRESHOLD = 3
+  if (newCount === ALERT_THRESHOLD) {
+    try {
+      await sendFlagAlertToSupport({
+        name: prof?.full_name ?? senderId.slice(0, 8),
+        email: prof?.email ?? "—",
+        count: newCount,
+        reason,
+        snippet: body.slice(0, 300),
+      })
+    } catch (e) {
+      console.error("flag-alert mislukt:", e)
+    }
+    await logAudit({
+      actorId: senderId,
+      action: "user.flag_threshold",
+      targetType: "profile",
+      targetId: senderId,
+      metadata: { count: newCount, reason },
+    })
+  }
 }
 
 // Markeer inkomende berichten als gelezen en ververs de ongelezen-badge in de
