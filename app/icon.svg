@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#0b0b0f"/>
-  <text x="256" y="262" font-family="Geist" font-weight="700" font-size="258" letter-spacing="-6" text-anchor="middle" dominant-baseline="central"><tspan fill="#ffffff">M</tspan><tspan fill="#ff6a00">G</tspan></text>
+  <text x="222" y="262" font-family="Geist" font-weight="700" font-size="252" letter-spacing="-6" text-anchor="middle" dominant-baseline="central" fill="#ffffff">MG</text>
+  <circle cx="366" cy="356" r="21" fill="#ff6a00"/>
 </svg>
