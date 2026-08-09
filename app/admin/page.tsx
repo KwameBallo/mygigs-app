@@ -15,6 +15,7 @@ import {
 } from "./actions"
 import { startOfMonthISO } from "@/lib/dj-tier"
 import { dict } from "./i18n"
+import { AdminCharts, type MPoint } from "./admin-charts"
 
 export const dynamic = "force-dynamic"
 
@@ -119,6 +120,44 @@ export default async function AdminPage({
   const artistName = (id: string) =>
     artists.find((a) => a.id === id)?.stage_name ?? "—"
 
+  // Tijdreeksen voor de grafieken — per jaar, per maand (UTC-bucketing via de
+  // ISO-string, geen tijdzone-drift). Afgeleid uit de al opgehaalde data.
+  const yearMap = new Map<number, MPoint[]>()
+  const ensureYear = (y: number) => {
+    let arr = yearMap.get(y)
+    if (!arr) {
+      arr = Array.from({ length: 12 }, () => ({
+        bookings: 0,
+        revenue: 0,
+        users: 0,
+        djs: 0,
+      }))
+      yearMap.set(y, arr)
+    }
+    return arr
+  }
+  for (const b of bookings) {
+    if (!b.created_at) continue
+    const y = Number(b.created_at.slice(0, 4))
+    const mi = Number(b.created_at.slice(5, 7)) - 1
+    if (!Number.isFinite(y) || mi < 0 || mi > 11) continue
+    const pt = ensureYear(y)[mi]
+    pt.bookings++
+    pt.revenue += b.total ?? 0
+  }
+  for (const u of users) {
+    if (!u.created_at) continue
+    const y = Number(u.created_at.slice(0, 4))
+    const mi = Number(u.created_at.slice(5, 7)) - 1
+    if (!Number.isFinite(y) || mi < 0 || mi > 11) continue
+    const pt = ensureYear(y)[mi]
+    pt.users++
+    if (u.role === "artist" || u.role === "both") pt.djs++
+  }
+  const chartData = [...yearMap.keys()]
+    .sort((a, b) => a - b)
+    .map((y) => ({ year: y, months: yearMap.get(y)! }))
+
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface px-4 py-3 safe-top">
@@ -177,6 +216,12 @@ export default async function AdminPage({
           <Metric label={d.metricReviews} value={String(reviewsCount)} />
           <Metric label={d.metricFlags} value={String(flags.length)} />
         </div>
+
+        {/* Grafieken: groei per maand, met jaar-schakelaar */}
+        <Panel title={d.chartsTitle} className="mt-4">
+          <p className="-mt-1 mb-4 text-xs text-muted">{d.chartsIntro}</p>
+          <AdminCharts data={chartData} locale={locale} t={d} />
+        </Panel>
 
         {/* Rollen + boekingstatus */}
         <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
