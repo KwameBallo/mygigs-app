@@ -1,0 +1,43 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # elke maandag 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    name: npm audit (dependencies)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # Faalt alleen op HIGH/CRITICAL — de bekende, praktisch niet-fixbare
+      # moderate-meldingen (PostCSS via Next, build-time) blokkeren de CI niet.
+      - name: npm audit
+        run: npm audit --audit-level=high
+
+  codeql:
+    name: CodeQL (code scanning)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
