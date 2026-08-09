@@ -256,6 +256,40 @@ export async function sendReviewRequestToBooker(opts: {
   })
 }
 
+// Maandelijkse terugblik naar de DJ: wat heb je afgelopen maand gedaan?
+// Alleen aantallen/plaatsen/verdiensten — geen klantgegevens (AVG).
+export async function sendMonthlyRecapToDJ(opts: {
+  to: string
+  locale: "nl" | "en"
+  monthLabel: string
+  gigs: number
+  cities: string
+  earned: string
+}) {
+  const nl = opts.locale === "nl"
+  const subject = nl
+    ? `Je maand in het kort — ${opts.monthLabel}`
+    : `Your month in review — ${opts.monthLabel}`
+  const rows =
+    row(nl ? "Optredens" : "Gigs", String(opts.gigs), true) +
+    (opts.cities ? row(nl ? "Waar" : "Where", opts.cities) : "") +
+    row(nl ? "Verdiend" : "Earned", opts.earned, true)
+  return sendEmail({
+    to: opts.to,
+    subject,
+    html: shell(
+      nl
+        ? `Je gigs van ${opts.monthLabel} 🎧`
+        : `Your gigs in ${opts.monthLabel} 🎧`,
+      rows,
+      {
+        href: `${siteUrl()}/dashboard`,
+        label: nl ? "Bekijk je gigs" : "View your gigs",
+      },
+    ),
+  })
+}
+
 // E-mailadres van een gebruiker ophalen via de service-role (auth.users).
 // Respecteert de e-mailvoorkeur: heeft de gebruiker e-mails uitgezet (opt-out),
 // dan geven we null terug en wordt er niets verstuurd.

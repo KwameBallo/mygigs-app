@@ -821,6 +821,32 @@ export type Database = {
           },
         ]
       }
+      dj_monthly_recap: {
+        Row: {
+          artist_id: string
+          period: string
+          sent_at: string
+        }
+        Insert: {
+          artist_id: string
+          period: string
+          sent_at?: string
+        }
+        Update: {
+          artist_id?: string
+          period?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dj_monthly_recap_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth: string
