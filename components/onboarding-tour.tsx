@@ -10,7 +10,13 @@ import { useHideOnScroll } from "@/lib/use-hide-on-scroll"
 // linksonder. Werkt met terugval: vindt hij een element niet, dan toont hij de
 // callout gecentreerd zodat de tour nooit vastloopt.
 
-type Step = { sel?: string; page?: string; title: string; body: string }
+type Step = {
+  sel?: string
+  page?: string
+  title: string
+  body: string
+  kind?: "rank"
+}
 type Rect = { top: number; left: number; width: number; height: number }
 
 type Dict = {
@@ -20,9 +26,19 @@ type Dict = {
   done: string
   reopen: string
   stepLabel: string
+  rankLabels: [string, string, string]
+  rankNote: string
   bookerSteps: Step[]
   djSteps: Step[]
 }
+
+// Rang-rijen voor de visuele uitleg in de rondleiding — kleuren gelijk aan de
+// echte DjTierBadge (blauw/geel/rood).
+const RANK_ROWS = [
+  { range: "1–5", color: "#3b82f6" },
+  { range: "6–14", color: "#eab308" },
+  { range: "15+", color: "#ef4444" },
+]
 
 const nl: Dict = {
   skip: "Overslaan",
@@ -31,11 +47,13 @@ const nl: Dict = {
   done: "Let's go",
   reopen: "Rondleiding",
   stepLabel: "Stap {n} / {t}",
+  rankLabels: ["Actief", "Gewild", "Hot"],
+  rankNote: "Telt per kalendermaand. 14 dagen geen boeking? Dan zak je een rang.",
   bookerSteps: [
     { sel: 'a[href="/discover"]', title: "Ontdek DJ's", body: "Tik op Ontdek en scroll door de DJ's op de kaart." },
     { sel: '[data-tour="discover-search"]', page: "/discover", title: "Zoek & filter", body: "Zoek op naam of stad, of via filter." },
     { sel: 'a[href="/bookings"]', page: "/bookings", title: "Je boekingen", body: "Boekingen, facturen én reviews." },
-    { title: "Het DJ-sterretje ⭐", body: "Bij DJ's zie je soms een gekleurd sterretje: het laat zien hoe gevraagd een DJ deze maand is — blauw = actief, geel = gewild, rood = hot. Handig om snel een populaire, betrouwbare DJ te kiezen." },
+    { kind: "rank", title: "Het DJ-sterretje ⭐", body: "Het sterretje laat zien hoe gevraagd een DJ deze maand is:" },
     { title: "Je bent klaar 🎉", body: "Boom. Klaar om je DJ te vinden." },
   ],
   djSteps: [
@@ -43,7 +61,7 @@ const nl: Dict = {
     { sel: '[data-tour="profile-billing"]', page: "/profile", title: "Facturatie & KVK", body: "Regel je zaakjes: KVK en btw-status. Zonder dit geen facturen." },
     { sel: 'a[href="/availability"]', page: "/availability", title: "Beschikbaarheid", body: "Wanneer kun je? Vul je beschikbaarheid in." },
     { sel: 'a[href="/dashboard"]', page: "/dashboard", title: "Aanvragen", body: "Boekingen landen op je dashboard. Controleer en accepteer." },
-    { title: "Je DJ-rang ⭐", body: "Je krijgt een gekleurd sterretje op basis van je boekingen deze maand: blauw = actief (1–5), geel = gewild (6–14), rood = hot (15+). 14 dagen geen boeking? Dan zak je een rang. Dus blijf knallen om te stijgen." },
+    { kind: "rank", title: "Je DJ-rang ⭐", body: "Je krijgt een sterretje op basis van je boekingen deze maand:" },
     { title: "Je bent set 🔥", body: "Klaar om gigs binnen te halen. Go." },
   ],
 }
@@ -55,11 +73,13 @@ const en: Dict = {
   done: "Let's go",
   reopen: "Tour",
   stepLabel: "Step {n} / {t}",
+  rankLabels: ["Active", "In demand", "Hot"],
+  rankNote: "Counted per calendar month. No booking for 14 days? You drop a rank.",
   bookerSteps: [
     { sel: 'a[href="/discover"]', title: "Discover DJs", body: "Tap Discover and scroll the DJs on the map." },
     { sel: '[data-tour="discover-search"]', page: "/discover", title: "Search & filter", body: "Search by name or city, or use a filter." },
     { sel: 'a[href="/bookings"]', page: "/bookings", title: "Your bookings", body: "Bookings, invoices and reviews." },
-    { title: "The DJ star ⭐", body: "Some DJs show a colored star — it shows how in-demand a DJ is this month: blue = active, yellow = in demand, red = hot. A quick way to pick a popular, reliable DJ." },
+    { kind: "rank", title: "The DJ star ⭐", body: "The star shows how in-demand a DJ is this month:" },
     { title: "You're set 🎉", body: "Boom. Ready to find your DJ." },
   ],
   djSteps: [
@@ -67,7 +87,7 @@ const en: Dict = {
     { sel: '[data-tour="profile-billing"]', page: "/profile", title: "Billing & registration", body: "Sort the essentials: Chamber of Commerce and VAT. No invoices without it." },
     { sel: 'a[href="/availability"]', page: "/availability", title: "Availability", body: "When are you free? Set your availability." },
     { sel: 'a[href="/dashboard"]', page: "/dashboard", title: "Requests", body: "Bookings land on your dashboard. Check and accept." },
-    { title: "Your DJ rank ⭐", body: "You get a colored star based on your bookings this month: blue = active (1–5), yellow = in demand (6–14), red = hot (15+). No booking for 14 days? You drop a rank. So keep playing to climb." },
+    { kind: "rank", title: "Your DJ rank ⭐", body: "You get a star based on your bookings this month:" },
     { title: "You're set 🔥", body: "Ready to pull in gigs. Go." },
   ],
 }
@@ -343,6 +363,27 @@ export function OnboardingTour({
         </div>
         <h3 className="mt-2 text-lg font-semibold tracking-tight">{s.title}</h3>
         <p className="mt-1.5 text-sm leading-relaxed text-muted">{s.body}</p>
+        {s.kind === "rank" && (
+          <div className="mt-3 space-y-2">
+            {RANK_ROWS.map((r, i) => (
+              <div key={r.range} className="flex items-center gap-2.5">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5 flex-none"
+                  fill={r.color}
+                  aria-hidden="true"
+                >
+                  <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 18.9 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9L12 2.5z" />
+                </svg>
+                <span className="w-14 text-sm font-semibold tabular-nums">
+                  {r.range}
+                </span>
+                <span className="text-sm text-muted">{d.rankLabels[i]}</span>
+              </div>
+            ))}
+            <p className="pt-1 text-xs text-muted">{d.rankNote}</p>
+          </div>
+        )}
         <div className="mt-4 flex items-center justify-between gap-3">
           <div className="flex gap-1.5">
             {steps.map((_, k) => (
