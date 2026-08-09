@@ -29,7 +29,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    // "black" (ondoorzichtig) zodat iOS de inhoud in de geïnstalleerde app onder
+    // de statusbalk/Dynamic Island plaatst — net als in Safari. "black-translucent"
+    // liet de inhoud fullscreen achter de camera lopen.
+    statusBarStyle: "black",
     title: "MyGigs",
   },
 };
