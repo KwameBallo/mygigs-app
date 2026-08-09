@@ -190,6 +190,11 @@ export async function setArtistAvatar(url: string) {
   } = await supabase.auth.getUser()
   if (!user) return
 
+  // Alleen een eigen upload uit Supabase Storage toestaan — geen externe URL's
+  // (tracking-pixels/hotlinking op een openbaar profiel). SEC #7.
+  const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "")
+  if (!base || !url.startsWith(`${base}/storage/`)) return
+
   await supabase
     .from("artists")
     .update({ avatar_url: url })

@@ -89,7 +89,14 @@ export async function saveAvailabilityTime(formData: FormData) {
 export async function removeAvailability(formData: FormData) {
   const id = String(formData.get("id") ?? "")
   if (!id) return
+  const artistId = await myArtistId()
+  if (!artistId) return
   const supabase = await createClient()
-  await supabase.from("artist_availability").delete().eq("id", id)
+  // Expliciete eigenaarschap-filter naast de RLS-policy (defense-in-depth, SEC #8).
+  await supabase
+    .from("artist_availability")
+    .delete()
+    .eq("id", id)
+    .eq("artist_id", artistId)
   revalidatePath("/availability")
 }

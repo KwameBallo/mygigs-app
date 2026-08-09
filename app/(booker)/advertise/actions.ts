@@ -13,6 +13,12 @@ function optStr(formData: FormData, key: string): string | null {
   return v || null
 }
 
+// Alleen http(s)-URL's toestaan — voorkomt javascript:/data:-URL's (latente
+// stored-XSS/open-redirect zodra een advertentie ergens gerenderd wordt). SEC #6.
+function httpUrl(v: string | null): string | null {
+  return v && /^https?:\/\//i.test(v) ? v : null
+}
+
 export async function createAd(formData: FormData) {
   const brand = str(formData, "brand_name")
   if (!brand) return
@@ -32,8 +38,8 @@ export async function createAd(formData: FormData) {
     created_by: user.id,
     brand_name: brand,
     title: optStr(formData, "title"),
-    image_url: optStr(formData, "image_url"),
-    target_url: optStr(formData, "target_url"),
+    image_url: httpUrl(optStr(formData, "image_url")),
+    target_url: httpUrl(optStr(formData, "target_url")),
     placement,
     starts_at: optStr(formData, "starts_at"),
     ends_at: optStr(formData, "ends_at"),

@@ -250,9 +250,11 @@ export async function checkInBooking(formData: FormData) {
       ? haversineMeters(lat, lng, Number(booking.lat), Number(booking.lng))
       : null
 
-  // Anti-fraude: een geldige (onvervalsbare) check-in moet op locatie zijn,
-  // binnen het tijdvenster van het event, met een redelijke GPS-nauwkeurigheid.
-  // Het tijdstip zetten we server-side, dus dat is niet te vervalsen.
+  // Indicator (GEEN onweerlegbaar bewijs): de lat/lng/accuracy komen van de
+  // client en zijn dus te spoofen. `checkin_verified` = op locatie + binnen het
+  // tijdvenster + redelijke nauwkeurigheid, maar alleen het tijdstip (server-set)
+  // is hard. Het echte aanwezigheidsbewijs is de tweezijdige bevestiging door de
+  // organisator (confirmDjAttendance) — daarop leunen we bij geschillen. SEC #3.
   const now = Date.now()
   const startAt = new Date(
     `${booking.event_date}T${(booking.start_time ?? "00:00").slice(0, 5)}:00`,
