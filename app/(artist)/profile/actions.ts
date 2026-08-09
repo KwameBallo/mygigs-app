@@ -124,6 +124,8 @@ export async function saveArtistProfile(formData: FormData) {
   revalidatePath("/profile")
   revalidatePath("/dashboard")
   revalidatePath("/discover")
+  // Ververs het scherm zichtbaar na opslaan (terug naar boven op het profiel).
+  redirect("/profile?saved=1")
 }
 
 // Facturatiegegevens van de DJ opslaan. AVG/ISO: deze PII staat in een aparte
