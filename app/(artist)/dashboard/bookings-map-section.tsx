@@ -1,6 +1,7 @@
 import { cityToCoords } from "@/lib/utils/nl-cities"
 import { KaartClient } from "../kaart/kaart-client"
 import type { BookingPoint } from "../kaart/booking-map"
+import { GigMonths } from "./gigs-months"
 
 // Kleur per fase: in afwachting → geaccepteerd → betaald/afgerond.
 const STATUS_COLOR: Record<string, string> = {
@@ -22,6 +23,9 @@ type MapBooking = {
 
 type Labels = {
   title: string
+  intro: string
+  countMany: string
+  countOne: string
   legendPending: string
   legendAccepted: string
   legendPaid: string
@@ -74,9 +78,20 @@ export function BookingsMapSection({
     })
   }
 
+  const gigs = bookings
+    .filter((b) => b.event_date)
+    .map((b) => ({
+      id: b.id,
+      place: b.venue_name ?? b.city ?? "—",
+      city: b.city,
+      date: b.event_date,
+      status: b.status,
+    }))
+
   return (
     <section className="mt-10">
-      <h2 className="text-sm font-semibold text-muted">{labels.title}</h2>
+      <h2 className="text-lg font-semibold tracking-tight">{labels.title}</h2>
+      <p className="mt-1 text-xs text-muted">{labels.intro}</p>
       <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
         <Legend color="#3b82f6" label={labels.legendPending} />
         <Legend color="#f59e0b" label={labels.legendAccepted} />
@@ -91,6 +106,18 @@ export function BookingsMapSection({
           <KaartClient points={points} />
         )}
       </div>
+      <GigMonths
+        gigs={gigs}
+        dateLocale={dateLocale}
+        labels={{
+          countMany: labels.countMany,
+          countOne: labels.countOne,
+          statusPending: labels.statusPending,
+          statusAccepted: labels.statusAccepted,
+          statusPaid: labels.statusPaid,
+          statusCompleted: labels.statusCompleted,
+        }}
+      />
     </section>
   )
 }

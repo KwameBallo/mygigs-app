@@ -164,7 +164,10 @@ export default async function DashboardPage() {
         }))}
         dateLocale={dateLocale}
         labels={{
-          title: mp.title,
+          title: mp.gigsTitle,
+          intro: mp.gigsIntro,
+          countMany: mp.gigsCountMany,
+          countOne: mp.gigsCountOne,
           legendPending: mp.legendPending,
           legendAccepted: mp.legendAccepted,
           legendPaid: mp.legendPaid,

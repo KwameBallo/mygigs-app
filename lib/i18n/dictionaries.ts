@@ -349,6 +349,11 @@ const nl = {
   },
   map: {
     title: "Boekingen op de kaart",
+    gigsTitle: "Gigs",
+    gigsIntro:
+      "Waar je hebt gespeeld, per maand. Klantgegevens blijven privé — alleen de locatie.",
+    gigsCountMany: "{n} optredens",
+    gigsCountOne: "1 optreden",
     legendPending: "In afwachting",
     legendAccepted: "Geaccepteerd (wacht op betaling)",
     legendPaid: "Betaald & bevestigd",
@@ -1021,6 +1026,11 @@ const en: typeof nl = {
   },
   map: {
     title: "Bookings on the map",
+    gigsTitle: "Gigs",
+    gigsIntro:
+      "Where you've played, by month. Client details stay private — only the location.",
+    gigsCountMany: "{n} gigs",
+    gigsCountOne: "1 gig",
     legendPending: "Pending",
     legendAccepted: "Accepted (awaiting payment)",
     legendPaid: "Paid & confirmed",
