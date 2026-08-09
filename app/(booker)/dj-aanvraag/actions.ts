@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { rateLimit } from "@/lib/ratelimit"
 
 // Een organisator vraagt aan om DJ te worden. De aanvraag komt op 'pending';
 // een beheerder keurt goed/af. Zelf-goedkeuring is niet mogelijk (rol staat vast).
@@ -15,6 +16,14 @@ export async function applyForDj(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect("/login?next=/dj-aanvraag")
+
+  // Rate-limit tegen aanvraag-spam (SEC #4).
+  const rl = await rateLimit(user.id, {
+    limit: 5,
+    windowSec: 3600,
+    scope: "djapply",
+  })
+  if (!rl.ok) redirect("/dj-aanvraag?error=too-many")
 
   // Al DJ? Dan naar het profiel.
   const { data: profile } = await supabase

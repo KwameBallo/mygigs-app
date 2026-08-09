@@ -7,6 +7,7 @@ import { priceBreakdown, VAT_RATE, formatEuro } from "@/lib/utils/pricing"
 import { getI18n } from "@/lib/i18n"
 import { sendNewRequestToDJ, getUserEmail } from "@/lib/email"
 import { sendPushToUser } from "@/lib/push"
+import { rateLimit } from "@/lib/ratelimit"
 import { pdokLookup } from "@/lib/geo"
 import {
   rangeHours,
@@ -53,6 +54,15 @@ export async function createBooking(formData: FormData) {
   if (!user) {
     redirect(`/login?next=/artists/${artistId}`)
   }
+
+  // Rate-limit: elke aanvraag stuurt de DJ een e-mail + 2 pushmeldingen, dus
+  // begrenzen tegen spam/harassment en externe kosten (SEC #4).
+  const rl = await rateLimit(user.id, {
+    limit: 12,
+    windowSec: 3600,
+    scope: "booking",
+  })
+  if (!rl.ok) redirect(`/artists/${artistId}?error=too-many`)
 
   // E-mailbevestiging verplicht voordat er geboekt kan worden.
   if (!user.email_confirmed_at) {

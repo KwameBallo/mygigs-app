@@ -17,6 +17,13 @@ export async function signInAdmin(formData: FormData) {
     scope: "login",
   })
   if (!rl.ok) redirect("/admin/login?error=too-many")
+  // Grovere per-IP-cap tegen credential-stuffing over veel accounts (SEC #5).
+  const rlIp = await rateLimit(ip, {
+    limit: 30,
+    windowSec: 900,
+    scope: "login-ip",
+  })
+  if (!rlIp.ok) redirect("/admin/login?error=too-many")
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password })

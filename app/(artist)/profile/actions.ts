@@ -77,6 +77,15 @@ export async function saveArtistProfile(formData: FormData) {
     await supabase.from("artists").update(fields).eq("id", existing.id)
     artistId = existing.id
   } else {
+    // Alleen een goedgekeurde DJ (rol 'artist'/'both') mag een artiestprofiel
+    // aanmaken. Anders kan een organisator zichzelf boekbaar maken en de
+    // admin-goedkeuring omzeilen (SEC #1). De DB-policy dwingt dit ook af (0028).
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle()
+    if (prof?.role !== "artist" && prof?.role !== "both") return
     // Artiest worden is gratis: MyGigs verdient via 7% commissie per boeking.
     const { data: created } = await supabase
       .from("artists")

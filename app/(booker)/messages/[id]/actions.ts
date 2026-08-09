@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { scanForContactInfo } from "@/lib/utils/contact-guard"
+import { rateLimit } from "@/lib/ratelimit"
 
 // Flag het gesprek én beide partijen wanneer iemand contactgegevens deelt.
 // Gebruikt de service-role omdat we ook het profiel van de tegenpartij bijwerken.
@@ -108,6 +109,14 @@ export async function sendMessage(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return
+
+  // Rate-limit tegen chat-flooding (SEC #4). Ruim genoeg voor normaal gebruik.
+  const rl = await rateLimit(user.id, {
+    limit: 20,
+    windowSec: 60,
+    scope: "message",
+  })
+  if (!rl.ok) redirect(`/messages/${conversationId}?warn=slow`)
 
   // Bevestig eerst dat de gebruiker deelnemer is (RLS-beschermde select) — anders
   // kon iemand met een willekeurige conversation_id een vreemd gesprek laten

@@ -28,6 +28,14 @@ export async function signIn(formData: FormData) {
     scope: "login",
   })
   if (!rl.ok) redirect(`/login?error=too-many${tab}`)
+  // Grovere per-IP-cap tegen credential-stuffing over veel accounts vanaf één IP
+  // (SEC #5) — de per-(ip,email)-teller alleen zou dat niet begrenzen.
+  const rlIp = await rateLimit(ip, {
+    limit: 30,
+    windowSec: 900,
+    scope: "login-ip",
+  })
+  if (!rlIp.ok) redirect(`/login?error=too-many${tab}`)
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password })
