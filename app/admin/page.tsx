@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { getProfile } from "@/lib/auth"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { createClient } from "@/lib/supabase/server"
 import { Logo } from "@/components/logo"
 import { LogoutIcon } from "@/components/icons"
 import { formatEuro } from "@/lib/utils/pricing"
@@ -26,6 +27,16 @@ export default async function AdminPage({
 }) {
   const profile = await getProfile()
   if (!profile || profile.role !== "admin") redirect("/admin/login")
+
+  // MFA: heeft de admin 2FA ingesteld maar deze sessie nog niet bevestigd (aal1
+  // terwijl aal2 mogelijk is)? → afdwingen. Nog geen 2FA → banner tonen.
+  const authClient = await createClient()
+  const { data: aal } =
+    await authClient.auth.mfa.getAuthenticatorAssuranceLevel()
+  if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+    redirect("/admin/mfa")
+  }
+  const mfaNotSetUp = aal?.nextLevel !== "aal2"
 
   const { admin: adminMsg } = await searchParams
   const { locale } = await getI18n()
@@ -202,6 +213,18 @@ export default async function AdminPage({
           >
             {adminMsg === "added" ? d.adminAdded : d.adminNotFound}
           </div>
+        )}
+
+        {mfaNotSetUp && (
+          <Link
+            href="/admin/mfa"
+            className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-brand/40 bg-brand/5 px-4 py-3 text-sm transition hover:border-brand/60"
+          >
+            <span>{d.mfaBanner}</span>
+            <span className="flex-none rounded-full bg-brand px-3 py-1 text-xs font-medium text-black">
+              {d.mfaEnrollTitle}
+            </span>
+          </Link>
         )}
 
         {/* Metric-kaarten */}
