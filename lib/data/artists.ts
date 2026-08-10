@@ -169,6 +169,56 @@ export async function getArtists(filters: ArtistFilters = {}): Promise<Artist[]>
   return rows
 }
 
+export type OrganiserPrefs = {
+  province?: string | null
+  budget?: number | null
+  genreId?: number | null
+  date?: string | null
+}
+
+// 'Aanbevolen': DJ's die passen bij de organisator-voorkeuren (regio, budget,
+// stijl, datum) — gesorteerd op match en daarna op meeste boekingen. De
+// voorkeuren zijn *zacht*: een lege of afwijkende voorkeur sluit niemand uit,
+// maar betere matches komen bovenaan. De datum is (indien opgegeven) wél hard:
+// we bevelen geen DJ aan die die dag niet beschikbaar is — tenzij niemand kan,
+// dan tonen we alsnog de rest op boekingen.
+export async function getRecommendedArtists(
+  prefs: OrganiserPrefs,
+): Promise<Artist[]> {
+  let base = await getArtists(prefs.date ? { date: prefs.date } : {})
+  if (prefs.date && base.length === 0) base = await getArtists({})
+
+  // Stijl-match op álle genres van een DJ, niet alleen de primaire.
+  let genreMatch: Set<string> | null = null
+  if (prefs.genreId) {
+    const supabase = await createClient()
+    const { data: ag } = await supabase
+      .from("artist_genres")
+      .select("artist_id")
+      .eq("genre_id", prefs.genreId)
+    genreMatch = new Set((ag ?? []).map((r) => r.artist_id))
+  }
+
+  const scored = base.map((a) => {
+    let score = 0
+    if (prefs.province && a.province === prefs.province) score += 3
+    if (
+      prefs.genreId &&
+      (a.genre_id === prefs.genreId || genreMatch?.has(a.id))
+    )
+      score += 2
+    if (prefs.budget && a.base_gage <= prefs.budget) score += 2
+    return { a, score }
+  })
+  scored.sort(
+    (x, y) =>
+      y.score - x.score ||
+      (y.a.total_bookings ?? 0) - (x.a.total_bookings ?? 0) ||
+      (y.a.rating ?? 0) - (x.a.rating ?? 0),
+  )
+  return scored.map((s) => s.a)
+}
+
 export async function getArtist(id: string): Promise<Artist | null> {
   const supabase = await createClient()
   const { data } = await supabase

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { Stars } from "@/components/stars"
@@ -45,6 +45,7 @@ type Filters = {
   date?: string
   ai?: string
   type?: string
+  rec?: string
 }
 
 // Prijs die de boeker betaalt: provinciebedrag indien gefilterd, anders basis.
@@ -98,6 +99,20 @@ export function DiscoverClient({
   )
   const [geoError, setGeoError] = useState<string | null>(null)
 
+  const recommended = Boolean(filters.rec)
+
+  // Mobiel: standaard geen DJ's in beeld — pas na 'Aanbevolen' of een filter.
+  // Start op false zodat server- en eerste client-render gelijk zijn (geen
+  // hydration-mismatch); na mount bepalen we het echte viewport.
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)")
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener("change", update)
+    return () => mq.removeEventListener("change", update)
+  }, [])
+
   function onDistance(value: string) {
     const km = value ? Number(value) : null
     setMaxKm(km)
@@ -149,6 +164,26 @@ export function DiscoverClient({
           })
       : artists
 
+  const hasFilter =
+    Boolean(
+      filters.q ||
+        filters.city ||
+        filters.province ||
+        filters.genre ||
+        filters.equipment ||
+        filters.act ||
+        filters.minFollowers ||
+        filters.budget ||
+        filters.rating ||
+        filters.date ||
+        filters.ai,
+    ) || maxKm != null
+
+  // Mobiel + geen filter + niet 'Aanbevolen' → lege startstaat (geen DJ's op de
+  // kaart of in de lijst). Op desktop tonen we gewoon alles.
+  const gateEmpty = isMobile && !isClubs && !recommended && !hasFilter
+  const effectiveArtists = gateEmpty ? [] : shownArtists
+
   const points: MapPoint[] = isClubs
     ? clubs
         .filter((c) => c.lat != null && c.lng != null)
@@ -162,7 +197,7 @@ export function DiscoverClient({
           href: `/clubs/${c.id}`,
           linkLabel: d.viewClub,
         }))
-    : shownArtists
+    : effectiveArtists
         .map((a) => ({ a, pos: artistPos(a) }))
         .filter(
           (x): x is { a: Artist; pos: { lat: number; lng: number } } =>
@@ -180,7 +215,7 @@ export function DiscoverClient({
           linkLabel: d.viewProfile,
         }))
 
-  const count = isClubs ? clubs.length : shownArtists.length
+  const count = isClubs ? clubs.length : effectiveArtists.length
   const countLabel = (
     isClubs
       ? count === 1
@@ -190,9 +225,33 @@ export function DiscoverClient({
         ? d.countDj
         : d.countDjs
   ).replace("{n}", String(count))
+  const headerLabel = gateEmpty
+    ? d.startTitle
+    : recommended
+      ? d.recommendedTitle
+      : countLabel
 
-  const results =
-    count === 0 ? (
+  const results = gateEmpty ? (
+    <div className="m-3 rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
+      <p className="font-medium">{d.startTitle}</p>
+      <p className="mt-1 text-sm text-muted">{d.startHint}</p>
+      <div className="mt-3 flex flex-wrap justify-center gap-2">
+        <Link
+          href="/discover?rec=1"
+          className="rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-black transition hover:bg-brand-strong"
+        >
+          ★ {d.recommended}
+        </Link>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(true)}
+          className="rounded-full border border-border px-4 py-1.5 text-sm text-muted transition hover:border-brand/50 hover:text-brand"
+        >
+          {d.filters}
+        </button>
+      </div>
+    </div>
+  ) : count === 0 ? (
       <div className="m-3 rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
         <p className="font-medium">{isClubs ? d.noClubs : d.noDjs}</p>
         <Link
@@ -213,7 +272,7 @@ export function DiscoverClient({
                 onHover={() => setActiveId(c.id)}
               />
             ))
-          : shownArtists.map((a) => (
+          : effectiveArtists.map((a) => (
               <ListCard
                 key={a.id}
                 artist={a}
@@ -241,9 +300,21 @@ export function DiscoverClient({
           <form method="get" className="flex flex-col gap-2">
             <div data-tour="discover-search" className="flex flex-wrap items-center gap-1.5 rounded-3xl border border-border bg-surface/95 p-1.5 shadow-xl backdrop-blur">
               <div className="flex flex-none rounded-full bg-surface-2 p-0.5">
-                <Seg label={d.segDjs} active={!isClubs} filters={filters} clubs={false} />
+                <Seg label={d.segDjs} active={!isClubs && !recommended} filters={filters} clubs={false} />
                 <Seg label={d.segClubs} active={isClubs} filters={filters} clubs />
               </div>
+              {!isClubs && (
+                <Link
+                  href="/discover?rec=1"
+                  className={`flex-none rounded-full px-3 py-2 text-sm font-medium transition ${
+                    recommended
+                      ? "bg-brand text-black"
+                      : "border border-brand/50 text-brand hover:bg-brand/10"
+                  }`}
+                >
+                  ★ {d.recommended}
+                </Link>
+              )}
               {isClubs && <input type="hidden" name="type" value="clubs" />}
               <input
                 name="q"
@@ -457,7 +528,7 @@ export function DiscoverClient({
           }`}
         >
           <div className="flex items-center justify-between gap-2 px-4 py-3 text-sm">
-            <span className="font-medium">{countLabel}</span>
+            <span className="font-medium">{headerLabel}</span>
             <div className="flex items-center gap-2">
               {!isClubs && panelOpen && (
                 <Link
@@ -496,7 +567,7 @@ export function DiscoverClient({
               aria-hidden="true"
             />
             <span className="flex w-full items-center justify-between text-sm">
-              <span className="font-medium">{countLabel}</span>
+              <span className="font-medium">{headerLabel}</span>
               <span className="text-xs text-muted">
                 {sheetOpen ? d.hideList : d.showList}
               </span>

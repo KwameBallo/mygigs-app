@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { DiscoverClient } from "./discover-client"
-import { getArtists, getGenres } from "@/lib/data/artists"
+import { getArtists, getRecommendedArtists, getGenres } from "@/lib/data/artists"
 import { getClubs } from "@/lib/data/events"
 import { getProfile } from "@/lib/auth"
 
@@ -17,6 +17,7 @@ type SearchParams = Promise<{
   date?: string
   ai?: string
   type?: string
+  rec?: string
 }>
 
 export default async function DiscoverPage({
@@ -49,8 +50,10 @@ export default async function DiscoverPage({
     date,
     ai,
     type,
+    rec,
   } = await searchParams
   const isClubs = type === "clubs"
+  const isRec = !isClubs && (rec === "1" || rec === "true")
   const minFollowersNum = minFollowers ? Number(minFollowers) : undefined
   const budgetNum = budget ? Number(budget) : undefined
   const ratingNum = rating ? Number(rating) : undefined
@@ -58,20 +61,27 @@ export default async function DiscoverPage({
   const [artists, clubs, genres] = await Promise.all([
     isClubs
       ? Promise.resolve([])
-      : getArtists({
-          q,
-          genre,
-          city,
-          province,
-          equipment,
-          act,
-          minFollowers: Number.isNaN(minFollowersNum)
-            ? undefined
-            : minFollowersNum,
-          budget: Number.isNaN(budgetNum) ? undefined : budgetNum,
-          minRating: Number.isNaN(ratingNum) ? undefined : ratingNum,
-          date,
-        }),
+      : isRec
+        ? getRecommendedArtists({
+            province: profile?.pref_province ?? null,
+            budget: profile?.pref_budget ?? null,
+            genreId: profile?.pref_genre_id ?? null,
+            date: profile?.pref_date ?? null,
+          })
+        : getArtists({
+            q,
+            genre,
+            city,
+            province,
+            equipment,
+            act,
+            minFollowers: Number.isNaN(minFollowersNum)
+              ? undefined
+              : minFollowersNum,
+            budget: Number.isNaN(budgetNum) ? undefined : budgetNum,
+            minRating: Number.isNaN(ratingNum) ? undefined : ratingNum,
+            date,
+          }),
     isClubs ? getClubs({ q, city }) : Promise.resolve([]),
     getGenres(),
   ])
@@ -94,6 +104,7 @@ export default async function DiscoverPage({
         date,
         ai,
         type,
+        rec,
       }}
     />
   )

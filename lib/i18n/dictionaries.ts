@@ -672,6 +672,11 @@ const nl = {
     unknownCity: "Onbekend",
     viewClub: "Bekijk club",
     viewProfile: "Bekijk profiel",
+    recommended: "Aanbevolen",
+    recommendedTitle: "Aanbevolen voor jou",
+    startTitle: "Begin met ontdekken",
+    startHint:
+      "Tik op Aanbevolen voor DJ's die bij jou passen, of gebruik de filter om te zoeken.",
     bookedTimes: "{n}× geboekt",
     followersCount: "{n} volgers",
     provincePriceTitle: "Totaalbedrag voor deze provincie, incl. reiskosten",
@@ -1349,6 +1354,11 @@ const en: typeof nl = {
     unknownCity: "Unknown",
     viewClub: "View club",
     viewProfile: "View profile",
+    recommended: "Recommended",
+    recommendedTitle: "Recommended for you",
+    startTitle: "Start discovering",
+    startHint:
+      "Tap Recommended for DJs that match you, or use the filter to search.",
     bookedTimes: "{n}× booked",
     followersCount: "{n} followers",
     provincePriceTitle: "Total amount for this province, incl. travel costs",
