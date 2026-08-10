@@ -20,7 +20,7 @@ export async function savePreferences(formData: FormData) {
   const genreId = Number.isFinite(genreRaw) && genreRaw > 0 ? genreRaw : null
   const date = String(formData.get("date") ?? "").trim() || null
 
-  await supabase
+  const { error } = await supabase
     .from("profiles")
     .update({
       pref_province: province,
@@ -30,6 +30,10 @@ export async function savePreferences(formData: FormData) {
       prefs_set: true,
     })
     .eq("id", user.id)
+
+  // Niet doorsturen als opslaan mislukt — anders stuurt /discover meteen terug
+  // naar /voorkeuren (schijnbare refresh). Toon in plaats daarvan een melding.
+  if (error) redirect("/voorkeuren?error=1")
 
   redirect("/discover?rec=1")
 }
@@ -41,6 +45,10 @@ export async function skipPreferences() {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect("/login?next=/voorkeuren")
-  await supabase.from("profiles").update({ prefs_set: true }).eq("id", user.id)
+  const { error } = await supabase
+    .from("profiles")
+    .update({ prefs_set: true })
+    .eq("id", user.id)
+  if (error) redirect("/voorkeuren?error=1")
   redirect("/discover")
 }

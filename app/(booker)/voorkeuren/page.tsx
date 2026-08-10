@@ -8,7 +8,11 @@ import { dict } from "./i18n"
 
 export const dynamic = "force-dynamic"
 
-export default async function VoorkeurenPage() {
+export default async function VoorkeurenPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
   const profile = await getProfile()
   if (!profile) redirect("/login?next=/voorkeuren")
   if (profile.role === "artist" || profile.role === "both") redirect("/dashboard")
@@ -17,11 +21,18 @@ export default async function VoorkeurenPage() {
   const d = dict[locale]
   const genres = await getGenres()
   const today = new Date().toISOString().slice(0, 10)
+  const { error } = await searchParams
 
   return (
     <main className="mx-auto w-full max-w-lg flex-1 px-6 py-12">
       <h1 className="text-2xl font-semibold tracking-tight">{d.title}</h1>
       <p className="mt-2 text-sm text-muted">{d.intro}</p>
+
+      {error && (
+        <p className="mt-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {d.saveError}
+        </p>
+      )}
 
       <form action={savePreferences} className="mt-6 flex flex-col gap-4">
         <label className="flex flex-col gap-1.5">

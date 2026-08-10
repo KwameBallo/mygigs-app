@@ -9,6 +9,8 @@ const nl = {
   save: "Toon aanbevolen DJ's",
   skip: "Overslaan",
   any: "Maakt niet uit",
+  saveError:
+    "Opslaan is niet gelukt. Probeer het zo opnieuw — lukt het nog steeds niet, laat het ons weten.",
 }
 
 const en: typeof nl = {
@@ -22,6 +24,8 @@ const en: typeof nl = {
   save: "Show recommended DJs",
   skip: "Skip",
   any: "No preference",
+  saveError:
+    "Saving failed. Please try again — if it keeps failing, let us know.",
 }
 
 export const dict = { nl, en }
