@@ -1276,6 +1276,11 @@ export type Database = {
           subscription_trial_end: string | null
           updated_at: string
           vat_number: string | null
+          pref_province: string | null
+          pref_budget: number | null
+          pref_genre_id: number | null
+          pref_date: string | null
+          prefs_set: boolean
         }
         Insert: {
           avatar_url?: string | null
@@ -1302,6 +1307,11 @@ export type Database = {
           subscription_trial_end?: string | null
           updated_at?: string
           vat_number?: string | null
+          pref_province?: string | null
+          pref_budget?: number | null
+          pref_genre_id?: number | null
+          pref_date?: string | null
+          prefs_set?: boolean
         }
         Update: {
           avatar_url?: string | null
@@ -1328,6 +1338,11 @@ export type Database = {
           subscription_trial_end?: string | null
           updated_at?: string
           vat_number?: string | null
+          pref_province?: string | null
+          pref_budget?: number | null
+          pref_genre_id?: number | null
+          pref_date?: string | null
+          prefs_set?: boolean
         }
         Relationships: []
       }

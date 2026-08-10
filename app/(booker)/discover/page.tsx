@@ -29,6 +29,12 @@ export default async function DiscoverPage({
   if (profile?.role === "artist" || profile?.role === "both") {
     redirect("/dashboard")
   }
+  // Organisator zonder ingevulde voorkeuren → eerst het (overslaanbare)
+  // voorkeuren-formulier, dat de 'Aanbevolen'-lijst voedt. `=== false` zodat dit
+  // vóór migratie 0030 niks doet (kolom nog afwezig → undefined).
+  if (profile?.role === "booker" && profile.prefs_set === false) {
+    redirect("/voorkeuren")
+  }
 
   const {
     q,
