@@ -168,6 +168,14 @@ export default async function LoginPage({
               hide: a.hidePassword,
             }}
           />
+          {!isSignup && (
+            <Link
+              href="/wachtwoord-vergeten"
+              className="-mt-1 self-end text-xs text-muted transition hover:text-foreground"
+            >
+              {a.forgotPassword}
+            </Link>
+          )}
           {isSignup && (
             <label className="flex items-start gap-2.5 text-sm text-muted">
               <input

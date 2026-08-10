@@ -62,6 +62,7 @@ const nl = {
     signupSubtitle: "Ontdek feesten en boek DJ's voor je eigen event.",
     loginDjSubtitle: "Log in op je DJ-account.",
     loginSubtitle: "Log in om DJ's te ontdekken en te boeken.",
+    forgotPassword: "Wachtwoord vergeten?",
     tabOrganiser: "Organisator",
     tabDj: "DJ",
     checkEmail:
@@ -748,6 +749,7 @@ const en: typeof nl = {
     signupSubtitle: "Discover events and book DJs for your own event.",
     loginDjSubtitle: "Log in to your DJ account.",
     loginSubtitle: "Log in to discover and book DJs.",
+    forgotPassword: "Forgot password?",
     tabOrganiser: "Organiser",
     tabDj: "DJ",
     checkEmail:

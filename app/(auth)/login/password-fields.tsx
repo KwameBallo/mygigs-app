@@ -43,7 +43,9 @@ export function PasswordFields({
             name="password"
             type={showPw ? "text" : "password"}
             required
-            minLength={12}
+            // Alleen bij aanmelden een minimumlengte afdwingen — bij inloggen
+            // moet een bestaand (mogelijk korter) wachtwoord gewoon werken.
+            minLength={isSignup ? 12 : undefined}
             autoComplete={isSignup ? "new-password" : "current-password"}
             placeholder="••••••••"
             value={pw}
