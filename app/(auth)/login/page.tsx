@@ -50,6 +50,7 @@ export default async function LoginPage({
     signin: a.errSignin,
     signup: a.errSignup,
     "password-mismatch": a.errPasswordMismatch,
+    "password-short": a.errPasswordShort,
     terms: a.errTerms,
     "too-many": a.errTooMany,
     "use-organiser": a.errUseOrganiser,

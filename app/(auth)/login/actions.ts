@@ -104,6 +104,12 @@ export async function signUp(formData: FormData) {
   const rl = await rateLimit(ip, { limit: 5, windowSec: 3600, scope: "signup" })
   if (!rl.ok) signupError("too-many", isDj)
 
+  // Wachtwoordbeleid: minimaal 12 tekens (server-side, naast de client-check en
+  // de Supabase-minimumlengte). Voorkomt zwakke wachtwoorden.
+  if (password.length < 12) {
+    signupError("password-short", isDj)
+  }
+
   // Beide wachtwoorden moeten gelijk zijn (voorkomt typefouten).
   if (password !== passwordConfirm) {
     signupError("password-mismatch", isDj)

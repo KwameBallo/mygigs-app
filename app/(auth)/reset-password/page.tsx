@@ -53,7 +53,7 @@ function ResetPasswordForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    if (password.length < 6) return setError(d.minChars)
+    if (password.length < 12) return setError(d.minChars)
     setPhase("saving")
     const { error } = await supabase.auth.updateUser({ password })
     if (error) {
@@ -103,7 +103,7 @@ function ResetPasswordForm() {
               <input
                 type="password"
                 required
-                minLength={6}
+                minLength={12}
                 autoFocus
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

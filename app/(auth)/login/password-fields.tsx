@@ -43,7 +43,7 @@ export function PasswordFields({
             name="password"
             type={showPw ? "text" : "password"}
             required
-            minLength={6}
+            minLength={12}
             autoComplete={isSignup ? "new-password" : "current-password"}
             placeholder="••••••••"
             value={pw}
@@ -67,7 +67,7 @@ export function PasswordFields({
               name="password_confirm"
               type={showConfirm ? "text" : "password"}
               required
-              minLength={6}
+              minLength={12}
               autoComplete="new-password"
               placeholder="••••••••"
               value={confirm}

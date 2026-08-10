@@ -99,6 +99,7 @@ const nl = {
     errSignup:
       "Aanmelden mislukt. Controleer je gegevens of probeer een ander e-mailadres.",
     errPasswordMismatch: "De wachtwoorden komen niet overeen.",
+    errPasswordShort: "Kies een wachtwoord van minimaal 12 tekens.",
     errTerms: "Je moet akkoord gaan met de voorwaarden en het privacybeleid.",
     errTooMany: "Te veel pogingen. Wacht een paar minuten en probeer opnieuw.",
     errUseOrganiser: "Dit is een organisator-account. Log in via organisator.",
@@ -779,6 +780,7 @@ const en: typeof nl = {
     errSignup:
       "Sign up failed. Check your details or try a different email address.",
     errPasswordMismatch: "The passwords do not match.",
+    errPasswordShort: "Choose a password of at least 12 characters.",
     errTerms: "You must agree to the terms and the privacy policy.",
     errTooMany: "Too many attempts. Wait a few minutes and try again.",
     errUseOrganiser: "This is an organiser account. Log in via organiser.",
