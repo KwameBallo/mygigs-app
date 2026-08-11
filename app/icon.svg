@@ -1,5 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#0b0b0f"/>
-  <text x="222" y="262" font-family="Geist" font-weight="700" font-size="252" letter-spacing="-6" text-anchor="middle" dominant-baseline="central" fill="#ffffff">MG</text>
-  <circle cx="366" cy="356" r="21" fill="#ff6a00"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <rect width="800" height="800" fill="#0b0b0f"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="52" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M120 275V154Q120 120 154 120H275"/>
+    <path d="M525 120H646Q680 120 680 154V275"/>
+    <path d="M680 525V646Q680 680 646 680H525"/>
+    <path d="M275 680H154Q120 680 120 646V525"/>
+  </g>
+  <path fill="#FF6500" d="M400 180
+    C410 300 500 390 620 400
+    C500 410 410 500 400 620
+    C390 500 300 410 180 400
+    C300 390 390 300 400 180Z"/>
 </svg>
