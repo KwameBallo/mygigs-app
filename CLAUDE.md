@@ -12,10 +12,10 @@ secrets, deployments, repos, env files, or domains.
 
 | Use this | Project | Supabase ref |
 |---|---|---|
-| ALWAYS | MyGigs | `qvenjlozeggrxfyycpsn` |
+| ALWAYS | MyGigs | `obvvbeniswpertarxobj` |
 | NEVER | Fresh Creatives ("Fresh Ones") | `dstcrrylnjxjuqvmslaw` |
 
-Before any database or deploy action, confirm the ref is `qvenjlozeggrxfyycpsn`.
+Before any database or deploy action, confirm the ref is `obvvbeniswpertarxobj`.
 If you ever see `dstcrrylnjxjuqvmslaw` in a MyGigs context: STOP, it is wrong.
 
 ## Conventions
