@@ -1,0 +1,33 @@
+# Regeleindes: in de repo altijd LF, lokaal wat je besturingssysteem gebruikt.
+# Voorkomt diffs waarin een heel bestand "gewijzigd" lijkt terwijl alleen de
+# regeleindes verschillen.
+* text=auto eol=lf
+
+# Expliciet als tekst behandelen
+*.ts    text
+*.tsx   text
+*.js    text
+*.mjs   text
+*.cjs   text
+*.json  text
+*.md    text
+*.css   text
+*.sql   text
+*.svg   text
+*.txt   text
+*.yml   text
+*.yaml  text
+
+# Binair: nooit converteren
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.mp4   binary
+*.wav   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
