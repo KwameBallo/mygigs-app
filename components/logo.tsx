@@ -38,10 +38,10 @@ export function Logo({
   href?: string
   size?: "sm" | "lg"
 }) {
-  const mark = size === "lg" ? "h-16 w-16 sm:h-20 sm:w-20" : "h-8 w-8"
+  const mark = size === "lg" ? "h-12 w-12 sm:h-14 sm:w-14" : "h-8 w-8"
   const word =
     size === "lg"
-      ? "text-xl sm:text-2xl -mt-1"
+      ? "text-base sm:text-lg -mt-1"
       : "text-[13px] -mt-0.5"
 
   return (

@@ -28,10 +28,10 @@ export default async function Home() {
         <section className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 pb-16 pt-20 text-center sm:pt-28">
           <Logo size="lg" />
           <div className="mb-8" />
-          <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
+          <h1 className="text-balance text-2xl font-semibold leading-tight tracking-tight sm:text-4xl">
             Be the <span className="text-brand">star</span> you want to be.
           </h1>
-          <p className="mt-6 max-w-xl text-balance text-lg font-medium text-muted">
+          <p className="mt-4 max-w-xl text-balance text-base font-medium text-muted">
             {h.brandTagline}
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
