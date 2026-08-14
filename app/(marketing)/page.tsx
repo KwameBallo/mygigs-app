@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
+import { Logo } from "@/components/logo"
 import { ArtistCard } from "@/components/artist-card"
 import { getArtists } from "@/lib/data/artists"
 import { getProfile } from "@/lib/auth"
@@ -25,9 +26,8 @@ export default async function Home() {
         <div className="brand-glow pointer-events-none absolute inset-x-0 top-0 h-[640px]" />
 
         <section className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 pb-16 pt-20 text-center sm:pt-28">
-          <p className="mb-6 text-2xl font-bold tracking-tight sm:text-3xl">
-            My<span className="text-brand">Gigs</span>
-          </p>
+          <Logo size="lg" />
+          <div className="mb-8" />
           <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
             Be the <span className="text-brand">star</span> you want to be.
           </h1>

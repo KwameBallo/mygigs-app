@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Logo } from "@/components/logo"
+import { LogoMark } from "@/components/logo"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { getProfile } from "@/lib/auth"
 import { getI18n } from "@/lib/i18n"
@@ -11,7 +11,7 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
-        <Logo />
+        <LogoMark />
         <nav className="flex items-center gap-1 text-sm">
           {/* DJ's browsen niet zelf op Ontdek. */}
           {!isArtist && (
