@@ -1,34 +1,24 @@
 import Link from "next/link"
+import { AvatarImage } from "@/components/avatar-image"
 import { Stars } from "@/components/stars"
 import { formatEuro } from "@/lib/utils/pricing"
 import type { Artist } from "@/lib/data/artists"
 
 export function ArtistCard({ artist }: { artist: Artist }) {
-  const initials = artist.stage_name
-    .split(" ")
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase()
-
   return (
     <Link
       href={`/artists/${artist.id}`}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface transition hover:border-brand/50 hover:shadow-[0_0_0_1px_var(--brand)]"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-surface-2">
-        {artist.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={artist.avatar_url}
-            alt={artist.stage_name}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-surface-2 to-surface text-4xl font-semibold text-muted">
-            {initials}
-          </div>
-        )}
+        <AvatarImage
+          row={artist}
+          name={artist.stage_name}
+          prefer={512}
+          sizes="(min-width: 1280px) 300px, (min-width: 640px) 45vw, 92vw"
+          className="text-4xl"
+          imgClassName="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
         {artist.online && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-green-400" />

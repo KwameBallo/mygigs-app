@@ -7,7 +7,7 @@ export function StarMark({ className = "h-8 w-8" }: { className?: string }) {
   return (
     <svg viewBox="0 0 800 800" className={`flex-none ${className}`} aria-hidden="true">
       <path fill="currentColor" d="M386.0 164C377.0 292.738,295.1 389.38,186.0 400C295.1 410.62,377.0 507.262,386.0 636Z" />
-      <path fill="#FF6500" d="M414.0 164C423.0 292.738,504.9 389.38,614.0 400C504.9 410.62,423.0 507.262,414.0 636Z" />
+      <path fill="#FF6A00" d="M414.0 164C423.0 292.738,504.9 389.38,614.0 400C504.9 410.62,423.0 507.262,414.0 636Z" />
     </svg>
   )
 }
@@ -55,7 +55,7 @@ export function Logo({
         className={`${word} font-bold tracking-[0.26em] indent-[0.26em]`}
         style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
       >
-        MY<span style={{ color: "#FF6500" }}>GIGS</span>
+        MY<span style={{ color: "#FF6A00" }}>GIGS</span>
       </span>
     </Link>
   )

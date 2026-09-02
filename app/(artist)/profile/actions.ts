@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { ACT_TYPES } from "@/lib/utils/acts"
 import { PROVINCE_NAMES } from "@/lib/utils/provinces"
+import { HOUSE_RULES_VERSION } from "@/lib/rules"
 
 export async function saveArtistProfile(formData: FormData) {
   const supabase = await createClient()
@@ -183,6 +184,62 @@ export async function saveArtistBilling(formData: FormData) {
 
 // Profielfoto (avatar) instellen — verschijnt op het profiel en in de
 // zoekresultaten i.p.v. de initialen.
+type AvatarSet = { variants: Record<string, string>; blur: string }
+
+// Slaat de drie varianten plus de vervaagde placeholder op. De client heeft de
+// bestanden al naar Storage geschreven; hier controleren we alleen of het
+// werkelijk onze eigen bucket is en zetten we de rij bij.
+export async function setArtistAvatarSet(input: AvatarSet): Promise<boolean> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return false
+
+  // Alleen eigen uploads uit Supabase Storage toestaan — geen externe URL's
+  // (tracking-pixels/hotlinking op een openbaar profiel). SEC #7.
+  const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "")
+  if (!base) return false
+
+  const allowed = ["160", "512", "1200"]
+  const variants: Record<string, string> = {}
+  for (const [key, url] of Object.entries(input.variants ?? {})) {
+    if (!allowed.includes(key)) continue
+    if (typeof url !== "string") continue
+    // Het pad moet in de eigen map van deze gebruiker staan.
+    if (!url.startsWith(`${base}/storage/`)) return false
+    if (!url.includes(`/media/${user.id}/avatar/`)) return false
+    variants[key] = url
+  }
+  if (Object.keys(variants).length === 0) return false
+
+  // De placeholder is een piepklein plaatje; alles daarboven is verdacht.
+  const blur =
+    typeof input.blur === "string" &&
+    input.blur.startsWith("data:image/jpeg;base64,") &&
+    input.blur.length < 4000
+      ? input.blur
+      : null
+
+  const main = variants["1200"] ?? variants["512"] ?? variants["160"]
+
+  const { error } = await supabase
+    .from("artists")
+    .update({
+      avatar_url: main,
+      avatar_variants: variants,
+      avatar_blur: blur,
+      avatar_updated_at: new Date().toISOString(),
+    } as never)
+    .eq("user_id", user.id)
+
+  if (error) return false
+
+  revalidatePath("/profile")
+  revalidatePath("/discover")
+  return true
+}
+
 export async function setArtistAvatar(url: string) {
   const supabase = await createClient()
   const {
@@ -202,4 +259,28 @@ export async function setArtistAvatar(url: string) {
 
   revalidatePath("/profile")
   revalidatePath("/discover")
+}
+
+// Akkoord met de huisregels vastleggen. We bewaren het moment én de versie,
+// zodat we bij een latere wijziging opnieuw akkoord kunnen vragen en achteraf
+// kunnen laten zien welke tekst iemand heeft geaccepteerd.
+export async function acceptHouseRules(): Promise<boolean> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return false
+
+  const { error } = await supabase
+    .from("artists")
+    .update({
+      rules_accepted_at: new Date().toISOString(),
+      rules_version: HOUSE_RULES_VERSION,
+    } as never)
+    .eq("user_id", user.id)
+
+  if (error) return false
+
+  revalidatePath("/profile")
+  return true
 }

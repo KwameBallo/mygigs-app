@@ -74,26 +74,26 @@ export type Database = {
         Row: {
           artist_id: string
           date: string
-          id: string
-          status: Database["public"]["Enums"]["availability_status"]
-          start_time: string | null
           end_time: string | null
+          id: string
+          start_time: string | null
+          status: Database["public"]["Enums"]["availability_status"]
         }
         Insert: {
           artist_id: string
           date: string
-          id?: string
-          status?: Database["public"]["Enums"]["availability_status"]
-          start_time?: string | null
           end_time?: string | null
+          id?: string
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["availability_status"]
         }
         Update: {
           artist_id?: string
           date?: string
-          id?: string
-          status?: Database["public"]["Enums"]["availability_status"]
-          start_time?: string | null
           end_time?: string | null
+          id?: string
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["availability_status"]
         }
         Relationships: [
           {
@@ -105,194 +105,40 @@ export type Database = {
           },
         ]
       }
-      audit_log: {
+      artist_billing: {
         Row: {
-          action: string
-          actor_id: string | null
-          created_at: string
-          id: number
-          metadata: Json | null
-          target_id: string | null
-          target_type: string | null
-        }
-        Insert: {
-          action: string
-          actor_id?: string | null
-          created_at?: string
-          id?: number
-          metadata?: Json | null
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Update: {
-          action?: string
-          actor_id?: string | null
-          created_at?: string
-          id?: number
-          metadata?: Json | null
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Relationships: []
-      }
-      dj_applications: {
-        Row: {
-          created_at: string
-          id: number
-          motivation: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          motivation?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          motivation?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      artists: {
-        Row: {
-          act_type: Database["public"]["Enums"]["act_type"]
-          avatar_url: string | null
-          base_gage: number
-          bio: string | null
-          bookings_30d: number
-          created_at: string
-          equipment: string | null
-          genre_id: number | null
-          home_city: string | null
-          id: string
-          instagram_followers: number
-          instagram_handle: string | null
-          instagram_url: string | null
-          lat: number | null
-          lng: number | null
-          mixcloud_url: string | null
-          online: boolean
-          rating: number
-          response_minutes: number | null
-          reviews_count: number
-          soundcloud_url: string | null
-          spotify_followers: number
-          spotify_url: string | null
-          stage_name: string
-          tiktok_followers: number
-          tiktok_handle: string | null
-          tiktok_url: string | null
-          total_bookings: number
+          artist_id: string
+          invoice_address: string | null
+          invoice_name: string | null
+          is_vat_registered: boolean
+          kvk_number: string | null
           updated_at: string
-          user_id: string | null
-          equipment_items: string[]
-          equipment_prices: Json
-          has_light: boolean
-          has_sound: boolean
-          province: string | null
-          verified: boolean
+          vat_number: string | null
         }
         Insert: {
-          act_type?: Database["public"]["Enums"]["act_type"]
-          avatar_url?: string | null
-          base_gage?: number
-          bio?: string | null
-          bookings_30d?: number
-          created_at?: string
-          equipment?: string | null
-          genre_id?: number | null
-          home_city?: string | null
-          id?: string
-          instagram_followers?: number
-          instagram_handle?: string | null
-          instagram_url?: string | null
-          lat?: number | null
-          lng?: number | null
-          mixcloud_url?: string | null
-          online?: boolean
-          rating?: number
-          response_minutes?: number | null
-          reviews_count?: number
-          soundcloud_url?: string | null
-          spotify_followers?: number
-          spotify_url?: string | null
-          stage_name: string
-          tiktok_followers?: number
-          tiktok_handle?: string | null
-          tiktok_url?: string | null
-          total_bookings?: number
+          artist_id: string
+          invoice_address?: string | null
+          invoice_name?: string | null
+          is_vat_registered?: boolean
+          kvk_number?: string | null
           updated_at?: string
-          user_id?: string | null
-          equipment_items?: string[]
-          equipment_prices?: Json
-          has_light?: boolean
-          has_sound?: boolean
-          province?: string | null
-          verified?: boolean
+          vat_number?: string | null
         }
         Update: {
-          act_type?: Database["public"]["Enums"]["act_type"]
-          avatar_url?: string | null
-          base_gage?: number
-          bio?: string | null
-          bookings_30d?: number
-          created_at?: string
-          equipment?: string | null
-          genre_id?: number | null
-          home_city?: string | null
-          id?: string
-          instagram_followers?: number
-          instagram_handle?: string | null
-          instagram_url?: string | null
-          lat?: number | null
-          lng?: number | null
-          mixcloud_url?: string | null
-          online?: boolean
-          rating?: number
-          response_minutes?: number | null
-          reviews_count?: number
-          soundcloud_url?: string | null
-          spotify_followers?: number
-          spotify_url?: string | null
-          stage_name?: string
-          tiktok_followers?: number
-          tiktok_handle?: string | null
-          tiktok_url?: string | null
-          total_bookings?: number
+          artist_id?: string
+          invoice_address?: string | null
+          invoice_name?: string | null
+          is_vat_registered?: boolean
+          kvk_number?: string | null
           updated_at?: string
-          user_id?: string | null
-          equipment_items?: string[]
-          equipment_prices?: Json
-          has_light?: boolean
-          has_sound?: boolean
-          province?: string | null
-          verified?: boolean
+          vat_number?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "artists_genre_id_fkey"
-            columns: ["genre_id"]
-            isOneToOne: false
-            referencedRelation: "genres"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "artists_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
+            foreignKeyName: "artist_billing_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: true
+            referencedRelation: "artists"
             referencedColumns: ["id"]
           },
         ]
@@ -323,35 +169,6 @@ export type Database = {
             columns: ["genre_id"]
             isOneToOne: false
             referencedRelation: "genres"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      artist_province_rates: {
-        Row: {
-          artist_id: string
-          gage: number
-          id: string
-          province: string
-        }
-        Insert: {
-          artist_id: string
-          gage: number
-          id?: string
-          province: string
-        }
-        Update: {
-          artist_id?: string
-          gage?: number
-          id?: string
-          province?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "artist_province_rates_artist_id_fkey"
-            columns: ["artist_id"]
-            isOneToOne: false
-            referencedRelation: "artists"
             referencedColumns: ["id"]
           },
         ]
@@ -391,291 +208,211 @@ export type Database = {
           },
         ]
       }
-      suppliers: {
-        Row: {
-          category: Database["public"]["Enums"]["supplier_category"]
-          city: string | null
-          contact_email: string | null
-          contact_phone: string | null
-          created_at: string
-          day_rate: number | null
-          description: string | null
-          id: string
-          image_url: string | null
-          lat: number | null
-          lng: number | null
-          name: string
-          rating: number
-          reviews_count: number
-          updated_at: string
-          user_id: string | null
-          website_url: string | null
-        }
-        Insert: {
-          category?: Database["public"]["Enums"]["supplier_category"]
-          city?: string | null
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          day_rate?: number | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          lat?: number | null
-          lng?: number | null
-          name: string
-          rating?: number
-          reviews_count?: number
-          updated_at?: string
-          user_id?: string | null
-          website_url?: string | null
-        }
-        Update: {
-          category?: Database["public"]["Enums"]["supplier_category"]
-          city?: string | null
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          day_rate?: number | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          lat?: number | null
-          lng?: number | null
-          name?: string
-          rating?: number
-          reviews_count?: number
-          updated_at?: string
-          user_id?: string | null
-          website_url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "suppliers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      chat_flags: {
-        Row: {
-          conversation_id: string | null
-          counterparty_id: string | null
-          created_at: string
-          id: string
-          reason: string
-          sender_id: string | null
-          snippet: string | null
-        }
-        Insert: {
-          conversation_id?: string | null
-          counterparty_id?: string | null
-          created_at?: string
-          id?: string
-          reason: string
-          sender_id?: string | null
-          snippet?: string | null
-        }
-        Update: {
-          conversation_id?: string | null
-          counterparty_id?: string | null
-          created_at?: string
-          id?: string
-          reason?: string
-          sender_id?: string | null
-          snippet?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_flags_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      clubs: {
-        Row: {
-          address: string | null
-          capacity: number | null
-          city: string | null
-          contact_email: string | null
-          contact_phone: string | null
-          created_at: string
-          description: string | null
-          id: string
-          image_url: string | null
-          lat: number | null
-          lng: number | null
-          name: string
-          updated_at: string
-          user_id: string | null
-          website_url: string | null
-        }
-        Insert: {
-          address?: string | null
-          capacity?: number | null
-          city?: string | null
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          lat?: number | null
-          lng?: number | null
-          name: string
-          updated_at?: string
-          user_id?: string | null
-          website_url?: string | null
-        }
-        Update: {
-          address?: string | null
-          capacity?: number | null
-          city?: string | null
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          lat?: number | null
-          lng?: number | null
-          name?: string
-          updated_at?: string
-          user_id?: string | null
-          website_url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clubs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      events: {
-        Row: {
-          city: string | null
-          club_id: string | null
-          created_at: string
-          description: string | null
-          end_time: string | null
-          event_date: string
-          flyer_url: string | null
-          genre_id: number | null
-          id: string
-          min_age: number | null
-          organizer_id: string | null
-          published: boolean
-          start_time: string | null
-          ticket_price: number | null
-          ticket_url: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          city?: string | null
-          club_id?: string | null
-          created_at?: string
-          description?: string | null
-          end_time?: string | null
-          event_date: string
-          flyer_url?: string | null
-          genre_id?: number | null
-          id?: string
-          min_age?: number | null
-          organizer_id?: string | null
-          published?: boolean
-          start_time?: string | null
-          ticket_price?: number | null
-          ticket_url?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          city?: string | null
-          club_id?: string | null
-          created_at?: string
-          description?: string | null
-          end_time?: string | null
-          event_date?: string
-          flyer_url?: string | null
-          genre_id?: number | null
-          id?: string
-          min_age?: number | null
-          organizer_id?: string | null
-          published?: boolean
-          start_time?: string | null
-          ticket_price?: number | null
-          ticket_url?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "events_club_id_fkey"
-            columns: ["club_id"]
-            isOneToOne: false
-            referencedRelation: "clubs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "events_genre_id_fkey"
-            columns: ["genre_id"]
-            isOneToOne: false
-            referencedRelation: "genres"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "events_organizer_id_fkey"
-            columns: ["organizer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      event_artists: {
+      artist_province_rates: {
         Row: {
           artist_id: string
-          created_at: string
-          event_id: string
-          sort_order: number
+          gage: number
+          id: string
+          province: string
         }
         Insert: {
           artist_id: string
-          created_at?: string
-          event_id: string
-          sort_order?: number
+          gage: number
+          id?: string
+          province: string
         }
         Update: {
           artist_id?: string
-          created_at?: string
-          event_id?: string
-          sort_order?: number
+          gage?: number
+          id?: string
+          province?: string
         }
         Relationships: [
           {
-            foreignKeyName: "event_artists_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_artists_artist_id_fkey"
+            foreignKeyName: "artist_province_rates_artist_id_fkey"
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
             referencedColumns: ["id"]
           },
         ]
+      }
+      artists: {
+        Row: {
+          act_type: Database["public"]["Enums"]["act_type"]
+          avatar_blur: string | null
+          avatar_updated_at: string | null
+          avatar_url: string | null
+          avatar_variants: Json | null
+          base_gage: number
+          bio: string | null
+          bookings_30d: number
+          created_at: string
+          equipment: string | null
+          equipment_items: string[]
+          equipment_prices: Json
+          genre_id: number | null
+          has_light: boolean
+          has_sound: boolean
+          home_city: string | null
+          id: string
+          instagram_followers: number
+          instagram_handle: string | null
+          instagram_url: string | null
+          lat: number | null
+          lng: number | null
+          mixcloud_url: string | null
+          online: boolean
+          province: string | null
+          rating: number
+          response_minutes: number | null
+          reviews_count: number
+          rules_accepted_at: string | null
+          rules_version: number | null
+          soundcloud_url: string | null
+          spotify_followers: number
+          spotify_url: string | null
+          stage_name: string
+          tiktok_followers: number
+          tiktok_handle: string | null
+          tiktok_url: string | null
+          total_bookings: number
+          updated_at: string
+          user_id: string | null
+          verified: boolean
+        }
+        Insert: {
+          act_type?: Database["public"]["Enums"]["act_type"]
+          avatar_blur?: string | null
+          avatar_updated_at?: string | null
+          avatar_url?: string | null
+          avatar_variants?: Json | null
+          base_gage?: number
+          bio?: string | null
+          bookings_30d?: number
+          created_at?: string
+          equipment?: string | null
+          equipment_items?: string[]
+          equipment_prices?: Json
+          genre_id?: number | null
+          has_light?: boolean
+          has_sound?: boolean
+          home_city?: string | null
+          id?: string
+          instagram_followers?: number
+          instagram_handle?: string | null
+          instagram_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          mixcloud_url?: string | null
+          online?: boolean
+          province?: string | null
+          rating?: number
+          response_minutes?: number | null
+          reviews_count?: number
+          rules_accepted_at?: string | null
+          rules_version?: number | null
+          soundcloud_url?: string | null
+          spotify_followers?: number
+          spotify_url?: string | null
+          stage_name: string
+          tiktok_followers?: number
+          tiktok_handle?: string | null
+          tiktok_url?: string | null
+          total_bookings?: number
+          updated_at?: string
+          user_id?: string | null
+          verified?: boolean
+        }
+        Update: {
+          act_type?: Database["public"]["Enums"]["act_type"]
+          avatar_blur?: string | null
+          avatar_updated_at?: string | null
+          avatar_url?: string | null
+          avatar_variants?: Json | null
+          base_gage?: number
+          bio?: string | null
+          bookings_30d?: number
+          created_at?: string
+          equipment?: string | null
+          equipment_items?: string[]
+          equipment_prices?: Json
+          genre_id?: number | null
+          has_light?: boolean
+          has_sound?: boolean
+          home_city?: string | null
+          id?: string
+          instagram_followers?: number
+          instagram_handle?: string | null
+          instagram_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          mixcloud_url?: string | null
+          online?: boolean
+          province?: string | null
+          rating?: number
+          response_minutes?: number | null
+          reviews_count?: number
+          rules_accepted_at?: string | null
+          rules_version?: number | null
+          soundcloud_url?: string | null
+          spotify_followers?: number
+          spotify_url?: string | null
+          stage_name?: string
+          tiktok_followers?: number
+          tiktok_handle?: string | null
+          tiktok_url?: string | null
+          total_bookings?: number
+          updated_at?: string
+          user_id?: string | null
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artists_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "genres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artists_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: number
+          metadata: Json | null
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: never
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: never
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
       }
       bookings: {
         Row: {
@@ -821,60 +558,113 @@ export type Database = {
           },
         ]
       }
-      dj_monthly_recap: {
+      chat_flags: {
         Row: {
-          artist_id: string
-          period: string
-          sent_at: string
+          conversation_id: string | null
+          counterparty_id: string | null
+          created_at: string
+          id: string
+          reason: string
+          sender_id: string | null
+          snippet: string | null
         }
         Insert: {
-          artist_id: string
-          period: string
-          sent_at?: string
+          conversation_id?: string | null
+          counterparty_id?: string | null
+          created_at?: string
+          id?: string
+          reason: string
+          sender_id?: string | null
+          snippet?: string | null
         }
         Update: {
-          artist_id?: string
-          period?: string
-          sent_at?: string
+          conversation_id?: string | null
+          counterparty_id?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          sender_id?: string | null
+          snippet?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "dj_monthly_recap_artist_id_fkey"
-            columns: ["artist_id"]
+            foreignKeyName: "chat_flags_conversation_id_fkey"
+            columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: "artists"
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_flags_counterparty_id_fkey"
+            columns: ["counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_flags_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      push_subscriptions: {
+      clubs: {
         Row: {
-          auth: string
+          address: string | null
+          capacity: number | null
+          city: string | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string
-          endpoint: string
+          description: string | null
           id: string
-          p256dh: string
-          user_id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          name: string
+          updated_at: string
+          user_id: string | null
+          website_url: string | null
         }
         Insert: {
-          auth: string
+          address?: string | null
+          capacity?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
-          endpoint: string
+          description?: string | null
           id?: string
-          p256dh: string
-          user_id: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name: string
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
         }
         Update: {
-          auth?: string
+          address?: string | null
+          capacity?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
-          endpoint?: string
+          description?: string | null
           id?: string
-          p256dh?: string
-          user_id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "push_subscriptions_user_id_fkey"
+            foreignKeyName: "clubs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -937,6 +727,180 @@ export type Database = {
           },
         ]
       }
+      dj_applications: {
+        Row: {
+          created_at: string
+          id: number
+          motivation: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          motivation?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          motivation?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dj_monthly_recap: {
+        Row: {
+          artist_id: string
+          period: string
+          sent_at: string
+        }
+        Insert: {
+          artist_id: string
+          period: string
+          sent_at?: string
+        }
+        Update: {
+          artist_id?: string
+          period?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dj_monthly_recap_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_artists: {
+        Row: {
+          artist_id: string
+          created_at: string
+          event_id: string
+          sort_order: number
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          event_id: string
+          sort_order?: number
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          event_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_artists_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_artists_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          city: string | null
+          club_id: string | null
+          created_at: string
+          description: string | null
+          end_time: string | null
+          event_date: string
+          flyer_url: string | null
+          genre_id: number | null
+          id: string
+          min_age: number | null
+          organizer_id: string | null
+          published: boolean
+          start_time: string | null
+          ticket_price: number | null
+          ticket_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          club_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date: string
+          flyer_url?: string | null
+          genre_id?: number | null
+          id?: string
+          min_age?: number | null
+          organizer_id?: string | null
+          published?: boolean
+          start_time?: string | null
+          ticket_price?: number | null
+          ticket_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          club_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date?: string
+          flyer_url?: string | null
+          genre_id?: number | null
+          id?: string
+          min_age?: number | null
+          organizer_id?: string | null
+          published?: boolean
+          start_time?: string | null
+          ticket_price?: number | null
+          ticket_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "genres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           artist_id: string
@@ -990,6 +954,121 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      invoice_counters: {
+        Row: {
+          scope: string
+          seq: number
+          year: number
+        }
+        Insert: {
+          scope: string
+          seq?: number
+          year: number
+        }
+        Update: {
+          scope?: string
+          seq?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          artist_id: string | null
+          booker_id: string | null
+          booking_id: string | null
+          created_at: string
+          description: string
+          gross: number
+          id: string
+          issued_at: string
+          issuer_address: string | null
+          issuer_kvk: string | null
+          issuer_name: string
+          issuer_vat: string | null
+          kind: Database["public"]["Enums"]["invoice_kind"]
+          line_items: Json | null
+          net: number
+          number: string
+          recipient_address: string | null
+          recipient_name: string
+          recipient_vat: string | null
+          vat_amount: number
+          vat_note: string | null
+          vat_rate: number
+        }
+        Insert: {
+          artist_id?: string | null
+          booker_id?: string | null
+          booking_id?: string | null
+          created_at?: string
+          description: string
+          gross: number
+          id?: string
+          issued_at?: string
+          issuer_address?: string | null
+          issuer_kvk?: string | null
+          issuer_name: string
+          issuer_vat?: string | null
+          kind: Database["public"]["Enums"]["invoice_kind"]
+          line_items?: Json | null
+          net: number
+          number: string
+          recipient_address?: string | null
+          recipient_name: string
+          recipient_vat?: string | null
+          vat_amount?: number
+          vat_note?: string | null
+          vat_rate?: number
+        }
+        Update: {
+          artist_id?: string | null
+          booker_id?: string | null
+          booking_id?: string | null
+          created_at?: string
+          description?: string
+          gross?: number
+          id?: string
+          issued_at?: string
+          issuer_address?: string | null
+          issuer_kvk?: string | null
+          issuer_name?: string
+          issuer_vat?: string | null
+          kind?: Database["public"]["Enums"]["invoice_kind"]
+          line_items?: Json | null
+          net?: number
+          number?: string
+          recipient_address?: string | null
+          recipient_name?: string
+          recipient_vat?: string | null
+          vat_amount?: number
+          vat_note?: string | null
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_booker_id_fkey"
+            columns: ["booker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -1116,140 +1195,6 @@ export type Database = {
           },
         ]
       }
-      artist_billing: {
-        Row: {
-          artist_id: string
-          invoice_name: string | null
-          invoice_address: string | null
-          kvk_number: string | null
-          vat_number: string | null
-          is_vat_registered: boolean
-          updated_at: string
-        }
-        Insert: {
-          artist_id: string
-          invoice_name?: string | null
-          invoice_address?: string | null
-          kvk_number?: string | null
-          vat_number?: string | null
-          is_vat_registered?: boolean
-          updated_at?: string
-        }
-        Update: {
-          artist_id?: string
-          invoice_name?: string | null
-          invoice_address?: string | null
-          kvk_number?: string | null
-          vat_number?: string | null
-          is_vat_registered?: boolean
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "artist_billing_artist_id_fkey"
-            columns: ["artist_id"]
-            isOneToOne: true
-            referencedRelation: "artists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      invoices: {
-        Row: {
-          id: string
-          booking_id: string | null
-          kind: Database["public"]["Enums"]["invoice_kind"]
-          number: string
-          issued_at: string
-          issuer_name: string
-          issuer_address: string | null
-          issuer_vat: string | null
-          issuer_kvk: string | null
-          recipient_name: string
-          recipient_address: string | null
-          recipient_vat: string | null
-          description: string
-          net: number
-          vat_rate: number
-          vat_amount: number
-          gross: number
-          vat_note: string | null
-          line_items: Json | null
-          artist_id: string | null
-          booker_id: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          booking_id: string
-          kind: Database["public"]["Enums"]["invoice_kind"]
-          number: string
-          issued_at?: string
-          issuer_name: string
-          issuer_address?: string | null
-          issuer_vat?: string | null
-          issuer_kvk?: string | null
-          recipient_name: string
-          recipient_address?: string | null
-          recipient_vat?: string | null
-          description: string
-          net: number
-          vat_rate?: number
-          vat_amount?: number
-          gross: number
-          vat_note?: string | null
-          line_items?: Json | null
-          artist_id: string
-          booker_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          booking_id?: string
-          kind?: Database["public"]["Enums"]["invoice_kind"]
-          number?: string
-          issued_at?: string
-          issuer_name?: string
-          issuer_address?: string | null
-          issuer_vat?: string | null
-          issuer_kvk?: string | null
-          recipient_name?: string
-          recipient_address?: string | null
-          recipient_vat?: string | null
-          description?: string
-          net?: number
-          vat_rate?: number
-          vat_amount?: number
-          gross?: number
-          vat_note?: string | null
-          line_items?: Json | null
-          artist_id?: string
-          booker_id?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invoices_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invoices_artist_id_fkey"
-            columns: ["artist_id"]
-            isOneToOne: false
-            referencedRelation: "artists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      invoice_counters: {
-        Row: { scope: string; year: number; seq: number }
-        Insert: { scope: string; year: number; seq?: number }
-        Update: { scope?: string; year?: number; seq?: number }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1267,6 +1212,11 @@ export type Database = {
           invoice_address: string | null
           invoice_email: string | null
           phone: string | null
+          pref_budget: number | null
+          pref_date: string | null
+          pref_genre_id: number | null
+          pref_province: string | null
+          prefs_set: boolean
           role: Database["public"]["Enums"]["user_role"]
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -1276,11 +1226,6 @@ export type Database = {
           subscription_trial_end: string | null
           updated_at: string
           vat_number: string | null
-          pref_province: string | null
-          pref_budget: number | null
-          pref_genre_id: number | null
-          pref_date: string | null
-          prefs_set: boolean
         }
         Insert: {
           avatar_url?: string | null
@@ -1298,6 +1243,11 @@ export type Database = {
           invoice_address?: string | null
           invoice_email?: string | null
           phone?: string | null
+          pref_budget?: number | null
+          pref_date?: string | null
+          pref_genre_id?: number | null
+          pref_province?: string | null
+          prefs_set?: boolean
           role?: Database["public"]["Enums"]["user_role"]
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -1307,11 +1257,6 @@ export type Database = {
           subscription_trial_end?: string | null
           updated_at?: string
           vat_number?: string | null
-          pref_province?: string | null
-          pref_budget?: number | null
-          pref_genre_id?: number | null
-          pref_date?: string | null
-          prefs_set?: boolean
         }
         Update: {
           avatar_url?: string | null
@@ -1329,6 +1274,11 @@ export type Database = {
           invoice_address?: string | null
           invoice_email?: string | null
           phone?: string | null
+          pref_budget?: number | null
+          pref_date?: string | null
+          pref_genre_id?: number | null
+          pref_province?: string | null
+          prefs_set?: boolean
           role?: Database["public"]["Enums"]["user_role"]
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -1338,13 +1288,43 @@ export type Database = {
           subscription_trial_end?: string | null
           updated_at?: string
           vat_number?: string | null
-          pref_province?: string | null
-          pref_budget?: number | null
-          pref_genre_id?: number | null
-          pref_date?: string | null
-          prefs_set?: boolean
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
@@ -1401,34 +1381,189 @@ export type Database = {
           },
         ]
       }
+      suppliers: {
+        Row: {
+          category: Database["public"]["Enums"]["supplier_category"]
+          city: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          day_rate: number | null
+          description: string | null
+          id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          name: string
+          rating: number
+          reviews_count: number
+          updated_at: string
+          user_id: string | null
+          website_url: string | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["supplier_category"]
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          day_rate?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name: string
+          rating?: number
+          reviews_count?: number
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["supplier_category"]
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          day_rate?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          rating?: number
+          reviews_count?: number
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      is_artist_owner: { Args: { a_id: string }; Returns: boolean }
-      bookings_due_for_review: {
-        Args: Record<PropertyKey, never>
-        Returns: Database["public"]["Tables"]["bookings"]["Row"][]
-      }
       bookings_due_for_reminder: {
-        Args: Record<PropertyKey, never>
-        Returns: Database["public"]["Tables"]["bookings"]["Row"][]
+        Args: never
+        Returns: {
+          address: string | null
+          address_verified: boolean
+          artist_id: string
+          booker_confirmed_at: string | null
+          booker_id: string
+          booking_type: Database["public"]["Enums"]["booking_type"]
+          checkin_accuracy_m: number | null
+          checkin_at: string | null
+          checkin_distance_m: number | null
+          checkin_lat: number | null
+          checkin_lng: number | null
+          checkin_verified: boolean
+          city: string | null
+          company_name: string | null
+          created_at: string
+          end_time: string | null
+          enroute_at: string | null
+          equipment_items: Json
+          eta: string | null
+          event_date: string
+          gage: number
+          hours: number
+          id: string
+          invoice_email: string | null
+          is_public: boolean
+          lat: number | null
+          lng: number | null
+          message: string | null
+          occasion: string | null
+          postal_code: string | null
+          reminder_sent_at: string | null
+          review_request_sent_at: string | null
+          service_fee: number
+          shortlist_id: string | null
+          start_time: string | null
+          status: Database["public"]["Enums"]["booking_status"]
+          total: number
+          updated_at: string
+          vat_number: string | null
+          venue_name: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
+      bookings_due_for_review: {
+        Args: never
+        Returns: {
+          address: string | null
+          address_verified: boolean
+          artist_id: string
+          booker_confirmed_at: string | null
+          booker_id: string
+          booking_type: Database["public"]["Enums"]["booking_type"]
+          checkin_accuracy_m: number | null
+          checkin_at: string | null
+          checkin_distance_m: number | null
+          checkin_lat: number | null
+          checkin_lng: number | null
+          checkin_verified: boolean
+          city: string | null
+          company_name: string | null
+          created_at: string
+          end_time: string | null
+          enroute_at: string | null
+          equipment_items: Json
+          eta: string | null
+          event_date: string
+          gage: number
+          hours: number
+          id: string
+          invoice_email: string | null
+          is_public: boolean
+          lat: number | null
+          lng: number | null
+          message: string | null
+          occasion: string | null
+          postal_code: string | null
+          reminder_sent_at: string | null
+          review_request_sent_at: string | null
+          service_fee: number
+          shortlist_id: string | null
+          start_time: string | null
+          status: Database["public"]["Enums"]["booking_status"]
+          total: number
+          updated_at: string
+          vat_number: string | null
+          venue_name: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      is_artist_owner: { Args: { a_id: string }; Returns: boolean }
       next_invoice_number: {
-        Args: { p_scope: string; p_prefix: string; p_year: number }
+        Args: { p_prefix: string; p_scope: string; p_year: number }
         Returns: string
       }
     }
     Enums: {
-      act_type:
-        | "dj"
-        | "band"
-        | "singer"
-        | "mc"
-        | "musician"
-        | "duo"
-        | "other"
+      act_type: "dj" | "band" | "singer" | "mc" | "musician" | "duo" | "other"
       ad_placement: "events_top" | "event_detail" | "discover" | "sidebar"
       availability_status: "available" | "booked"
       booking_status:
@@ -1442,6 +1577,12 @@ export type Database = {
       invoice_kind: "dj_sale" | "mg_commission"
       payment_status: "pending" | "held" | "released" | "refunded" | "failed"
       payout_status: "scheduled" | "paid" | "failed"
+      subscription_status:
+        | "inactive"
+        | "trialing"
+        | "active"
+        | "past_due"
+        | "canceled"
       supplier_category:
         | "sound"
         | "light"
@@ -1449,12 +1590,6 @@ export type Database = {
         | "dj_gear"
         | "backline"
         | "other"
-      subscription_status:
-        | "inactive"
-        | "trialing"
-        | "active"
-        | "past_due"
-        | "canceled"
       user_role: "booker" | "artist" | "both" | "admin"
     }
     CompositeTypes: {
@@ -1471,12 +1606,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1500,11 +1635,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1525,11 +1660,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1550,11 +1685,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1567,11 +1702,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1598,6 +1733,13 @@ export const Constants = {
       invoice_kind: ["dj_sale", "mg_commission"],
       payment_status: ["pending", "held", "released", "refunded", "failed"],
       payout_status: ["scheduled", "paid", "failed"],
+      subscription_status: [
+        "inactive",
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+      ],
       supplier_category: [
         "sound",
         "light",
@@ -1605,13 +1747,6 @@ export const Constants = {
         "dj_gear",
         "backline",
         "other",
-      ],
-      subscription_status: [
-        "inactive",
-        "trialing",
-        "active",
-        "past_due",
-        "canceled",
       ],
       user_role: ["booker", "artist", "both", "admin"],
     },

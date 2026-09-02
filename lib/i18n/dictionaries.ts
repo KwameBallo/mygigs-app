@@ -538,10 +538,51 @@ const nl = {
     mediaUpload: "+ Foto's / video's uploaden",
     mediaSaveFailed: "Opslaan mislukt",
     mediaRemove: "Verwijder media",
+    // Huisregels
+    rulesHeading: "Huisregels",
+    rulesHint:
+      "Kort en duidelijk: hier houd je je aan als je via MyGigs draait.",
+    rulesEyebrow: "Zo werken we samen",
+    rulesIntro:
+      "Twaalf regels die de avond voor iedereen goed laten verlopen. De oranje omrande regels zijn de regels waar we streng op zijn.",
+    rulesPromises: "En dit zetten wij daar tegenover",
+    rulesConfirm:
+      "Ik heb de huisregels gelezen en ik houd me eraan bij elke boeking via MyGigs.",
+    rulesAcceptButton: "Akkoord met de huisregels",
+    rulesSaving: "Opslaan…",
+    rulesAcceptedNow: "Akkoord vastgelegd. Bedankt.",
+    rulesAcceptedOn: "Je ging akkoord op {date}.",
+    rulesUpdated:
+      "De huisregels zijn aangepast. Lees ze door en geef opnieuw akkoord.",
+    rulesFailed: "Opslaan mislukt. Probeer het nog een keer.",
+    rulesBadge: "Werkt volgens de MyGigs-huisregels",
     // Avatar
     avatarAlt: "Profielfoto",
     avatarChange: "Foto wijzigen",
     avatarAdd: "Foto toevoegen",
+    // Profielfoto: bijsnijden en kwaliteitseisen
+    cropTitle: "Zet je gezicht goed in beeld",
+    cropHint:
+      "Sleep de foto en zoom in. De cirkel is je avatar, de streepjeslijn is wat er in een kaartje overblijft. Houd je ogen op de oranje lijn.",
+    cropZoom: "Zoom",
+    cropCancel: "Annuleren",
+    cropConfirm: "Zo is het goed",
+    photoNotAnImage: "Dit is geen afbeelding. Kies een JPG, PNG of HEIC.",
+    photoTooHeavy: "Deze foto is groter dan 25 MB. Kies een kleinere.",
+    photoTooSmall:
+      "Deze uitsnede is te klein en wordt korrelig. Zoom uit of kies een scherpere foto.",
+    photoSoft:
+      "Let op: deze uitsnede is aan de kleine kant. Op een groot scherm kan hij zacht ogen.",
+    photoLoadFailed:
+      "Deze foto kon niet worden geopend. Sla hem op als JPG en probeer opnieuw.",
+    photoSaveFailed: "Opslaan van de foto is mislukt. Probeer het nog een keer.",
+    photoTipFace:
+      "Gezicht groot in beeld, van je schouders tot net boven je hoofd.",
+    photoTipSize: "Minimaal 1000 bij 1000 pixels, liever 2000.",
+    photoTipLight:
+      "Licht op je gezicht. Clubfoto's mogen, mits je herkenbaar bent.",
+    photoTipOriginal:
+      "Stuur het origineel, geen schermafbeelding en niet via WhatsApp.",
     // Equipment items
     equipMicrophone: "Microfoon",
     equipTurntable: "Draaitafel",
@@ -1221,10 +1262,46 @@ const en: typeof nl = {
     mediaUpload: "+ Upload photos / videos",
     mediaSaveFailed: "Save failed",
     mediaRemove: "Remove media",
+    // House rules
+    rulesHeading: "House rules",
+    rulesHint: "Short and clear: this is what you sign up to when you play through MyGigs.",
+    rulesEyebrow: "How we work together",
+    rulesIntro:
+      "Twelve rules that keep the night right for everyone. The ones with an orange border are the ones we are strict about.",
+    rulesPromises: "And here is what we put against it",
+    rulesConfirm:
+      "I have read the house rules and I follow them on every MyGigs booking.",
+    rulesAcceptButton: "Agree to the house rules",
+    rulesSaving: "Saving…",
+    rulesAcceptedNow: "Agreement recorded. Thank you.",
+    rulesAcceptedOn: "You agreed on {date}.",
+    rulesUpdated: "The house rules changed. Please read them and agree again.",
+    rulesFailed: "Saving failed. Please try again.",
+    rulesBadge: "Works by the MyGigs house rules",
     // Avatar
     avatarAlt: "Profile photo",
     avatarChange: "Change photo",
     avatarAdd: "Add photo",
+    // Profile photo: cropping and quality
+    cropTitle: "Frame your face",
+    cropHint:
+      "Drag and zoom. The circle is your avatar, the dashed box is what a card shows. Keep your eyes on the orange line.",
+    cropZoom: "Zoom",
+    cropCancel: "Cancel",
+    cropConfirm: "Looks good",
+    photoNotAnImage: "That is not an image. Pick a JPG, PNG or HEIC.",
+    photoTooHeavy: "This photo is over 25 MB. Please pick a smaller one.",
+    photoTooSmall:
+      "This crop is too small and will look grainy. Zoom out or pick a sharper photo.",
+    photoSoft:
+      "Heads up: this crop is on the small side and may look soft on large screens.",
+    photoLoadFailed:
+      "This photo could not be opened. Save it as JPG and try again.",
+    photoSaveFailed: "Saving the photo failed. Please try again.",
+    photoTipFace: "Face large in frame, from your shoulders to just above your head.",
+    photoTipSize: "At least 1000 by 1000 pixels, 2000 is better.",
+    photoTipLight: "Light on your face. Club shots are fine if you are recognisable.",
+    photoTipOriginal: "Send the original, not a screenshot and not via WhatsApp.",
     // Equipment items
     equipMicrophone: "Microphone",
     equipTurntable: "Turntable",
