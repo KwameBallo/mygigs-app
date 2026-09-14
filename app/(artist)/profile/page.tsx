@@ -9,7 +9,6 @@ import { GenrePicker } from "./genre-picker"
 import { MediaManager } from "./media-manager"
 import { AvatarUploader } from "./avatar-uploader"
 import { RulesAccept } from "./rules-accept"
-import { HouseRules } from "@/components/house-rules"
 import { HOUSE_RULES_VERSION } from "@/lib/rules"
 import { ProvinceMap } from "./province-map"
 import { EquipmentPicker } from "./equipment-picker"
@@ -36,7 +35,7 @@ export default async function ProfilePage({
     .maybeSingle()
   if (me?.role !== "artist" && me?.role !== "both") redirect("/dj-aanvraag")
 
-  const { t, locale } = await getI18n()
+  const { t } = await getI18n()
   const p = t.profile
   const d = t.dashboard
 
@@ -263,12 +262,6 @@ export default async function ProfilePage({
           <h2 className="text-sm font-medium">{p.rulesHeading}</h2>
           <p className="mb-3 mt-0.5 text-xs text-muted">{p.rulesHint}</p>
           <div className="flex flex-col gap-4">
-            <HouseRules
-              locale={locale}
-              title={p.rulesEyebrow}
-              intro={p.rulesIntro}
-              promisesTitle={p.rulesPromises}
-            />
             <RulesAccept
               acceptedAt={
                 (artist as { rules_accepted_at?: string | null }).rules_accepted_at ??

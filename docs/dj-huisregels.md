@@ -1,62 +1,39 @@
 # MyGigs huisregels voor DJ's
 
-Status: voorstel, 2 september 2026. Jouw drie regels zijn de kern, hieronder
-aangevuld tot een lijst die ook de veiligheid van gasten en de zekerheid van de
-organisator dekt.
+Status: vastgesteld door Kwame, 7 september 2026. Versie 2
+(`HOUSE_RULES_VERSION` in `lib/rules.ts`). Acht regels, waarvan vijf
+kernafspraken.
 
-## De regels
+## De afspraken
 
-Formulering is bewust kort en in de jij-vorm. Elke regel heeft één zin met het
-waarom erbij, want een regel die je niet snapt houd je niet.
+Toon: afspraken tussen twee partijen, geen bevelen. De regels met de
+aanduiding kernafspraak staan ook in het korte lijstje bij het accepteren
+van een boeking.
 
-**1. Je draait nuchter.**
-Geen alcohol en geen drugs voor of tijdens je optreden. Je bent er om te
-presteren, en de organisator betaalt voor je beste set.
+**1. No Alcohol.** (kernafspraak)
+We vragen je om zonder alcohol of drugs te draaien. Je kwaliteiten zijn on point en de atmosfeer tijdens je gig. Denk ook aan de veiligheid van jou en die van een ander.
 
-**2. Je meldt je uiterlijk 24 uur van tevoren af.**
-Lukt het echt niet, dan doe je dat via de knop in de app. Zo weten de
-organisator én MyGigs het tegelijk, en kunnen wij nog een vervanger zoeken.
+**2. Afmelden 24 uur van tevoren.** (kernafspraak)
+Kan je boeking door omstandigheden niet doorgaan? Laat dit zo snel mogelijk weten via de afmeldknop. Zo hebben we tijd om zo snel mogelijk een vervanger te vinden.
+PS: Binnen 24 uur kan de klant een review achterlaten voor een No-Show.
 
-**3. Je kleedt je naar het thema.**
-Staat er een dresscode bij de boeking, dan volg je die. Bij twijfel vraag je het
-in de chat, niet op de avond zelf.
+**3. Kledingvoorschriften.** (kernafspraak)
+Is er bij de boeking een dresscode of thema doorgegeven? Houd je daaraan, zo bezorg je de klant een prachtige dag. Ook jouw mening telt: geef vroegtijdig aan als je dat niet wilt.
 
-**4. Je bent op tijd.**
-Minimaal 45 minuten voor aanvang aanwezig, zodat je rustig kunt opbouwen en
-soundchecken. Je checkt in via de app zodra je er bent.
+**4. Op tijd aanwezig.** (kernafspraak)
+Wees op tijd op de afgesproken locatie, volgens schema.
 
-**5. Je draait zelf.**
-Je stuurt geen vervanger zonder dat MyGigs en de organisator daarmee akkoord
-zijn. De organisator heeft jou geboekt, niet iemand anders.
+**5. We want more!**
+Is je set geweldig en wil de klant je langer laten draaien? Geef dit aan in de app, dan passen we de betaling aan. Je verlengt simpelweg de tijd en de prijs wordt automatisch doorberekend.
 
-**6. Je houdt je aan de afgesproken tijden.**
-Begin- en eindtijd staan in de boeking. Langer doordraaien mag, maar leg het
-eerst vast in de app zodat het ook betaald en verzekerd is.
+**6. Respect voor gasten en personeel.** (kernafspraak)
+Iedereen moet zich veilig voelen op de vloer. Let's make it happen!
 
-**7. Je bent respectvol naar gasten en personeel.**
-Geen intimidatie, discriminatie of ongewenste avances, op geen enkele manier.
-Eén melding hierover is genoeg voor ons om je profiel direct te pauzeren.
+**7. AVG Bescherming.**
+De gegevens van de klant mogen niet gedeeld worden. Houd de gegevens privé.
 
-**8. Je volgt de regels van de locatie.**
-Geluidsnormen, eindtijd, rookbeleid en aanwijzingen van de beveiliging of de
-geluidstechnicus. Zij zijn verantwoordelijk voor de vergunning.
-
-**9. Je apparatuur is veilig.**
-Deugdelijke kabels, niets in looppaden, niets dat kan omvallen. Schade die jij
-veroorzaakt is voor jouw rekening.
-
-**10. Je regelt alles via MyGigs.**
-Betalingen, wijzigingen en afspraken lopen via het platform. Geen contante
-deals buiten de app om, want dan vervallen je bescherming, je factuur en je
-reviews.
-
-**11. Je gaat netjes om met gegevens.**
-Adres, telefoonnummer en plattegrond van de klant gebruik je alleen voor deze
-boeking. Niet delen, niet bewaren, niet hergebruiken.
-
-**12. Je filmt met toestemming.**
-Content maken mag en is goed voor je profiel, maar vraag het aan de organisator
-en film geen herkenbare gasten die dat niet willen.
+**8. Film overeenkomst.**
+Content maken voor je profiel is top! Bespreek dit met de klant om verwarring te voorkomen.
 
 ## Wat MyGigs daar tegenover zet
 
@@ -70,11 +47,16 @@ onder, zichtbaar op dezelfde pagina:
 
 ## Waar de regels staan
 
-1. **Bij aanmelden als DJ.** Een vinkje "ik ken en volg de huisregels", met de
-   versie en de datum in de database. Zonder akkoord geen zichtbaar profiel.
-2. **Op je profielpagina**, inklapbaar, altijd terug te lezen.
-3. **In het scherm waar je een boeking accepteert.** Alleen regel 1 tot en met 4
-   in het kort, want dat zijn de regels die op de avond zelf misgaan.
+1. **Als doorklikker op je profielpagina.** Eén afspraak per scherm, met de
+   reden erbij. De akkoordknop staat pas op het laatste scherm, en de knop
+   "Volgende" gaat per afspraak anderhalve seconde op slot. Zo is elke regel
+   aantoonbaar in beeld geweest en is doorrammen geen optie. Datum en versie
+   gaan bij akkoord de database in. Zonder akkoord geen zichtbaar profiel.
+2. **Op je profielpagina**, na akkoord ingeklapt onder "Alle afspraken onder
+   elkaar", altijd terug te lezen. De knop "Teruglezen" opent dezelfde
+   doorklikker, dan zonder akkoordstap.
+3. **In het scherm waar je een boeking accepteert.** Alleen de kernafspraken in
+   het kort, want dat zijn de regels die op de avond zelf misgaan.
 4. **Op het publieke DJ-profiel**, als geruststelling voor de organisator:
    "Deze DJ werkt volgens de MyGigs-huisregels."
 
@@ -123,7 +105,7 @@ Dit is een voorstel, geen wet. Kies wat je wilt en dan bouwen we het.
 | Afmelden, meer dan 24 uur van tevoren | Geen sanctie. Telt wel mee in je afmeldpercentage |
 | Afmelden, minder dan 24 uur van tevoren | Eén tik. Zichtbaar in je interne betrouwbaarheidsscore |
 | Niet komen opdagen | Twee tikken, profiel op pauze tot je MyGigs hebt gesproken. Organisator krijgt alles terug |
-| Melding over regel 1 of regel 7 | Profiel direct op pauze, wij onderzoeken en horen beide kanten |
+| Melding over regel 1 of regel 6 | Profiel direct op pauze, wij onderzoeken en horen beide kanten |
 | Drie tikken in twaalf maanden | Profiel offline tot een gesprek |
 
 Tikken vervallen na twaalf maanden. Toon de DJ zijn eigen stand, zodat het geen

@@ -316,6 +316,102 @@ export async function sendMonthlyRecapToDJ(opts: {
   })
 }
 
+// De DJ heeft zich afgemeld — naar de organisator. Deze mail moet twee dingen
+// doen: eerlijk zijn dat het optreden niet doorgaat, en meteen laten zien dat
+// het niet zijn probleem is om op te lossen. De reden van de DJ staat er
+// bewust NIET in: die is voor MyGigs, niet voor de klant.
+export async function sendCancelledByDJToBooker(opts: {
+  to: string
+  locale: "nl" | "en"
+  djName: string
+  when: string
+  place: string
+  /** Was er al betaald? Dan komt het bedrag terug. */
+  refund: boolean
+}) {
+  const nl = opts.locale === "nl"
+  const subject = nl
+    ? `${opts.djName} kan helaas niet komen`
+    : `${opts.djName} is unable to make it`
+  const rows =
+    row("DJ", opts.djName) +
+    row(nl ? "Wanneer" : "When", opts.when) +
+    (opts.place ? row(nl ? "Locatie" : "Location", opts.place) : "") +
+    row(
+      nl ? "Wat wij doen" : "What we do",
+      nl
+        ? "We zoeken een vervanger voor je"
+        : "We are looking for a stand-in for you",
+      true,
+    ) +
+    (opts.refund
+      ? row(
+          nl ? "Je betaling" : "Your payment",
+          nl
+            ? "Komt volledig terug op je rekening"
+            : "Will be refunded in full",
+          true,
+        )
+      : "")
+  return sendEmail({
+    to: opts.to,
+    subject,
+    html: shell(
+      nl ? "Je boeking gaat niet door" : "Your booking is cancelled",
+      rows,
+      {
+        href: `${siteUrl()}/discover`,
+        label: nl ? "Bekijk andere DJ's" : "Browse other DJs",
+      },
+    ),
+  })
+}
+
+// Diezelfde afmelding, maar dan naar de eigen inbox. Hier staat wél de reden
+// in, plus of er nog geld terug moet. Zolang de betaalprovider gesimuleerd is,
+// is deze mail het enige wat een terugbetaling in gang zet.
+export async function sendCancelAlertToSupport(opts: {
+  djName: string
+  when: string
+  place: string
+  occasion: string
+  reason: string
+  noticeHours: number
+  amount: string
+  refundNeeded: boolean
+  bookingId: string
+}) {
+  const to = process.env.SUPPORT_EMAIL || "support@mygigs.nl"
+  const late = opts.noticeHours < 24
+  const rows =
+    row("DJ", opts.djName) +
+    row("Wanneer", opts.when) +
+    (opts.occasion ? row("Gelegenheid", opts.occasion) : "") +
+    row("Locatie", opts.place) +
+    row("Reden", opts.reason) +
+    row(
+      "Vooraf gemeld",
+      `${opts.noticeHours} uur${late ? " (te laat)" : ""}`,
+      late,
+    ) +
+    row("Bedrag", opts.amount) +
+    row(
+      "Actie",
+      opts.refundNeeded
+        ? "Handmatig terugbetalen aan de klant"
+        : "Geen betaling gedaan, niets terug te storten",
+      opts.refundNeeded,
+    )
+  return sendEmail({
+    to,
+    subject: `Afmelding door ${opts.djName}${late ? " (binnen 24 uur)" : ""}`,
+    html: shell("Een DJ heeft zich afgemeld", rows, {
+      href: `${siteUrl()}/admin`,
+      label: "Bekijk in admin",
+    }),
+  })
+}
+
 // E-mailadres van een gebruiker ophalen via de service-role (auth.users).
 // Respecteert de e-mailvoorkeur: heeft de gebruiker e-mails uitgezet (opt-out),
 // dan geven we null terug en wordt er niets verstuurd.

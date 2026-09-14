@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
 import { formatEuro, formatPercent } from "@/lib/utils/pricing"
+import { StarMark } from "@/components/logo"
 import { PrintButton } from "./print-button"
 import { dict } from "./i18n"
 
@@ -59,14 +60,26 @@ export default async function InvoicePage({
       </div>
 
       <div className="mt-6 rounded-3xl border border-neutral-200 bg-white p-8 text-sm text-neutral-800 print:rounded-none print:border-0">
-        {/* MyGigs-merkbalk in huisstijl (oranje vlak, zwarte tekst — print-veilig) */}
+        {/* MyGigs-merkbalk in huisstijl: oranje vlak, zwarte tekst, en het
+            beeldmerk in het donkere vierkant zoals in het app-icoon. Op oranje
+            zou de oranje sterhelft wegvallen, vandaar die donkere achtergrond.
+            printColorAdjust houdt de kleuren staan als de klant de factuur
+            uitprint of als PDF opslaat. */}
         <div
-          className="mb-8 rounded-2xl bg-brand px-6 py-5 text-black"
+          className="mb-8 flex items-center gap-4 rounded-2xl bg-brand px-6 py-5 text-black"
           style={{ printColorAdjust: "exact", WebkitPrintColorAdjust: "exact" }}
         >
-          <div className="text-2xl font-bold tracking-tight">MyGigs.</div>
-          <div className="mt-0.5 text-xs font-medium text-black/70">
-            {d.brandTagline}
+          <span
+            className="flex h-14 w-14 flex-none items-center justify-center rounded-xl bg-[#0b0b0f] text-white"
+            style={{ printColorAdjust: "exact", WebkitPrintColorAdjust: "exact" }}
+          >
+            <StarMark className="h-9 w-9" />
+          </span>
+          <div>
+            <div className="text-2xl font-bold tracking-tight">MyGigs.</div>
+            <div className="mt-0.5 text-xs font-medium text-black/70">
+              {d.brandTagline}
+            </div>
           </div>
         </div>
 

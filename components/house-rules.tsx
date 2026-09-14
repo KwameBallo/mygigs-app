@@ -51,6 +51,11 @@ export function HouseRules({
                 {r.title}
               </h3>
               <p className="mt-1 text-xs leading-relaxed text-muted">{r.body}</p>
+              {r.note && (
+                <p className="mt-1.5 text-xs leading-relaxed text-brand/80">
+                  {r.note}
+                </p>
+              )}
             </div>
           </li>
         ))}

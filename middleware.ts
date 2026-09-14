@@ -4,6 +4,13 @@ import { updateSession } from "@/lib/supabase/middleware"
 // Content-Security-Policy met een per-request NONCE (sterker dan 'unsafe-inline'
 // voor scripts). De nonce gaat via de request-headers mee zodat Next zijn eigen
 // scripts noncet; 'strict-dynamic' laat door die scripts geladen chunks toe.
+//
+// In development heeft React/Turbopack eval() nodig voor de dev-overlay en
+// hot reload, en loopt HMR over een ws:-verbinding. Die twee versoepelingen
+// staan daarom achter een NODE_ENV-check: in productie blijft het beleid
+// precies zo streng als het was.
+const isDev = process.env.NODE_ENV === "development"
+
 function buildCsp(nonce: string) {
   return [
     "default-src 'self'",
@@ -11,14 +18,14 @@ function buildCsp(nonce: string) {
     "object-src 'none'",
     "frame-ancestors 'self'",
     "form-action 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
-    "connect-src 'self' https: wss:",
+    `connect-src 'self' https: wss:${isDev ? " ws:" : ""}`,
     "frame-src 'self'",
     "worker-src 'self' blob:",
-    "upgrade-insecure-requests",
+    ...(isDev ? [] : ["upgrade-insecure-requests"]),
   ].join("; ")
 }
 

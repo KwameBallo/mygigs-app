@@ -33,7 +33,77 @@ type Labels = {
   working: string
   tooSmall: string
   soft: string
+  dark: string
+  bright: string
+  blurry: string
   loadFailed: string
+}
+
+// Wat er mis kan zijn met de uitsnede. We zeggen niets zolang er niets aan de
+// hand is: een lijst met tips leest toch niemand, en een melding op het moment
+// zelf wél. "block" houdt de knop tegen, "warn" is een advies.
+type IssueKey = "small" | "soft" | "dark" | "bright" | "blurry"
+type Issue = { key: IssueKey; level: "block" | "warn" }
+
+/** Meetlat: hoe licht, hoe uitgebeten en hoe scherp is de uitsnede? */
+const SCAN = 256
+const TILES = 4
+const DARK_MAX = 0.15
+const BRIGHT_MIN = 0.82
+const BLOWN_MAX = 0.25
+const SHARP_MIN = 0.0005
+
+function inspect(canvas: HTMLCanvasElement): IssueKey[] {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })
+  if (!ctx) return []
+  const { data } = ctx.getImageData(0, 0, SCAN, SCAN)
+  const lum = new Float32Array(SCAN * SCAN)
+
+  let sum = 0
+  let blown = 0
+  for (let i = 0; i < SCAN * SCAN; i++) {
+    const l =
+      (0.2126 * data[i * 4] + 0.7152 * data[i * 4 + 1] + 0.0722 * data[i * 4 + 2]) / 255
+    lum[i] = l
+    sum += l
+    if (l > 0.97) blown++
+  }
+  const mean = sum / (SCAN * SCAN)
+
+  // Laplace-variantie: scherpe randen geven een hoge waarde, een wazige of
+  // bewogen foto blijft vlak. We kijken per vak en houden het scherpste vak
+  // aan. Anders zou een portret met een onscherpe achtergrond, juist het
+  // soort foto dat er goed uitziet, als wazig worden aangemerkt.
+  const step = Math.floor(SCAN / TILES)
+  let sharpest = 0
+  for (let ty = 0; ty < TILES; ty++) {
+    for (let tx = 0; tx < TILES; tx++) {
+      let s = 0
+      let sq = 0
+      let n = 0
+      const y0 = Math.max(1, ty * step)
+      const x0 = Math.max(1, tx * step)
+      const y1 = Math.min(SCAN - 1, (ty + 1) * step)
+      const x1 = Math.min(SCAN - 1, (tx + 1) * step)
+      for (let y = y0; y < y1; y++) {
+        for (let x = x0; x < x1; x++) {
+          const i = y * SCAN + x
+          const v =
+            4 * lum[i] - lum[i - 1] - lum[i + 1] - lum[i - SCAN] - lum[i + SCAN]
+          s += v
+          sq += v * v
+          n++
+        }
+      }
+      if (n > 0) sharpest = Math.max(sharpest, sq / n - (s / n) ** 2)
+    }
+  }
+
+  const found: IssueKey[] = []
+  if (mean < DARK_MAX) found.push("dark")
+  else if (mean > BRIGHT_MIN || blown / (SCAN * SCAN) > BLOWN_MAX) found.push("bright")
+  if (sharpest < SHARP_MIN) found.push("blurry")
+  return found
 }
 
 export function PhotoCropper({
@@ -59,6 +129,7 @@ export function PhotoCropper({
   const [ready, setReady] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [found, setFound] = useState<IssueKey[]>([])
 
   // --- bron inladen -------------------------------------------------------
   useEffect(() => {
@@ -152,6 +223,33 @@ export function PhotoCropper({
     cv.style.width = `${frame}px`
     cv.style.height = `${frame}px`
   }, [ready, frame, paint])
+
+  // --- nakijken ------------------------------------------------------------
+  // Alleen meten als het beeld stilstaat, anders rekenen we ons suf tijdens het
+  // slepen. Een kwart seconde na de laatste beweging is ruim genoeg.
+  useEffect(() => {
+    if (!ready) return
+    const timer = setTimeout(() => {
+      const scratch = document.createElement("canvas")
+      paint(scratch, SCAN)
+      const hits = inspect(scratch)
+      // Een kleine uitsnede wordt bij het opblazen naar de meetmaat vanzelf
+      // zacht. Daar melden we al iets over, dus niet ook nog "onscherp".
+      setFound(sourceSide < SOFT_MIN ? hits.filter((h) => h !== "blurry") : hits)
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [ready, paint, sourceSide])
+
+  const issues: Issue[] = [
+    ...(ready && sourceSide < HARD_MIN
+      ? [{ key: "small" as const, level: "block" as const }]
+      : []),
+    ...(ready && sourceSide >= HARD_MIN && sourceSide < SOFT_MIN
+      ? [{ key: "soft" as const, level: "warn" as const }]
+      : []),
+    ...found.map((key) => ({ key, level: "warn" as const })),
+  ]
+  const blocked = issues.some((i) => i.level === "block")
 
   // --- slepen -------------------------------------------------------------
   function onPointerDown(e: ReactPointerEvent) {
@@ -262,8 +360,30 @@ export function PhotoCropper({
           />
         </label>
 
-        {ready && sourceSide < SOFT_MIN && sourceSide >= HARD_MIN && (
-          <p className="text-xs text-amber-400">{labels.soft}</p>
+        {/* Alleen iets zeggen als er iets aan de hand is, en dan meteen wat je
+            eraan doet. Geen tiplijst voor de foto's die gewoon goed zijn. */}
+        {issues.length > 0 && (
+          <ul
+            className={`flex flex-col gap-1.5 rounded-xl border p-3 text-xs leading-relaxed ${
+              blocked
+                ? "border-red-500/40 bg-red-500/5"
+                : "border-amber-500/40 bg-amber-500/5"
+            }`}
+          >
+            {issues.map((i) => (
+              <li
+                key={i.key}
+                className={`flex gap-2 ${
+                  i.level === "block" ? "text-red-300" : "text-amber-300"
+                }`}
+              >
+                <span aria-hidden="true" className="flex-none">
+                  {i.level === "block" ? "✕" : "!"}
+                </span>
+                <span>{labels[i.key === "small" ? "tooSmall" : i.key]}</span>
+              </li>
+            ))}
+          </ul>
         )}
         {error && <p className="text-xs text-red-400">{error}</p>}
 
@@ -278,7 +398,7 @@ export function PhotoCropper({
           <button
             type="button"
             onClick={confirm}
-            disabled={!ready || busy}
+            disabled={!ready || busy || blocked}
             className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition disabled:opacity-50"
           >
             {busy ? labels.working : labels.confirm}

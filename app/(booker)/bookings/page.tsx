@@ -249,9 +249,6 @@ export default async function BookingsPage({
                         </form>
                       )}
                     </div>
-                    {b.status === "paid" && (
-                      <span className="text-xs text-green-400">{m.paidNote}</span>
-                    )}
                   </div>
                 </div>
               )

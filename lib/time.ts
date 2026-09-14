@@ -42,6 +42,39 @@ export function formatDuration(
   return `${m} ${mUnit}`
 }
 
+// Hoeveel staat Nederland op dit moment voor op UTC? In de zomer 120 minuten,
+// in de winter 60. We vragen het aan de browser/Node zelf, zodat we geen
+// tijdzone-tabel hoeven bij te houden.
+function nlOffsetMinutes(at: Date): number {
+  const name =
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Europe/Amsterdam",
+      timeZoneName: "shortOffset",
+    })
+      .formatToParts(at)
+      .find((p) => p.type === "timeZoneName")?.value ?? "GMT+1"
+  const m = /GMT([+-])(\d{1,2})(?::(\d{2}))?/.exec(name)
+  if (!m) return 60
+  const sign = m[1] === "-" ? -1 : 1
+  return sign * (Number(m[2]) * 60 + Number(m[3] ?? 0))
+}
+
+// Starttijd van een optreden als echt tijdstip. De datum en tijd staan in de
+// database als Nederlandse kloktijd zonder tijdzone; zonder deze omrekening zou
+// een server in UTC er in de zomer twee uur naast zitten. Geen starttijd? Dan
+// nemen we 20:00, het gebruikelijke begin van een avond.
+export function nlEventStart(date: string, time: string | null): Date {
+  const t = hhmm(time) || "20:00"
+  const asUtc = new Date(`${date}T${t}:00Z`)
+  return new Date(asUtc.getTime() - nlOffsetMinutes(asUtc) * 60000)
+}
+
+// Uren tussen nu en de starttijd. Negatief als het optreden al begonnen is.
+export function hoursUntil(date: string, time: string | null): number {
+  const ms = nlEventStart(date, time).getTime() - Date.now()
+  return Math.round((ms / 3600000) * 10) / 10
+}
+
 // Reistijd-buffer (minuten) die we tussen twee optredens vrijhouden, zodat een
 // DJ dezelfde dag op een ander tijdstip nog geboekt kan worden mét reistijd.
 export const BOOKING_BUFFER_MIN = 60

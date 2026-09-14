@@ -59,6 +59,8 @@ const nl: Dict = {
   djSteps: [
     { sel: 'a[href="/profile"]', title: "Je profiel", body: "Eerst even shinen: profiel, foto's en je tarief." },
     { sel: '[data-tour="profile-billing"]', page: "/profile", title: "Facturatie & KVK", body: "Regel je zaakjes: KVK en btw-status. Zonder dit geen facturen." },
+    { sel: '[data-tour="profile-rules"]', page: "/profile", title: "Huisregels", body: "De regels die elke gig soepel laten verlopen. Je klikt ze hier één voor één door, en op het laatste scherm geef je akkoord. Daarna kan je profiel online." },
+    { sel: '[data-tour="profile-photo"]', page: "/profile", title: "Je profielfoto", body: "Kies een foto, sleep en zoom in het kader. De cirkel wordt je avatar, de streepjeslijn is wat organisatoren in de zoekresultaten zien." },
     { sel: 'a[href="/availability"]', page: "/availability", title: "Beschikbaarheid", body: "Wanneer kun je? Vul je beschikbaarheid in." },
     { sel: 'a[href="/dashboard"]', page: "/dashboard", title: "Aanvragen", body: "Boekingen landen op je dashboard. Controleer en accepteer." },
     { kind: "rank", title: "Je DJ-rang ⭐", body: "Je krijgt een sterretje op basis van je boekingen deze maand:" },
@@ -85,6 +87,8 @@ const en: Dict = {
   djSteps: [
     { sel: 'a[href="/profile"]', title: "Your profile", body: "Shine first: profile, photos and your rate." },
     { sel: '[data-tour="profile-billing"]', page: "/profile", title: "Billing & registration", body: "Sort the essentials: Chamber of Commerce and VAT. No invoices without it." },
+    { sel: '[data-tour="profile-rules"]', page: "/profile", title: "House rules", body: "The rules that keep every gig running smoothly. You click through them one at a time here, and agree on the last screen. Then your profile can go live." },
+    { sel: '[data-tour="profile-photo"]', page: "/profile", title: "Your profile photo", body: "Pick a photo, then drag and zoom in the frame. The circle becomes your avatar, the dashed box is what organisers see in search results." },
     { sel: 'a[href="/availability"]', page: "/availability", title: "Availability", body: "When are you free? Set your availability." },
     { sel: 'a[href="/dashboard"]', page: "/dashboard", title: "Requests", body: "Bookings land on your dashboard. Check and accept." },
     { kind: "rank", title: "Your DJ rank ⭐", body: "You get a star based on your bookings this month:" },
@@ -92,7 +96,7 @@ const en: Dict = {
   ],
 }
 
-const KEY = "mygigs_onboarding_v3"
+const KEY = "mygigs_onboarding_v4"
 
 function visibleEl(sel: string): HTMLElement | null {
   const els = Array.from(document.querySelectorAll<HTMLElement>(sel))

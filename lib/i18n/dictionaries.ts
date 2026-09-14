@@ -35,7 +35,7 @@ const nl = {
     card2Body: "Maak je profiel en ontvang boekingen.",
     card2Cta: "Word DJ",
     card3Title: "Zakelijk boeken",
-    card3Body: "DJ's voor je bedrijfsevent — met factuur en btw.",
+    card3Body: "DJ's voor je bedrijfsevent, met factuur en btw.",
     card3Cta: "Naar zakelijk",
     featuredTitle: "Uitgelichte DJ's",
     viewAll: "Bekijk alles",
@@ -144,7 +144,7 @@ const nl = {
     loginButton: "Inloggen om te boeken",
     confirmEmailTitle: "Bevestig eerst je e-mailadres",
     confirmEmailBody:
-      "We hebben je een bevestigingsmail gestuurd. Klik op de link in die mail om je account te activeren — daarna kun je deze DJ boeken. Zo weet de DJ zeker dat elke aanvraag echt is.",
+      "We hebben je een bevestigingsmail gestuurd. Klik op de link in die mail om je account te activeren. Daarna kun je deze DJ boeken. Zo weet de DJ zeker dat elke aanvraag echt is.",
     confirmEmailSpam:
       "Geen mail ontvangen? Check je spam, of log opnieuw in om een nieuwe bevestigingsmail te ontvangen.",
     title: "Boek deze DJ",
@@ -166,7 +166,7 @@ const nl = {
     addressPickHint: "Kies een adres uit de lijst zodat we het kunnen verifiëren.",
     addressVerified: "Adres geverifieerd",
     addressRequired: "Kies een geverifieerd adres uit de lijst voordat je boekt.",
-    availableWindow: "Beschikbaar: {from}–{to}",
+    availableWindow: "Beschikbaar: {from} tot {to}",
     availableAllDay: "De hele dag beschikbaar",
     timeLabel: "Tijd van het optreden",
     startTimeLabel: "Starttijd",
@@ -210,7 +210,7 @@ const nl = {
     ofWhichVat: "waarvan btw",
     privateNote: "Particulier: dit is de totaalprijs, inclusief btw.",
     equipmentNote:
-      "De DJ neemt eigen geluid/licht mee — apparatuurkosten inbegrepen.",
+      "De DJ neemt eigen geluid/licht mee, apparatuurkosten inbegrepen.",
     payAfterAccept: "Je betaalt pas na acceptatie.",
     submit: "Aanvraag versturen",
     escrowNote: "Je betaalt pas na acceptatie. Geld staat veilig in escrow.",
@@ -243,7 +243,7 @@ const nl = {
       "Komt de DJ niet opdagen? Dan krijg je je volledige bedrag terug.",
     trust3Title: "100% digitaal, geen contant",
     trust3Body:
-      "Alles loopt via een beveiligde betaalomgeving — je hoeft nooit contant te betalen.",
+      "Alles loopt via een beveiligde betaalomgeving. Je hoeft nooit contant te betalen.",
     trust4Title: "Je privacy blijft beschermd",
     trust4Body:
       "De DJ krijgt alleen je naam te zien voor de afstemming; je contactgegevens deel je niet.",
@@ -285,7 +285,7 @@ const nl = {
     chat: "Chat",
     pay: "Betalen",
     cancel: "Annuleren",
-    paidNote: "Betaald — geld staat bij MyGigs, uitbetaling binnen 5 werkdagen.",
+    paidNote: "Betaald. Het geld staat bij MyGigs, uitbetaling binnen 5 werkdagen.",
     djEnroute: "DJ is onderweg · aankomst ~{eta}",
     djEnrouteNoEta: "DJ is onderweg",
     djOnSite: "DJ ingecheckt op locatie",
@@ -294,7 +294,7 @@ const nl = {
     reviewCta: "Review plaatsen",
     reviewThanks: "Bedankt voor je review!",
     reviewBanner:
-      "Je hebt {n} afgerond optreden om te reviewen — help je DJ met een beoordeling.",
+      "Je hebt {n} afgerond optreden om te reviewen. Help je DJ met een beoordeling.",
   },
   agenda: {
     title: "Agenda",
@@ -313,7 +313,17 @@ const nl = {
     prevMonth: "Vorige maand",
     nextMonth: "Volgende maand",
     calendarHint:
-      "Tik op een dag om die aan te zetten en de tijden in te stellen. Bevestig daarna je schema. Geboekte dagen kun je niet wijzigen.",
+      "Tik zoveel dagen aan als je wilt, stel daaronder je tijden in en klik op Schema doorvoeren. Pas dan wordt er iets opgeslagen. Geboekte dagen kun je niet wijzigen.",
+    draftHint:
+      "Deze dagen staan nog niet vast. Klik op Schema doorvoeren om ze op te slaan; doe je dat niet, dan verandert er niets.",
+    draftLegend: "Aangetikt, nog niet doorgevoerd",
+    cancelDraft: "Selectie wissen",
+    pickedOne: "1 dag aangetikt",
+    pickedMany: "{n} dagen aangetikt",
+    pickedTimesHint: "De tijden hierboven gelden voor alle aangetikte dagen.",
+    confirmScheduleMulti:
+      "Weet je zeker dat dit je schema is voor deze {n} dagen?",
+    removeDaysQ: "Weet je zeker dat je deze {n} dagen wilt verwijderen?",
     noProfile: "Je hebt nog geen DJ-profiel. Maak er eerst een aan.",
     toProfile: "Naar profiel",
     timesTitle: "Beschikbare tijden",
@@ -353,14 +363,14 @@ const nl = {
     title: "Boekingen op de kaart",
     gigsTitle: "Gigs",
     gigsIntro:
-      "Waar je hebt gespeeld, per maand. Klantgegevens blijven privé — alleen de locatie.",
+      "Waar je hebt gespeeld, per maand. Klantgegevens blijven privé, alleen de locatie is zichtbaar.",
     gigsCountMany: "{n} optredens",
     gigsCountOne: "1 optreden",
     legendPending: "In afwachting",
     legendAccepted: "Geaccepteerd (wacht op betaling)",
     legendPaid: "Betaald & bevestigd",
     statusPending: "In afwachting",
-    statusAccepted: "Geaccepteerd — wacht op betaling",
+    statusAccepted: "Geaccepteerd, wacht op betaling",
     statusPaid: "Betaald & bevestigd",
     statusCompleted: "Afgerond",
     empty: "Nog geen boekingen om op de kaart te tonen.",
@@ -454,7 +464,7 @@ const nl = {
     navNoCoords: "Voor deze boeking zijn geen adrescoördinaten beschikbaar.",
     navConsentTitle: "Toestemming voor locatie",
     navConsentBody:
-      "We gebruiken je locatie om de route en aankomsttijd te berekenen. De klant ziet alleen de aankomsttijd — nooit je locatie. Sluit dit scherm om te stoppen.",
+      "We gebruiken je locatie om de route en aankomsttijd te berekenen. De klant ziet alleen de aankomsttijd, nooit je locatie. Sluit dit scherm om te stoppen.",
     navConsentStart: "Locatie delen & starten",
     navRetry: "Opnieuw proberen",
     enrouteHint:
@@ -481,6 +491,31 @@ const nl = {
     decline: "Weiger",
     chatClient: "Chat met klant",
     markDone: "Markeer als afgerond",
+    // Afmelden (huisregel 2)
+    cancelOpen: "Ik kan niet komen",
+    cancelTitle: "Je kunt niet komen?",
+    cancelInHours: "Het optreden begint over ongeveer {h} uur.",
+    cancelStarted: "Het optreden is al begonnen.",
+    cancelLate: "Dit is binnen 24 uur. Dat telt als een late afmelding: de klant kan er een review over achterlaten, en wij hebben weinig tijd om een vervanger te vinden.",
+    cancelOnTime: "Er is nog ruim tijd om een vervanger te zoeken. Vervelend, maar netjes op tijd gemeld.",
+    cancelReasonLabel: "Wat is de reden?",
+    cancelReasonChoose: "Kies een reden",
+    cancelReasons: {
+      ziekte: "Ziekte",
+      ongeval: "Ongeval",
+      "dubbele-boeking": "Dubbele boeking",
+      vervoer: "Vervoer",
+      prive: "Privéomstandigheden",
+      anders: "Anders",
+    },
+    cancelNoteLabel: "Toelichting",
+    cancelNotePlaceholder: "Optioneel. Alleen wij lezen dit mee, de klant niet.",
+    cancelConfirm: "Ik begrijp dat de organisator hier direct bericht van krijgt.",
+    cancelBack: "Toch niet",
+    cancelSubmit: "Ja, ik meld me af",
+    cancelBusy: "Bezig…",
+    cancelErrorReason: "Kies eerst een reden.",
+    cancelErrorGeneric: "Afmelden is niet gelukt. Ververs de pagina en probeer het nog een keer.",
     visibleFans: "Zichtbaar voor fans",
     showPublic: "Toon op publiek profiel",
     private: "Privé",
@@ -495,10 +530,10 @@ const nl = {
     viewPublic: "Bekijk je openbare profiel →",
     photoHeading: "Profielfoto",
     photoHint:
-      "Verschijnt op je profiel en in de zoekresultaten — in plaats van je initialen.",
+      "Verschijnt op je profiel en in de zoekresultaten, in plaats van je initialen.",
     mediaHeading: "Foto's & video's",
     mediaHint:
-      "Laat boekers je sfeer zien — voeg foto's en korte video's van je sets toe.",
+      "Laat boekers je sfeer zien. Voeg foto's en korte video's van je sets toe.",
     djName: "DJ-naam",
     djNamePlaceholder: "DJ Voorbeeld",
     province: "Provincie (thuisbasis)",
@@ -511,7 +546,7 @@ const nl = {
     genresHeading: "Genres / stijlen",
     equipmentHeading: "Apparatuur die je meeneemt",
     equipmentHint:
-      "Vink aan wat je meebrengt en zet je huurprijs erbij — dit wordt verhuurd aan de boeker. De prijs verschijnt op je profiel.",
+      "Vink aan wat je meebrengt en zet je huurprijs erbij. Dit wordt verhuurd aan de boeker. De prijs verschijnt op je profiel.",
     equipmentDetailsPlaceholder:
       "Details (optioneel): bv. Pioneer CDJ-3000, DJM-900",
     pricePerProvinceHeading: "Prijs per provincie",
@@ -532,7 +567,7 @@ const nl = {
     genreRemove: "Verwijder {name}",
     genreSearchPlaceholder: "Zoek een stijl… (bv. techno, house, afro)",
     genreEmpty:
-      "Typ om stijlen te zoeken en aan te klikken — kies er zoveel als je wilt.",
+      "Typ om stijlen te zoeken en aan te klikken. Kies er zoveel als je wilt.",
     // Media-manager
     uploading: "Uploaden…",
     mediaUpload: "+ Foto's / video's uploaden",
@@ -541,21 +576,42 @@ const nl = {
     // Huisregels
     rulesHeading: "Huisregels",
     rulesHint:
-      "Kort en duidelijk: hier houd je je aan als je via MyGigs draait.",
+      "Zo werken we samen als je via MyGigs draait.",
     rulesEyebrow: "Zo werken we samen",
     rulesIntro:
-      "Twaalf regels die de avond voor iedereen goed laten verlopen. De oranje omrande regels zijn de regels waar we streng op zijn.",
+      "De regels die de avond voor iedereen goed laten verlopen. De oranje omrande punten zijn de regels waar we het meeste aan hechten.",
     rulesPromises: "En dit zetten wij daar tegenover",
     rulesConfirm:
-      "Ik heb de huisregels gelezen en ik houd me eraan bij elke boeking via MyGigs.",
+      "Ik heb de huisregels gelezen en werk er graag naar bij mijn boekingen via MyGigs.",
     rulesAcceptButton: "Akkoord met de huisregels",
     rulesSaving: "Opslaan…",
     rulesAcceptedNow: "Akkoord vastgelegd. Bedankt.",
     rulesAcceptedOn: "Je ging akkoord op {date}.",
     rulesUpdated:
-      "De huisregels zijn aangepast. Lees ze door en geef opnieuw akkoord.",
+      "De huisregels zijn aangepast. Lees ze even door en geef opnieuw akkoord.",
     rulesFailed: "Opslaan mislukt. Probeer het nog een keer.",
     rulesBadge: "Werkt volgens de MyGigs-huisregels",
+    // Doorklikker: één afspraak per scherm
+    rulesStart: "Lees de huisregels",
+    rulesRereadStart: "Lees ze opnieuw door",
+    rulesReread: "Teruglezen",
+    rulesOverview: "Alle afspraken onder elkaar",
+    rulesCtaBody:
+      "{total} regels die belangrijk zijn om jouw gig en de ervaring van je klant onvergetelijk te maken. Laten we er samen doorheen gaan.",
+    rulesIntroTitle: "Huisregels",
+    rulesIntroBody:
+      "{total} regels die belangrijk zijn om jouw gig en de ervaring van je klant onvergetelijk te maken. Laten we er samen doorheen gaan.",
+    rulesIntroTime: "Ongeveer twee minuten",
+    rulesStep: "{n} van {total}",
+    rulesCoreLabel: "Kernafspraak",
+    rulesNote: "PS:",
+    rulesNext: "Volgende",
+    rulesReading: "Even lezen…",
+    rulesBack: "Terug",
+    rulesClose: "Sluiten",
+    rulesFinalTitle: "Dat waren ze alle {total}",
+    rulesFinalBody:
+      "Mooi. Nog even dit: de afspraken werken twee kanten op, dus hieronder staat wat wij tegenover jouw kant zetten.",
     // Avatar
     avatarAlt: "Profielfoto",
     avatarChange: "Foto wijzigen",
@@ -576,13 +632,12 @@ const nl = {
     photoLoadFailed:
       "Deze foto kon niet worden geopend. Sla hem op als JPG en probeer opnieuw.",
     photoSaveFailed: "Opslaan van de foto is mislukt. Probeer het nog een keer.",
-    photoTipFace:
-      "Gezicht groot in beeld, van je schouders tot net boven je hoofd.",
-    photoTipSize: "Minimaal 1000 bij 1000 pixels, liever 2000.",
-    photoTipLight:
-      "Licht op je gezicht. Clubfoto's mogen, mits je herkenbaar bent.",
-    photoTipOriginal:
-      "Stuur het origineel, geen schermafbeelding en niet via WhatsApp.",
+    photoDark:
+      "Deze foto is donker: je gezicht valt straks weg in de zoekresultaten. Maak er een bij daglicht of met licht van voren.",
+    photoBright:
+      "Er is hier zoveel licht dat je gezicht vervlakt. Ga uit de volle zon of weg bij die spot.",
+    photoBlurry:
+      "Deze uitsnede oogt onscherp. Zoom iets uit, of kies een foto waarop je gezicht scherp staat.",
     // Equipment items
     equipMicrophone: "Microfoon",
     equipTurntable: "Draaitafel",
@@ -595,9 +650,9 @@ const nl = {
     autoFillHint: "o.b.v. thuisprovincie + richtprijs (reiskosten + reistijd)",
     autoFillNoProvince: "Kies eerst je thuisprovincie hierboven.",
     autoFillNoBase: "Vul eerst je richtprijs in.",
-    autoFillDone: "Ingevuld vanuit {province} — pas gerust per provincie aan.",
+    autoFillDone: "Ingevuld vanuit {province}. Pas gerust per provincie aan.",
     mapAria:
-      "Kaart van Nederland — klik een provincie om je bedrag in te stellen",
+      "Kaart van Nederland. Klik een provincie om je bedrag in te stellen",
     provinceTotalHint: "Totaalbedrag incl. reiskosten. Leeg = daar niet boekbaar.",
     amountPlaceholder: "bedrag",
     notBookable: "Niet boekbaar",
@@ -628,7 +683,7 @@ const nl = {
       "Niet aangevinkt? Dan factureren we zonder btw volgens de kleineondernemersregeling (KOR).",
     kvkInfoTitle: "Inschrijving KVK & btw",
     kvkInfo1:
-      "Om via MyGigs uitbetaald te worden, factureer je als ondernemer. Schrijf je daarom in bij de KVK (Kamer van Koophandel) — dan krijg je een KVK-nummer en meestal een btw-id.",
+      "Om via MyGigs uitbetaald te worden, factureer je als ondernemer. Schrijf je daarom in bij de KVK (Kamer van Koophandel). Dan krijg je een KVK-nummer en meestal een btw-id.",
     kvkInfo2:
       "Kleineondernemersregeling (KOR): blijf je onder € 20.000 omzet per jaar, dan kun je de KOR gebruiken en breng je géén btw in rekening. Je meldt je hiervoor apart aan bij de Belastingdienst.",
     kvkInfo3:
@@ -638,7 +693,7 @@ const nl = {
     billingSave: "Facturatie opslaan",
     billingSaved: "Facturatiegegevens opgeslagen.",
     billingError:
-      "Opslaan mislukt. Ververs de pagina en probeer opnieuw — bestaat de tabel al in de database?",
+      "Opslaan mislukt. Ververs de pagina en probeer opnieuw. Bestaat de tabel al in de database?",
   },
   messages: {
     title: "Berichten",
@@ -763,7 +818,7 @@ const en: typeof nl = {
     card2Body: "Create your profile and receive bookings.",
     card2Cta: "Become a DJ",
     card3Title: "Business bookings",
-    card3Body: "DJs for your company event — with invoice and VAT.",
+    card3Body: "DJs for your company event, with invoice and VAT.",
     card3Cta: "To business",
     featuredTitle: "Featured DJs",
     viewAll: "View all",
@@ -872,7 +927,7 @@ const en: typeof nl = {
     loginButton: "Log in to book",
     confirmEmailTitle: "Confirm your email first",
     confirmEmailBody:
-      "We've sent you a confirmation email. Click the link in that email to activate your account — then you can book this DJ. This way the DJ knows every request is genuine.",
+      "We've sent you a confirmation email. Click the link in that email to activate your account. Then you can book this DJ. This way the DJ knows every request is genuine.",
     confirmEmailSpam:
       "No email received? Check your spam, or log in again to get a new confirmation email.",
     title: "Book this DJ",
@@ -894,7 +949,7 @@ const en: typeof nl = {
     addressPickHint: "Pick an address from the list so we can verify it.",
     addressVerified: "Address verified",
     addressRequired: "Pick a verified address from the list before booking.",
-    availableWindow: "Available: {from}–{to}",
+    availableWindow: "Available: {from} to {to}",
     availableAllDay: "Available all day",
     timeLabel: "Performance time",
     startTimeLabel: "Start time",
@@ -937,7 +992,7 @@ const en: typeof nl = {
     ofWhichVat: "of which VAT",
     privateNote: "Private: this is the total price, including VAT.",
     equipmentNote:
-      "The DJ brings their own sound/lighting — equipment costs included.",
+      "The DJ brings their own sound/lighting, equipment costs included.",
     payAfterAccept: "You only pay after acceptance.",
     submit: "Send request",
     escrowNote: "You only pay after acceptance. Money is safely held in escrow.",
@@ -969,7 +1024,7 @@ const en: typeof nl = {
     trust2Body: "If the DJ doesn't show up, you get your full amount back.",
     trust3Title: "100% digital, no cash",
     trust3Body:
-      "Everything goes through a secure payment environment — you never have to pay cash.",
+      "Everything goes through a secure payment environment. You never have to pay cash.",
     trust4Title: "Your privacy stays protected",
     trust4Body:
       "The DJ only sees your name for coordination; you don't share your contact details.",
@@ -1011,7 +1066,7 @@ const en: typeof nl = {
     chat: "Chat",
     pay: "Pay",
     cancel: "Cancel",
-    paidNote: "Paid — money is held by MyGigs, payout within 5 business days.",
+    paidNote: "Paid. The money is held by MyGigs, payout within 5 business days.",
     djEnroute: "DJ is on the way · arriving ~{eta}",
     djEnrouteNoEta: "DJ is on the way",
     djOnSite: "DJ checked in on site",
@@ -1020,7 +1075,7 @@ const en: typeof nl = {
     reviewCta: "Leave a review",
     reviewThanks: "Thanks for your review!",
     reviewBanner:
-      "You have {n} completed gig to review — help your DJ with a rating.",
+      "You have {n} completed gig to review. Help your DJ with a rating.",
   },
   agenda: {
     title: "Calendar",
@@ -1038,7 +1093,16 @@ const en: typeof nl = {
     prevMonth: "Previous month",
     nextMonth: "Next month",
     calendarHint:
-      "Tap a day to turn it on and set the times. Then confirm your schedule. Booked days can't be changed.",
+      "Tap as many days as you like, set your times below and click Apply schedule. Only then is anything saved. Booked days can't be changed.",
+    draftHint:
+      "These days are not set yet. Click Apply schedule to save them; if you do not, nothing changes.",
+    draftLegend: "Selected, not applied yet",
+    cancelDraft: "Clear selection",
+    pickedOne: "1 day selected",
+    pickedMany: "{n} days selected",
+    pickedTimesHint: "The times above apply to every selected day.",
+    confirmScheduleMulti: "Are you sure this is your schedule for these {n} days?",
+    removeDaysQ: "Are you sure you want to remove these {n} days?",
     noProfile: "You don't have a DJ profile yet. Create one first.",
     toProfile: "To profile",
     timesTitle: "Available times",
@@ -1078,14 +1142,14 @@ const en: typeof nl = {
     title: "Bookings on the map",
     gigsTitle: "Gigs",
     gigsIntro:
-      "Where you've played, by month. Client details stay private — only the location.",
+      "Where you've played, by month. Client details stay private, only the location is shown.",
     gigsCountMany: "{n} gigs",
     gigsCountOne: "1 gig",
     legendPending: "Pending",
     legendAccepted: "Accepted (awaiting payment)",
     legendPaid: "Paid & confirmed",
     statusPending: "Pending",
-    statusAccepted: "Accepted — awaiting payment",
+    statusAccepted: "Accepted, awaiting payment",
     statusPaid: "Paid & confirmed",
     statusCompleted: "Completed",
     empty: "No bookings to show on the map yet.",
@@ -1178,7 +1242,7 @@ const en: typeof nl = {
     navNoCoords: "No address coordinates are available for this booking.",
     navConsentTitle: "Location permission",
     navConsentBody:
-      "We use your location to calculate the route and arrival time. The client only sees the arrival time — never your location. Close this screen to stop.",
+      "We use your location to calculate the route and arrival time. The client only sees the arrival time, never your location. Close this screen to stop.",
     navConsentStart: "Share location & start",
     navRetry: "Try again",
     enrouteHint:
@@ -1205,6 +1269,31 @@ const en: typeof nl = {
     decline: "Decline",
     chatClient: "Chat with client",
     markDone: "Mark as completed",
+    // Cancelling (house rule 2)
+    cancelOpen: "I cannot make it",
+    cancelTitle: "You cannot make it?",
+    cancelInHours: "The gig starts in about {h} hours.",
+    cancelStarted: "The gig has already started.",
+    cancelLate: "This is within 24 hours. That counts as a late cancellation: the client can leave a review about it, and we have little time to find a stand-in.",
+    cancelOnTime: "There is still plenty of time to find a stand-in. A shame, but reported in good time.",
+    cancelReasonLabel: "What is the reason?",
+    cancelReasonChoose: "Pick a reason",
+    cancelReasons: {
+      ziekte: "Illness",
+      ongeval: "Accident",
+      "dubbele-boeking": "Double booking",
+      vervoer: "Transport",
+      prive: "Personal circumstances",
+      anders: "Other",
+    },
+    cancelNoteLabel: "Explanation",
+    cancelNotePlaceholder: "Optional. Only we read this, not the client.",
+    cancelConfirm: "I understand the organiser is notified right away.",
+    cancelBack: "Never mind",
+    cancelSubmit: "Yes, cancel my booking",
+    cancelBusy: "Working…",
+    cancelErrorReason: "Please pick a reason first.",
+    cancelErrorGeneric: "Cancelling failed. Refresh the page and try again.",
     visibleFans: "Visible to fans",
     showPublic: "Show on public profile",
     private: "Private",
@@ -1219,10 +1308,10 @@ const en: typeof nl = {
     viewPublic: "View your public profile →",
     photoHeading: "Profile photo",
     photoHint:
-      "Appears on your profile and in search results — instead of your initials.",
+      "Appears on your profile and in search results, instead of your initials.",
     mediaHeading: "Photos & videos",
     mediaHint:
-      "Show bookers your vibe — add photos and short videos of your sets.",
+      "Show bookers your vibe. Add photos and short videos of your sets.",
     djName: "DJ name",
     djNamePlaceholder: "DJ Example",
     province: "Province (home base)",
@@ -1235,7 +1324,7 @@ const en: typeof nl = {
     genresHeading: "Genres / styles",
     equipmentHeading: "Equipment you bring",
     equipmentHint:
-      "Tick what you bring and add your rental price — this is rented to the booker. The price appears on your profile.",
+      "Tick what you bring and add your rental price. This is rented to the booker. The price appears on your profile.",
     equipmentDetailsPlaceholder:
       "Details (optional): e.g. Pioneer CDJ-3000, DJM-900",
     pricePerProvinceHeading: "Price per province",
@@ -1256,7 +1345,7 @@ const en: typeof nl = {
     genreRemove: "Remove {name}",
     genreSearchPlaceholder: "Search a style… (e.g. techno, house, afro)",
     genreEmpty:
-      "Type to search styles and click to add — pick as many as you like.",
+      "Type to search styles and click to add. Pick as many as you like.",
     // Media manager
     uploading: "Uploading…",
     mediaUpload: "+ Upload photos / videos",
@@ -1264,13 +1353,13 @@ const en: typeof nl = {
     mediaRemove: "Remove media",
     // House rules
     rulesHeading: "House rules",
-    rulesHint: "Short and clear: this is what you sign up to when you play through MyGigs.",
+    rulesHint: "How we work together when you play through MyGigs.",
     rulesEyebrow: "How we work together",
     rulesIntro:
-      "Twelve rules that keep the night right for everyone. The ones with an orange border are the ones we are strict about.",
+      "The rules that keep the night right for everyone. The ones with an orange border matter most to us.",
     rulesPromises: "And here is what we put against it",
     rulesConfirm:
-      "I have read the house rules and I follow them on every MyGigs booking.",
+      "I have read the house rules and am happy to work by them on my MyGigs bookings.",
     rulesAcceptButton: "Agree to the house rules",
     rulesSaving: "Saving…",
     rulesAcceptedNow: "Agreement recorded. Thank you.",
@@ -1278,6 +1367,27 @@ const en: typeof nl = {
     rulesUpdated: "The house rules changed. Please read them and agree again.",
     rulesFailed: "Saving failed. Please try again.",
     rulesBadge: "Works by the MyGigs house rules",
+    // Click-through reader: one agreement per screen
+    rulesStart: "Read the house rules",
+    rulesRereadStart: "Read them again",
+    rulesReread: "Read again",
+    rulesOverview: "All agreements in one list",
+    rulesCtaBody:
+      "{total} rules that matter for making your gig, and your client's night, one to remember. Let us go through them together.",
+    rulesIntroTitle: "House rules",
+    rulesIntroBody:
+      "{total} rules that matter for making your gig, and your client's night, one to remember. Let us go through them together.",
+    rulesIntroTime: "About two minutes",
+    rulesStep: "{n} of {total}",
+    rulesCoreLabel: "Key agreement",
+    rulesNote: "PS:",
+    rulesNext: "Next",
+    rulesReading: "Reading…",
+    rulesBack: "Back",
+    rulesClose: "Close",
+    rulesFinalTitle: "That was all {total}",
+    rulesFinalBody:
+      "Good. One more thing: agreements work both ways, so below is what we put against your side.",
     // Avatar
     avatarAlt: "Profile photo",
     avatarChange: "Change photo",
@@ -1298,10 +1408,12 @@ const en: typeof nl = {
     photoLoadFailed:
       "This photo could not be opened. Save it as JPG and try again.",
     photoSaveFailed: "Saving the photo failed. Please try again.",
-    photoTipFace: "Face large in frame, from your shoulders to just above your head.",
-    photoTipSize: "At least 1000 by 1000 pixels, 2000 is better.",
-    photoTipLight: "Light on your face. Club shots are fine if you are recognisable.",
-    photoTipOriginal: "Send the original, not a screenshot and not via WhatsApp.",
+    photoDark:
+      "This photo is dark: your face will disappear in the search results. Take one in daylight, or with light coming from the front.",
+    photoBright:
+      "There is so much light here that your face flattens out. Step out of direct sun or away from that spotlight.",
+    photoBlurry:
+      "This crop looks out of focus. Zoom out a little, or pick a photo where your face is sharp.",
     // Equipment items
     equipMicrophone: "Microphone",
     equipTurntable: "Turntable",
@@ -1314,9 +1426,9 @@ const en: typeof nl = {
     autoFillHint: "based on home province + guide price (travel cost + time)",
     autoFillNoProvince: "Choose your home province above first.",
     autoFillNoBase: "Enter your guide price first.",
-    autoFillDone: "Filled from {province} — feel free to adjust per province.",
+    autoFillDone: "Filled from {province}. Feel free to adjust per province.",
     mapAria:
-      "Map of the Netherlands — click a province to set your amount",
+      "Map of the Netherlands. Click a province to set your amount",
     provinceTotalHint: "Total amount incl. travel costs. Empty = not bookable there.",
     amountPlaceholder: "amount",
     notBookable: "Not bookable",
@@ -1347,7 +1459,7 @@ const en: typeof nl = {
       "Not ticked? Then we invoice without VAT under the small-business scheme (KOR).",
     kvkInfoTitle: "Chamber of Commerce & VAT",
     kvkInfo1:
-      "To get paid via MyGigs, you invoice as a business. Register with the Dutch Chamber of Commerce (KVK) — you'll get a KVK number and usually a VAT ID.",
+      "To get paid via MyGigs, you invoice as a business. Register with the Dutch Chamber of Commerce (KVK). You'll get a KVK number and usually a VAT ID.",
     kvkInfo2:
       "Small-business scheme (KOR): if you stay under €20,000 turnover per year, you can use the KOR and charge no VAT. You register for it separately with the Tax Administration.",
     kvkInfo3:
@@ -1357,7 +1469,7 @@ const en: typeof nl = {
     billingSave: "Save billing details",
     billingSaved: "Billing details saved.",
     billingError:
-      "Saving failed. Refresh the page and try again — does the table already exist in the database?",
+      "Saving failed. Refresh the page and try again. Does the table already exist in the database?",
   },
   messages: {
     title: "Messages",

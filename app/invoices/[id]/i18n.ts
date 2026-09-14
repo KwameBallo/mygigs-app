@@ -16,15 +16,15 @@ const nl = {
   vat: "Btw ({rate})",
   total: "Totaal",
   paidViaMyGigs:
-    "Betaald via MyGigs — het bedrag staat in escrow tot na het optreden en wordt binnen 5 werkdagen uitbetaald.",
+    "Betaald via MyGigs. Het bedrag staat in escrow tot na het optreden en wordt binnen 5 werkdagen uitbetaald.",
   payoutTitle: "Uitbetalingsspecificatie",
   payoutHint:
-    "Alleen zichtbaar voor jou — dit staat niet op de factuur aan de klant.",
+    "Alleen zichtbaar voor jou, dit staat niet op de factuur aan de klant.",
   payoutGross: "Bruto boekingsbedrag",
   payoutCommission: "MyGigs-commissie (7%, excl. btw)",
   payoutNet: "Netto uitbetaling",
   payoutVatNote:
-    "Over de commissie berekenen wij 21% btw ({vat}) via een aparte commissie-factuur — voor btw-plichtige DJ's verrekenbaar.",
+    "Over de commissie berekenen wij 21% btw ({vat}) via een aparte commissie-factuur. Voor btw-plichtige DJ's is dat verrekenbaar.",
   equip: {
     Microfoon: "Microfoon (huur)",
     Draaitafel: "Draaitafel (huur)",
@@ -52,14 +52,14 @@ const en: typeof nl = {
   vat: "VAT ({rate})",
   total: "Total",
   paidViaMyGigs:
-    "Paid via MyGigs — held in escrow until after the performance and paid out within 5 business days.",
+    "Paid via MyGigs. Held in escrow until after the performance and paid out within 5 business days.",
   payoutTitle: "Payout breakdown",
-  payoutHint: "Only visible to you — this is not shown on the client invoice.",
+  payoutHint: "Only visible to you, this is not shown on the client invoice.",
   payoutGross: "Gross booking amount",
   payoutCommission: "MyGigs commission (7%, excl. VAT)",
   payoutNet: "Net payout",
   payoutVatNote:
-    "We charge 21% VAT ({vat}) on the commission via a separate commission invoice — reclaimable for VAT-registered DJs.",
+    "We charge 21% VAT ({vat}) on the commission via a separate commission invoice. VAT-registered DJs can reclaim it.",
   equip: {
     Microfoon: "Microphone (rental)",
     Draaitafel: "Turntable (rental)",

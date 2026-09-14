@@ -1,18 +1,20 @@
 import type { Locale } from "@/lib/i18n/config"
 
-// De MyGigs-huisregels. Eén bron voor alle plekken waar ze staan: het
-// DJ-profiel, het scherm waarin je een boeking accepteert en het publieke
-// profiel. Verander je de tekst inhoudelijk, verhoog dan de versie: DJ's
-// moeten dan opnieuw akkoord geven.
+// De MyGigs-huisregels. Eén bron voor alle plekken waar ze staan: de
+// doorklikker op het DJ-profiel, het scherm waarin je een boeking accepteert
+// en het publieke profiel. Verander je de tekst inhoudelijk, verhoog dan de
+// versie: DJ's moeten dan opnieuw akkoord geven.
 
-export const HOUSE_RULES_VERSION = 1
+export const HOUSE_RULES_VERSION = 2
 
 export type HouseRule = {
   n: number
   icon: string
   title: string
   body: string
-  /** Kernregel: staat ook in het korte lijstje bij het accepteren van een boeking. */
+  /** Kleine toevoeging onder de regel, voor een gevolg of een uitzondering. */
+  note?: string
+  /** Kernafspraak: staat ook in het korte lijstje bij het accepteren van een boeking. */
   core?: boolean
 }
 
@@ -20,79 +22,56 @@ const NL: HouseRule[] = [
   {
     n: 1,
     icon: "🚫",
-    title: "Je draait nuchter",
-    body: "Geen alcohol en geen drugs voor of tijdens je optreden. Je bent er om te presteren, en daar betaalt de organisator voor.",
+    title: "No Alcohol",
+    body: "We vragen je om zonder alcohol of drugs te draaien. Je kwaliteiten zijn on point en de atmosfeer tijdens je gig. Denk ook aan de veiligheid van jou en die van een ander.",
     core: true,
   },
   {
     n: 2,
     icon: "⏳",
-    title: "Afmelden doe je 24 uur van tevoren",
-    body: "Lukt het echt niet, gebruik dan de afmeldknop bij je boeking. Zo weten de organisator en MyGigs het tegelijk en kunnen wij een vervanger zoeken.",
+    title: "Afmelden 24 uur van tevoren",
+    body: "Kan je boeking door omstandigheden niet doorgaan? Laat dit zo snel mogelijk weten via de afmeldknop. Zo hebben we tijd om zo snel mogelijk een vervanger te vinden.",
+    note: "Binnen 24 uur kan de klant een review achterlaten voor een No-Show.",
     core: true,
   },
   {
     n: 3,
     icon: "👔",
-    title: "Je kleedt je naar het thema",
-    body: "Staat er een dresscode bij de boeking, dan volg je die. Twijfel je? Vraag het in de chat, niet op de avond zelf.",
+    title: "Kledingvoorschriften",
+    body: "Is er bij de boeking een dresscode of thema doorgegeven? Houd je daaraan, zo bezorg je de klant een prachtige dag. Ook jouw mening telt: geef vroegtijdig aan als je dat niet wilt.",
     core: true,
   },
   {
     n: 4,
     icon: "🕒",
-    title: "Je bent op tijd",
-    body: "Minimaal 45 minuten voor aanvang aanwezig, zodat je rustig opbouwt en soundcheckt. Check in via de app zodra je er bent.",
+    title: "Op tijd aanwezig",
+    body: "Wees op tijd op de afgesproken locatie, volgens schema.",
     core: true,
   },
   {
     n: 5,
-    icon: "🎧",
-    title: "Je draait zelf",
-    body: "Geen vervanger sturen zonder akkoord van de organisator en MyGigs. Ze hebben jou geboekt, niet iemand anders.",
+    icon: "🔥",
+    title: "We want more!",
+    body: "Is je set geweldig en wil de klant je langer laten draaien? Geef dit aan in de app, dan passen we de betaling aan. Je verlengt simpelweg de tijd en de prijs wordt automatisch doorberekend.",
   },
   {
     n: 6,
-    icon: "📅",
-    title: "Je houdt je aan de afgesproken tijden",
-    body: "Begin- en eindtijd staan in de boeking. Langer doordraaien mag, maar leg het eerst vast in de app zodat het ook betaald wordt.",
-  },
-  {
-    n: 7,
     icon: "🤝",
-    title: "Je bent respectvol naar gasten en personeel",
-    body: "Geen intimidatie, discriminatie of ongewenste avances, op geen enkele manier. Eén melding hierover is genoeg om je profiel direct te pauzeren.",
+    title: "Respect voor gasten en personeel",
+    body: "Iedereen moet zich veilig voelen op de vloer. Let's make it happen!",
     core: true,
   },
   {
-    n: 8,
-    icon: "🔊",
-    title: "Je volgt de regels van de locatie",
-    body: "Geluidsnormen, eindtijd en aanwijzingen van de beveiliging of de geluidstechnicus. Aan hen hangt de vergunning van de avond.",
-  },
-  {
-    n: 9,
-    icon: "🔌",
-    title: "Je apparatuur is veilig",
-    body: "Deugdelijke kabels, niets in looppaden, niets dat kan omvallen. Schade die jij veroorzaakt is voor jouw rekening.",
-  },
-  {
-    n: 10,
-    icon: "💳",
-    title: "Je regelt alles via MyGigs",
-    body: "Betalingen, wijzigingen en afspraken lopen via het platform. Bij een deal buiten de app vervallen je bescherming, je factuur en je reviews.",
-  },
-  {
-    n: 11,
+    n: 7,
     icon: "🔐",
-    title: "Je gaat netjes om met gegevens",
-    body: "Adres, telefoonnummer en plattegrond van de klant gebruik je alleen voor deze boeking. Niet delen, niet bewaren, niet hergebruiken.",
+    title: "AVG Bescherming",
+    body: "De gegevens van de klant mogen niet gedeeld worden. Houd de gegevens privé.",
   },
   {
-    n: 12,
+    n: 8,
     icon: "📸",
-    title: "Je filmt met toestemming",
-    body: "Content maken is goed voor je profiel, maar vraag het aan de organisator en film geen herkenbare gasten die dat niet willen.",
+    title: "Film overeenkomst",
+    body: "Content maken voor je profiel is top! Bespreek dit met de klant om verwarring te voorkomen.",
   },
 ]
 
@@ -100,85 +79,62 @@ const EN: HouseRule[] = [
   {
     n: 1,
     icon: "🚫",
-    title: "You play sober",
-    body: "No alcohol and no drugs before or during your set. You are there to perform, and that is what the organiser pays for.",
+    title: "No Alcohol",
+    body: "We ask you to play without alcohol or drugs. Your skills are on point, and so is the atmosphere during your gig. Think of your own safety and that of everyone around you.",
     core: true,
   },
   {
     n: 2,
     icon: "⏳",
-    title: "Cancel at least 24 hours ahead",
-    body: "If you really cannot make it, use the cancel button on your booking. The organiser and MyGigs hear it at the same time, so we can find a stand-in.",
+    title: "Cancel 24 hours ahead",
+    body: "Can your booking not go ahead? Let us know as soon as you can through the cancel button. That gives us time to find a stand-in quickly.",
+    note: "Within 24 hours the client can leave a review for a no-show.",
     core: true,
   },
   {
     n: 3,
     icon: "👔",
-    title: "You dress for the theme",
-    body: "If the booking lists a dress code, you follow it. In doubt? Ask in the chat, not on the night itself.",
+    title: "Dress code",
+    body: "Has a dress code or theme been given with the booking? Stick to it, that is how you give the client a beautiful day. Your view counts too: say so in good time if you would rather not.",
     core: true,
   },
   {
     n: 4,
     icon: "🕒",
-    title: "You are on time",
-    body: "On site at least 45 minutes before the start, so you can set up and sound check calmly. Check in through the app when you arrive.",
+    title: "There on time",
+    body: "Be at the agreed location on time, as scheduled.",
     core: true,
   },
   {
     n: 5,
-    icon: "🎧",
-    title: "You play yourself",
-    body: "No stand-in without approval from the organiser and MyGigs. They booked you, not somebody else.",
+    icon: "🔥",
+    title: "We want more!",
+    body: "Is your set going down well and does the client want you to play on? Set it in the app and we adjust the payment. You simply extend the time and the price is calculated automatically.",
   },
   {
     n: 6,
-    icon: "📅",
-    title: "You keep to the agreed times",
-    body: "Start and end times are in the booking. Playing longer is fine, but record it in the app first so it gets paid.",
-  },
-  {
-    n: 7,
     icon: "🤝",
-    title: "You respect guests and staff",
-    body: "No harassment, discrimination or unwanted advances, in any form. One report is enough for us to pause your profile immediately.",
+    title: "Respect for guests and staff",
+    body: "Everyone should feel safe on the floor. Let's make it happen!",
     core: true,
   },
   {
-    n: 8,
-    icon: "🔊",
-    title: "You follow the venue's rules",
-    body: "Sound limits, closing time and instructions from security or the sound engineer. Their licence depends on it.",
-  },
-  {
-    n: 9,
-    icon: "🔌",
-    title: "Your gear is safe",
-    body: "Sound cables, nothing in walkways, nothing that can topple over. Damage you cause is on you.",
-  },
-  {
-    n: 10,
-    icon: "💳",
-    title: "You arrange everything through MyGigs",
-    body: "Payments, changes and agreements run through the platform. Deal outside the app and you lose your protection, your invoice and your reviews.",
-  },
-  {
-    n: 11,
+    n: 7,
     icon: "🔐",
-    title: "You handle data carefully",
-    body: "The client's address, phone number and floor plan are for this booking only. Do not share, store or reuse them.",
+    title: "Data protection",
+    body: "The client's details are not to be shared. Keep them private.",
   },
   {
-    n: 12,
+    n: 8,
     icon: "📸",
-    title: "You film with permission",
-    body: "Content is good for your profile, but ask the organiser and do not film recognisable guests who would rather not be filmed.",
+    title: "Filming agreement",
+    body: "Making content for your profile is great! Talk it through with the client to avoid any confusion.",
   },
 ]
 
 export const HOUSE_RULES: Record<Locale, HouseRule[]> = { nl: NL, en: EN }
 
-// Wat MyGigs er tegenover zet. Regels die één kant op werken voelen als een
+// Wat MyGigs er tegenover zet. Afspraken die één kant op werken voelen als een
 // bureau, en daar komen onze DJ's juist vandaan.
 export const HOUSE_PROMISES: Record<Locale, string[]> = {
   nl: [

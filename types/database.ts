@@ -422,6 +422,11 @@ export type Database = {
           booker_confirmed_at: string | null
           booker_id: string
           booking_type: Database["public"]["Enums"]["booking_type"]
+          cancel_notice_hours: number | null
+          cancel_reason: string | null
+          cancel_reason_code: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           checkin_accuracy_m: number | null
           checkin_at: string | null
           checkin_distance_m: number | null
@@ -464,6 +469,11 @@ export type Database = {
           booker_confirmed_at?: string | null
           booker_id: string
           booking_type?: Database["public"]["Enums"]["booking_type"]
+          cancel_notice_hours?: number | null
+          cancel_reason?: string | null
+          cancel_reason_code?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           checkin_accuracy_m?: number | null
           checkin_at?: string | null
           checkin_distance_m?: number | null
@@ -506,6 +516,11 @@ export type Database = {
           booker_confirmed_at?: string | null
           booker_id?: string
           booking_type?: Database["public"]["Enums"]["booking_type"]
+          cancel_notice_hours?: number | null
+          cancel_reason?: string | null
+          cancel_reason_code?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           checkin_accuracy_m?: number | null
           checkin_at?: string | null
           checkin_distance_m?: number | null
@@ -1463,6 +1478,11 @@ export type Database = {
           booker_confirmed_at: string | null
           booker_id: string
           booking_type: Database["public"]["Enums"]["booking_type"]
+          cancel_notice_hours: number | null
+          cancel_reason: string | null
+          cancel_reason_code: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           checkin_accuracy_m: number | null
           checkin_at: string | null
           checkin_distance_m: number | null
@@ -1514,6 +1534,11 @@ export type Database = {
           booker_confirmed_at: string | null
           booker_id: string
           booking_type: Database["public"]["Enums"]["booking_type"]
+          cancel_notice_hours: number | null
+          cancel_reason: string | null
+          cancel_reason_code: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           checkin_accuracy_m: number | null
           checkin_at: string | null
           checkin_distance_m: number | null
@@ -1576,7 +1601,7 @@ export type Database = {
       booking_type: "prive" | "zakelijk"
       invoice_kind: "dj_sale" | "mg_commission"
       payment_status: "pending" | "held" | "released" | "refunded" | "failed"
-      payout_status: "scheduled" | "paid" | "failed"
+      payout_status: "scheduled" | "paid" | "failed" | "cancelled"
       subscription_status:
         | "inactive"
         | "trialing"
@@ -1732,7 +1757,7 @@ export const Constants = {
       booking_type: ["prive", "zakelijk"],
       invoice_kind: ["dj_sale", "mg_commission"],
       payment_status: ["pending", "held", "released", "refunded", "failed"],
-      payout_status: ["scheduled", "paid", "failed"],
+      payout_status: ["scheduled", "paid", "failed", "cancelled"],
       subscription_status: [
         "inactive",
         "trialing",

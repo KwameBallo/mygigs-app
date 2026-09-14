@@ -11,6 +11,7 @@ import {
   checkInBooking,
   startEnroute,
 } from "./actions"
+import { CancelBooking } from "./cancel-booking"
 import { openBookingChat } from "@/lib/actions/chat"
 import { useT } from "@/components/i18n-provider"
 
@@ -95,11 +96,11 @@ function formatTime(t: string | null) {
   return m ? `${m[1]}:${m[2]}` : null
 }
 
-// Tijdvenster van het event, bijv. "20:00 – 01:00" of alleen de starttijd.
+// Tijdvenster van het event, bijv. "20:00 tot 01:00" of alleen de starttijd.
 function timeRange(start: string | null, end: string | null) {
   const s = formatTime(start)
   const e = formatTime(end)
-  if (s && e) return `${s} – ${e}`
+  if (s && e) return `${s} tot ${e}`
   return s ?? e
 }
 
@@ -140,7 +141,7 @@ function EmptyLine({ text }: { text: string }) {
   )
 }
 
-// Inklapbare sectie (Open / Afgerond) — kop met teller + chevron om te
+// Inklapbare sectie (Open / Afgerond): kop met teller + chevron om te
 // minimaliseren; onthoudt open/dicht lokaal.
 function CollapsibleSection({
   title,
@@ -220,7 +221,7 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
 
   return (
     <div className="mt-8 flex flex-col gap-8">
-      {/* Aanvragen — belangrijkst, altijd zichtbaar */}
+      {/* Aanvragen: belangrijkst, altijd zichtbaar */}
       <section>
         <SectionHeader
           title={d.secRequests}
@@ -238,7 +239,7 @@ export function BookingsBoard({ bookings }: { bookings: DashBooking[] }) {
         )}
       </section>
 
-      {/* Open en Afgerond — beide in/uit te klappen */}
+      {/* Open en Afgerond: beide in/uit te klappen */}
       <CollapsibleSection
         title={d.secUpcoming}
         emptyText={d.emptyConfirmed}
@@ -276,7 +277,7 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
   const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
   const isPending = b.status === "pending"
   // AVG/dataminimalisatie: de naam van de klant komt pas vrij zodra er een
-  // grondslag is — d.w.z. de aanvraag is geaccepteerd. Daarvóór blijft de
+  // grondslag is, dus zodra de aanvraag is geaccepteerd. Daarvóór blijft de
   // klant anoniem voor de DJ.
   const contactUnlocked = ["accepted", "paid", "completed"].includes(b.status)
   const u = isPending
@@ -547,6 +548,17 @@ function BookingCard({ booking: b }: { booking: DashBooking }) {
                       </button>
                     </form>
                   </>
+                )}
+
+                {/* Afmelden kan tot het optreden begonnen is. Staat bewust
+                    rechts en zonder kleur: het is geen knop om per ongeluk
+                    te raken. */}
+                {!eventEnded(b) && (
+                  <CancelBooking
+                    bookingId={b.id}
+                    eventDate={b.event_date}
+                    startTime={b.start_time}
+                  />
                 )}
               </div>
             )}

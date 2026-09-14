@@ -12,15 +12,15 @@ const MYGIGS = {
   kvk: "00000000",
 }
 
-const KOR_NOTE = "Kleineondernemersregeling — geen btw in rekening gebracht."
+const KOR_NOTE = "Kleineondernemersregeling, geen btw in rekening gebracht."
 
 function r2(n: number) {
   return Math.round(n * 100) / 100
 }
 
 // Genereert (idempotent) de twee facturen bij een betaalde boeking:
-// 1. dj_sale       — verkoopfactuur DJ -> klant (gage + apparatuur = boeking.total)
-// 2. mg_commission — commissie-factuur MyGigs -> DJ (7% + 21% btw)
+// 1. dj_sale       verkoopfactuur DJ -> klant (gage + apparatuur = boeking.total)
+// 2. mg_commission commissie-factuur MyGigs -> DJ (7% + 21% btw)
 // Draait met de service-role; de nummering is sequentieel per scope+jaar.
 export async function generateInvoicesForBooking(bookingId: string) {
   const admin = createAdminClient()
@@ -73,7 +73,7 @@ export async function generateInvoicesForBooking(bookingId: string) {
       : booker?.full_name || "Particuliere klant"
     const description =
       `Optreden${artist?.stage_name ? ` ${artist.stage_name}` : ""}` +
-      (booking.occasion ? ` — ${booking.occasion}` : "")
+      (booking.occasion ? ` (${booking.occasion})` : "")
     // Regelitems: het optreden + elke apparatuurregel; samen = saleNet.
     const lineItems = [
       { description, amount: perfNet },

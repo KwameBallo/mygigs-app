@@ -6,7 +6,13 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
 import { getI18n } from "@/lib/i18n"
 import { formatEuro } from "@/lib/utils/pricing"
-import { sendAcceptedToBooker, getUserEmail } from "@/lib/email"
+import {
+  sendAcceptedToBooker,
+  sendCancelledByDJToBooker,
+  sendCancelAlertToSupport,
+  getUserEmail,
+} from "@/lib/email"
+import { hoursUntil } from "@/lib/time"
 import {
   haversineMeters,
   estimateTravelSeconds,
@@ -16,8 +22,10 @@ import type { Database } from "@/types/database"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
 
-// Statussen die een DJ zelf mag zetten. 'paid' zit hier bewust NIET tussen —
-// dat kan alleen via betaling (payBooking); 'cancelled' hoort bij de boeker.
+// Statussen die een DJ via deze weg mag zetten. 'paid' zit hier bewust NIET
+// tussen: dat kan alleen via betaling (payBooking). 'cancelled' ook niet, want
+// afmelden gaat via cancelBookingAsArtist verderop, mét reden en bericht aan de
+// organisator. Zonder die route zou een afmelding spoorloos zijn.
 const DJ_ALLOWED_STATUS = ["accepted", "declined", "completed"] as const
 
 export async function updateBookingStatus(formData: FormData) {
@@ -290,6 +298,164 @@ export async function checkInBooking(formData: FormData) {
   })
 
   revalidatePath("/dashboard")
+}
+
+// ---------------------------------------------------------------------------
+// Afmelden (huisregel 2)
+//
+// De DJ kan een boeking die hij al had aangenomen alsnog afzeggen. Bewust een
+// eigen actie en niet via updateBookingStatus: 'cancelled' blijft daar
+// verboden, zodat een afmelding nooit zonder reden en zonder bericht aan de
+// organisator kan plaatsvinden.
+//
+// Wat hier gebeurt, in deze volgorde:
+//  1. claimen (alleen vanuit accepted of paid, precies één keer)
+//  2. vastleggen wie, waarom, wanneer en hoeveel uur van tevoren
+//  3. een ingeplande uitbetaling laten vervallen
+//  4. de organisator en MyGigs mailen
+//
+// Wat hier NIET gebeurt: geld terugstorten. De betaalprovider is nog een
+// simulatie, dus de mail naar support zegt expliciet dat er handmatig
+// terugbetaald moet worden. Zodra er een echte provider hangt, hoort de
+// terugboeking hier.
+// ---------------------------------------------------------------------------
+
+export const CANCEL_REASONS = [
+  "ziekte",
+  "ongeval",
+  "dubbele-boeking",
+  "vervoer",
+  "prive",
+  "anders",
+] as const
+export type CancelReason = (typeof CANCEL_REASONS)[number]
+
+export type CancelState = { error?: "reason" | "late" | "generic"; ok?: boolean }
+
+export async function cancelBookingAsArtist(
+  _prev: CancelState,
+  formData: FormData,
+): Promise<CancelState> {
+  const bookingId = String(formData.get("booking_id") ?? "")
+  const reasonCode = String(formData.get("reason_code") ?? "")
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 500)
+
+  if (!bookingId) return { error: "generic" }
+  if (!(CANCEL_REASONS as readonly string[]).includes(reasonCode)) {
+    return { error: "reason" }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "generic" }
+
+  const { data: artist } = await supabase
+    .from("artists")
+    .select("id, stage_name")
+    .eq("user_id", user.id)
+    .maybeSingle()
+  if (!artist) return { error: "generic" }
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select(
+      "id, status, event_date, start_time, booker_id, city, venue_name, occasion, total",
+    )
+    .eq("id", bookingId)
+    .eq("artist_id", artist.id)
+    .maybeSingle()
+  if (!booking) return { error: "generic" }
+  if (!["accepted", "paid"].includes(booking.status)) return { error: "generic" }
+
+  const wasPaid = booking.status === "paid"
+  const notice = hoursUntil(booking.event_date, booking.start_time)
+  const admin = createAdminClient()
+
+  // Atomisch claimen: een tweede klik raakt nul rijen en stopt hier.
+  const { data: claimed } = await admin
+    .from("bookings")
+    .update({
+      status: "cancelled",
+      cancelled_by: "artist",
+      cancel_reason_code: reasonCode,
+      cancel_reason: reason || null,
+      cancelled_at: new Date().toISOString(),
+      cancel_notice_hours: notice,
+    })
+    .eq("id", booking.id)
+    .eq("artist_id", artist.id)
+    .in("status", ["accepted", "paid"])
+    .select("id")
+  if (!claimed || claimed.length === 0) return { error: "generic" }
+
+  // Een ingeplande uitbetaling voor een optreden dat niet doorgaat, moet er
+  // niet meer staan. Betaald? Dan moet het geld terug naar de klant, en dat
+  // staat in de mail naar support.
+  await admin
+    .from("payouts")
+    .update({ status: "cancelled" })
+    .eq("booking_id", booking.id)
+    .eq("status", "scheduled")
+
+  await logAudit({
+    actorId: user.id,
+    action: "booking.cancel_by_artist",
+    targetType: "booking",
+    targetId: booking.id,
+    metadata: {
+      reason_code: reasonCode,
+      notice_hours: notice,
+      was_paid: wasPaid,
+    },
+  })
+
+  // Berichten. Best-effort: een mislukte mail mag de afmelding niet blokkeren,
+  // want in de database is hij al definitief.
+  try {
+    const { locale } = await getI18n()
+    const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+    const when = new Date(booking.event_date).toLocaleDateString(dateLocale, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+    const place = [booking.city, booking.venue_name].filter(Boolean).join(" · ")
+
+    const bookerEmail = await getUserEmail(booking.booker_id)
+    if (bookerEmail) {
+      await sendCancelledByDJToBooker({
+        to: bookerEmail,
+        locale,
+        djName: artist.stage_name,
+        when,
+        place,
+        refund: wasPaid,
+      })
+    }
+
+    await sendCancelAlertToSupport({
+      djName: artist.stage_name,
+      when,
+      place: place || "onbekend",
+      occasion: booking.occasion ?? "",
+      reason: reason ? `${reasonCode} — ${reason}` : reasonCode,
+      noticeHours: notice,
+      amount: formatEuro(Number(booking.total)),
+      refundNeeded: wasPaid,
+      bookingId: booking.id,
+    })
+  } catch (e) {
+    console.error("afmeld-mail mislukt:", e)
+  }
+
+  revalidatePath("/dashboard")
+  revalidatePath("/bookings")
+  revalidatePath("/availability")
+  revalidatePath("/discover")
+  return { ok: true }
 }
 
 export async function toggleBookingPublic(formData: FormData) {

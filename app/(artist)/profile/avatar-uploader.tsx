@@ -126,13 +126,6 @@ export function AvatarUploader({
         </div>
       </div>
 
-      <ul className="flex flex-col gap-1 text-xs text-muted">
-        <li>{p.photoTipFace}</li>
-        <li>{p.photoTipSize}</li>
-        <li>{p.photoTipLight}</li>
-        <li>{p.photoTipOriginal}</li>
-      </ul>
-
       {pending && (
         <PhotoCropper
           file={pending}
@@ -145,6 +138,9 @@ export function AvatarUploader({
             working: p.uploading,
             tooSmall: p.photoTooSmall,
             soft: p.photoSoft,
+            dark: p.photoDark,
+            bright: p.photoBright,
+            blurry: p.photoBlurry,
             loadFailed: p.photoLoadFailed,
           }}
           onCancel={() => setPending(null)}
