@@ -6,6 +6,8 @@ import type { EmailOtpType } from "@supabase/supabase-js"
 import { Logo } from "@/components/logo"
 import { createClient } from "@/lib/supabase/client"
 import { useT } from "@/components/i18n-provider"
+import { PasswordRules } from "@/components/password-rules"
+import { passwordOk, PASSWORD_MIN } from "@/lib/password"
 import { dict } from "./i18n"
 
 type Phase = "checking" | "ready" | "invalid" | "saving" | "done"
@@ -53,7 +55,7 @@ function ResetPasswordForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    if (password.length < 12) return setError(d.minChars)
+    if (!passwordOk(password)) return setError(d.minChars)
     setPhase("saving")
     const { error } = await supabase.auth.updateUser({ password })
     if (error) {
@@ -103,18 +105,19 @@ function ResetPasswordForm() {
               <input
                 type="password"
                 required
-                minLength={12}
+                minLength={PASSWORD_MIN}
                 autoFocus
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="input"
               />
+              <PasswordRules password={password} />
             </label>
             {error && <p className="text-sm text-red-400">{error}</p>}
             <button
               type="submit"
-              disabled={phase === "saving"}
+              disabled={phase === "saving" || !passwordOk(password)}
               className="mt-2 rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong disabled:opacity-60"
             >
               {phase === "saving" ? d.saving : d.save}

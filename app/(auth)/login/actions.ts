@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { rateLimit, clientIpFromHeaders } from "@/lib/ratelimit"
 import type { Database } from "@/types/database"
+import { passwordOk } from "@/lib/password"
 
 type Role = Database["public"]["Enums"]["user_role"]
 
@@ -104,9 +105,10 @@ export async function signUp(formData: FormData) {
   const rl = await rateLimit(ip, { limit: 5, windowSec: 3600, scope: "signup" })
   if (!rl.ok) signupError("too-many", isDj)
 
-  // Wachtwoordbeleid: minimaal 12 tekens (server-side, naast de client-check en
-  // de Supabase-minimumlengte). Voorkomt zwakke wachtwoorden.
-  if (password.length < 12) {
+  // Wachtwoordbeleid, server-side. Exact dezelfde eisen als het vinkjeslijstje
+  // in het scherm, want beide halen ze uit lib/password.ts. Nooit alleen op de
+  // client controleren: die kan iedereen omzeilen.
+  if (!passwordOk(password)) {
     signupError("password-short", isDj)
   }
 

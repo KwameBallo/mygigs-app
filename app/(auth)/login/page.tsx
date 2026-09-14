@@ -166,6 +166,7 @@ export default async function LoginPage({
               mismatch: a.passwordMismatch,
               show: a.showPassword,
               hide: a.hidePassword,
+              incomplete: a.pwRuleIncomplete,
             }}
           />
           {!isSignup && (
