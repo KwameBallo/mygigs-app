@@ -76,7 +76,7 @@ export default async function KaartPage() {
       lat: coords[0],
       lng: coords[1],
       color: STATUS_COLOR[b.status] ?? "#9ca3af",
-      title: b.venue_name ?? b.city ?? "—",
+      title: b.venue_name ?? b.city ?? "-",
       meta: `${new Date(b.event_date).toLocaleDateString(dateLocale, {
         day: "numeric",
         month: "long",

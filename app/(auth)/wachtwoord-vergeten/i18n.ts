@@ -6,7 +6,7 @@ const nl = {
   send: "Stuur resetlink",
   sending: "Versturen…",
   // Bewust neutraal geformuleerd (geen bevestiging dat het account bestaat).
-  sent: "Als er een account bij dit e-mailadres hoort, hebben we je een resetlink gestuurd. Check je inbox — en je spam-map.",
+  sent: "Als er een account bij dit e-mailadres hoort, hebben we je een resetlink gestuurd. Check je inbox en je spam-map.",
   error: "Er ging iets mis. Probeer het zo opnieuw.",
   back: "Terug naar inloggen",
 }
@@ -18,7 +18,7 @@ const en: typeof nl = {
   emailLabel: "Email address",
   send: "Send reset link",
   sending: "Sending…",
-  sent: "If an account exists for this email address, we've sent you a reset link. Check your inbox — and your spam folder.",
+  sent: "If an account exists for this email address, we've sent you a reset link. Check your inbox and your spam folder.",
   error: "Something went wrong. Please try again.",
   back: "Back to login",
 }

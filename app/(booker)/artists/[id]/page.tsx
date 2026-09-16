@@ -96,7 +96,7 @@ export default async function ArtistPage({
           : null
 
   // Btw-status van de DJ (via service-role; artist_billing is owner-only). Bepaalt
-  // of een zakelijke boeking btw krijgt — nodig voor de juiste prijsweergave.
+  // of een zakelijke boeking btw krijgt, nodig voor de juiste prijsweergave.
   const { data: djBilling } = await createAdminClient()
     .from("artist_billing")
     .select("is_vat_registered")

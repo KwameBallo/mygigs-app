@@ -76,9 +76,9 @@ export function GigSchedule({
               })
               const time =
                 g.start_time && g.end_time
-                  ? `${hhmm(g.start_time)} – ${hhmm(g.end_time)}`
+                  ? `${hhmm(g.start_time)} - ${hhmm(g.end_time)}`
                   : labels.timeTbd
-              const where = g.venue_name ?? g.city ?? "—"
+              const where = g.venue_name ?? g.city ?? "-"
               const sub = g.address ?? (g.venue_name ? g.city : null)
               const color = STATUS_COLOR[g.status] ?? "#a1a1aa"
               return (

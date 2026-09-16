@@ -25,7 +25,7 @@ export default async function DiscoverPage({
 }: {
   searchParams: SearchParams
 }) {
-  // DJ's browsen niet op Ontdek — stuur ze naar hun dashboard.
+  // DJ's browsen niet op Ontdek, stuur ze naar hun dashboard.
   const profile = await getProfile()
   if (profile?.role === "artist" || profile?.role === "both") {
     redirect("/dashboard")

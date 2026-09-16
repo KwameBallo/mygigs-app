@@ -9,7 +9,7 @@ export type Artist = Tables<"artists"> & {
   // Prijs in de gekozen provincie (incl. reiskosten); alleen gevuld als er
   // op provincie gefilterd wordt.
   province_gage?: number | null
-  // Activiteitsrang (actief/gewild/hot) — organisatoren zien wie in trek is.
+  // Activiteitsrang (actief/gewild/hot), organisatoren zien wie in trek is.
   tier?: DjTier | null
 }
 
@@ -177,10 +177,10 @@ export type OrganiserPrefs = {
 }
 
 // 'Aanbevolen': DJ's die passen bij de organisator-voorkeuren (regio, budget,
-// stijl, datum) — gesorteerd op match en daarna op meeste boekingen. De
+// stijl, datum), gesorteerd op match en daarna op meeste boekingen. De
 // voorkeuren zijn *zacht*: een lege of afwijkende voorkeur sluit niemand uit,
 // maar betere matches komen bovenaan. De datum is (indien opgegeven) wél hard:
-// we bevelen geen DJ aan die die dag niet beschikbaar is — tenzij niemand kan,
+// we bevelen geen DJ aan die die dag niet beschikbaar is, tenzij niemand kan,
 // dan tonen we alsnog de rest op boekingen.
 export async function getRecommendedArtists(
   prefs: OrganiserPrefs,

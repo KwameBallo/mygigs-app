@@ -74,7 +74,7 @@ export async function updateBookingStatus(formData: FormData) {
 
   // Accepteren blokkeert NIET meer de hele dag. Een boeking blokkeert alleen
   // zijn eigen tijdvak (mét reistijd-buffer), zodat de DJ die dag op andere
-  // tijden nog boekbaar blijft — de tijd-overlapcheck gebeurt bij het boeken.
+  // tijden nog boekbaar blijft, de tijd-overlapcheck gebeurt bij het boeken.
   if (status === "accepted") {
     // Mail de boeker dat de aanvraag is geaccepteerd (met betaal-CTA). Best-effort.
     try {
@@ -102,7 +102,7 @@ export async function updateBookingStatus(formData: FormData) {
   }
 
   // Het review-verzoek gaat NIET hier, maar automatisch ~3 uur na het einde van
-  // het optreden via de geplande taak (/api/cron/review-requests) — zie
+  // het optreden via de geplande taak (/api/cron/review-requests), zie
   // migratie 0022. Zo is de timing onafhankelijk van of de DJ handmatig afrondt.
 
   revalidatePath("/dashboard")
@@ -112,7 +112,7 @@ export async function updateBookingStatus(formData: FormData) {
 
 // "Ik ben onderweg": de DJ deelt eenmalig zijn locatie zodat wij de rijtijd
 // naar het event-adres berekenen. De klant ziet alleen de status "onderweg" +
-// de verwachte aankomsttijd — nooit de locatie van de DJ (privacy/AVG).
+// de verwachte aankomsttijd, nooit de locatie van de DJ (privacy/AVG).
 export async function startEnroute(formData: FormData) {
   const bookingId = String(formData.get("booking_id") ?? "")
   const lat = Number(formData.get("lat"))
@@ -174,7 +174,7 @@ export async function startEnroute(formData: FormData) {
 
 // Live ETA vanuit het in-app navigatiescherm. De kaart berekent de rijtijd en
 // stuurt de verwachte aankomsttijd door; wij bewaren die (en markeren onderweg)
-// zodat de klant een actuele aankomsttijd ziet — nooit de locatie van de DJ.
+// zodat de klant een actuele aankomsttijd ziet, nooit de locatie van de DJ.
 export async function setBookingEta(formData: FormData) {
   const bookingId = String(formData.get("booking_id") ?? "")
   const etaRaw = String(formData.get("eta") ?? "")
@@ -219,7 +219,7 @@ export async function setBookingEta(formData: FormData) {
 
 // Aanwezigheidsbewijs: de DJ legt bij aankomst zijn GPS + tijdstip vast. We
 // berekenen de afstand tot het geverifieerde event-adres en bewaren die als
-// bewijs. AVG: locatie is persoonsgegeven — de UI vraagt eerst toestemming en
+// bewijs. AVG: locatie is persoonsgegeven, de UI vraagt eerst toestemming en
 // de gegevens zijn alleen zichtbaar voor de betrokken DJ en boeker.
 export async function checkInBooking(formData: FormData) {
   const bookingId = String(formData.get("booking_id") ?? "")
@@ -262,7 +262,7 @@ export async function checkInBooking(formData: FormData) {
   // client en zijn dus te spoofen. `checkin_verified` = op locatie + binnen het
   // tijdvenster + redelijke nauwkeurigheid, maar alleen het tijdstip (server-set)
   // is hard. Het echte aanwezigheidsbewijs is de tweezijdige bevestiging door de
-  // organisator (confirmDjAttendance) — daarop leunen we bij geschillen. SEC #3.
+  // organisator (confirmDjAttendance), daarop leunen we bij geschillen. SEC #3.
   const now = Date.now()
   const startAt = new Date(
     `${booking.event_date}T${(booking.start_time ?? "00:00").slice(0, 5)}:00`,
@@ -441,7 +441,7 @@ export async function cancelBookingAsArtist(
       when,
       place: place || "onbekend",
       occasion: booking.occasion ?? "",
-      reason: reason ? `${reasonCode} — ${reason}` : reasonCode,
+      reason: reason ? `${reasonCode}: ${reason}` : reasonCode,
       noticeHours: notice,
       amount: formatEuro(Number(booking.total)),
       refundNeeded: wasPaid,

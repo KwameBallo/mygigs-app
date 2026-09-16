@@ -20,7 +20,7 @@ const nl = {
     },
     {
       q: "Hoe werkt de betaling?",
-      a: "Betalen gaat digitaal via de app (bijv. iDEAL). MyGigs houdt het bedrag veilig in escrow en betaalt de DJ pas ná het optreden uit — zo zit je aan beide kanten goed.",
+      a: "Betalen gaat digitaal via de app (bijv. iDEAL). MyGigs houdt het bedrag veilig in escrow en betaalt de DJ pas ná het optreden uit. Zo zit je aan beide kanten goed.",
     },
     {
       q: "Wanneer krijg ik als DJ uitbetaald?",
@@ -59,7 +59,7 @@ const nl = {
   ],
 
   contactTitle: "Stuur ons een bericht",
-  contactIntro: "We reageren meestal binnen 1–2 werkdagen.",
+  contactIntro: "We reageren meestal binnen 1 tot 2 werkdagen.",
   form: {
     name: "Naam",
     email: "E-mailadres",
@@ -75,7 +75,7 @@ const nl = {
     successBody: "Bedankt! We hebben je bericht ontvangen en nemen zo snel mogelijk contact op.",
     errRequired: "Vul je naam, e-mailadres en bericht in.",
     errEmail: "Vul een geldig e-mailadres in.",
-    errShort: "Je bericht is te kort — geef wat meer details.",
+    errShort: "Je bericht is te kort. Geef wat meer details.",
     errRate: "Je hebt te veel berichten verstuurd. Probeer het later opnieuw.",
     errFailed: "Er ging iets mis bij het versturen. Probeer het later opnieuw.",
   },
@@ -103,7 +103,7 @@ const en: typeof nl = {
     },
     {
       q: "How does payment work?",
-      a: "Payment is digital through the app (e.g. iDEAL). MyGigs holds the amount securely in escrow and only pays the DJ after the gig — protecting both sides.",
+      a: "Payment is digital through the app (e.g. iDEAL). MyGigs holds the amount securely in escrow and only pays the DJ after the gig. That protects both sides.",
     },
     {
       q: "When do I get paid as a DJ?",
@@ -142,7 +142,7 @@ const en: typeof nl = {
   ],
 
   contactTitle: "Send us a message",
-  contactIntro: "We usually reply within 1–2 business days.",
+  contactIntro: "We usually reply within 1 to 2 business days.",
   form: {
     name: "Name",
     email: "Email address",
@@ -158,7 +158,7 @@ const en: typeof nl = {
     successBody: "Thank you! We've received your message and will get back to you as soon as possible.",
     errRequired: "Please fill in your name, email address and message.",
     errEmail: "Please enter a valid email address.",
-    errShort: "Your message is too short — please add some more detail.",
+    errShort: "Your message is too short. Please add some more detail.",
     errRate: "You've sent too many messages. Please try again later.",
     errFailed: "Something went wrong while sending. Please try again later.",
   },

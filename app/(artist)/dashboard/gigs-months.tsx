@@ -26,7 +26,7 @@ const COLOR: Record<string, string> = {
   completed: "#22c55e",
 }
 
-// Optredens gegroepeerd per maand, uitklapbaar. Toont alleen locatie + datum —
+// Optredens gegroepeerd per maand, uitklapbaar. Toont alleen locatie + datum -
 // geen klantgegevens (AVG). Nieuwste maand staat standaard open.
 export function GigMonths({
   gigs,

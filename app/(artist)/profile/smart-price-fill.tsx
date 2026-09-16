@@ -51,7 +51,7 @@ export function SmartPriceFill() {
     }
     const active = suggestions.filter((s) => s.inRange).length
     setNote(
-      `Ingevuld voor ${filled} provincies vanuit ${province}. ${active} zijn aangevinkt (binnen reisafstand) — pas gerust bedragen of vinkjes aan.`,
+      `Ingevuld voor ${filled} provincies vanuit ${province}. ${active} zijn aangevinkt (binnen reisafstand). Pas gerust bedragen of vinkjes aan.`,
     )
   }
 
@@ -66,7 +66,7 @@ export function SmartPriceFill() {
       </button>
       <span className="text-xs text-muted">
         Op basis van je thuisprovincie + richtprijs, verrekent reiskosten en
-        reistijd (~€0,29/km retour + reistijd). Een indicatie — je kunt alles
+        reistijd (~€0,29/km retour + reistijd). Een indicatie. Je kunt alles
         aanpassen.
       </span>
       {error && <span className="text-xs text-red-400">{error}</span>}

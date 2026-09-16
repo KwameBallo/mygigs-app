@@ -92,7 +92,7 @@ export default async function AdvertisePage() {
             >
               {AD_PLACEMENTS.map((p) => (
                 <option key={p.value} value={p.value}>
-                  {labelFor(p.value)} — {formatEuro(p.price)}
+                  {labelFor(p.value)}: {formatEuro(p.price)}
                   {d.perWeek}
                 </option>
               ))}
@@ -153,7 +153,7 @@ export default async function AdvertisePage() {
                     {ad.title ? (
                       <span className="font-normal text-muted">
                         {" "}
-                        — {ad.title}
+                        {ad.title}
                       </span>
                     ) : null}
                   </p>

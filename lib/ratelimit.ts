@@ -2,7 +2,7 @@ import "server-only"
 import { headers } from "next/headers"
 
 // Lichte rate limiter. Gebruikt Upstash Redis (REST) als UPSTASH_REDIS_REST_URL/
-// _TOKEN zijn ingesteld — dat werkt betrouwbaar over serverless-instances heen.
+// _TOKEN zijn ingesteld, dat werkt betrouwbaar over serverless-instances heen.
 // Zonder Upstash valt hij terug op een best-effort in-memory teller per instance
 // (beter dan niets, maar niet gedeeld). Faalt "open" bij een limiter-fout.
 

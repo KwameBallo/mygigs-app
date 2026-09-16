@@ -7,7 +7,7 @@ import { formatEuro } from "@/lib/utils/pricing"
 // Geplande taak: stuurt begin de maand elke DJ een terugblik op de vorige maand
 // (aantal optredens, steden, verdiensten) via e-mail + push. Idempotent per
 // (DJ, periode) zodat het bij dagelijks draaien maar één keer gaat. Beveiligd
-// met CRON_SECRET. Geen klantgegevens — alleen aantallen/plaatsen (AVG).
+// met CRON_SECRET. Geen klantgegevens, alleen aantallen/plaatsen (AVG).
 export const dynamic = "force-dynamic"
 
 export async function GET(request: Request) {

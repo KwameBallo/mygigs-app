@@ -60,7 +60,7 @@ export default async function EventDetailPage({
               {start && (
                 <span className="rounded-full bg-surface-2 px-3 py-1 text-xs text-muted">
                   {start}
-                  {end ? ` – ${end}` : ""}
+                  {end ? ` - ${end}` : ""}
                 </span>
               )}
               {event.genres && (

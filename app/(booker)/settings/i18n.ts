@@ -24,7 +24,7 @@ const nl = {
   phonePlaceholder: "06 12345678",
   email: "E-mail",
   contactPrivacyNote:
-    "Je telefoonnummer en e-mailadres delen we nooit met de DJ — die ziet na acceptatie alleen je naam.",
+    "Je telefoonnummer en e-mailadres delen we nooit met de DJ. Die ziet na acceptatie alleen je naam.",
   role: "Rol:",
   save: "Opslaan",
 
@@ -117,7 +117,7 @@ const en: typeof nl = {
   phonePlaceholder: "06 12345678",
   email: "Email",
   contactPrivacyNote:
-    "We never share your phone number or email address with the DJ — after acceptance they only see your name.",
+    "We never share your phone number or email address with the DJ. After acceptance they only see your name.",
   role: "Role:",
   save: "Save",
 

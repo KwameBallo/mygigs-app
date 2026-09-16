@@ -4,8 +4,8 @@
 //
 // Drempels (boekingen deze maand):
 //   0     → geen badge (niet actief)
-//   1–5   → actief  (blauw)
-//   6–14  → gewild  (geel)
+//   1-5   → actief  (blauw)
+//   6-14  → gewild  (geel)
 //   15+   → hot     (rood)
 
 export type TierKey = "actief" | "gewild" | "hot"

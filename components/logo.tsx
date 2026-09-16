@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-// De gedeelde ster: twee helften — de organisator (currentColor, wit op donker)
+// De gedeelde ster: twee helften, de organisator (currentColor, wit op donker)
 // en de DJ (brand-oranje). Los is elke helft incompleet, samen vormen ze één
 // ster: "be the star you want to be".
 export function StarMark({ className = "h-8 w-8" }: { className?: string }) {
@@ -12,7 +12,7 @@ export function StarMark({ className = "h-8 w-8" }: { className?: string }) {
   )
 }
 
-// Alleen het beeldmerk — voor de balk linksboven, waar de naam al uit de context
+// Alleen het beeldmerk, voor de balk linksboven, waar de naam al uit de context
 // blijkt.
 export function LogoMark({
   href = "/",
@@ -28,7 +28,7 @@ export function LogoMark({
   )
 }
 
-// Het volledige merk: ster boven, naam eronder in gespatieerde kapitalen —
+// Het volledige merk: ster boven, naam eronder in gespatieerde kapitalen -
 // MY in de tekstkleur, GIGS in brand-oranje. De extra text-indent compenseert
 // de letterspatie rechts zodat het woord optisch gecentreerd blijft.
 export function Logo({

@@ -23,14 +23,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MyGigs — Boek DJ's rechtstreeks",
+  title: "MyGigs: Boek DJ's rechtstreeks",
   description:
     "Het boekingsplatform voor DJ's en events. Boek rechtstreeks, met transparante tarieven en veilige betaling via escrow.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     // "black" (ondoorzichtig) zodat iOS de inhoud in de geïnstalleerde app onder
-    // de statusbalk/Dynamic Island plaatst — net als in Safari. "black-translucent"
+    // de statusbalk/Dynamic Island plaatst, net als in Safari. "black-translucent"
     // liet de inhoud fullscreen achter de camera lopen.
     statusBarStyle: "black",
     title: "MyGigs",

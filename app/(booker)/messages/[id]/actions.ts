@@ -51,7 +51,7 @@ async function flagConversation(
   })
 
   // Alleen de VERZENDER wordt bestraft (flag_count + flagged). De tegenpartij
-  // wordt niet gepenaliseerd — die deed niets (voorheen een misbruik-vector).
+  // wordt niet gepenaliseerd, die deed niets (voorheen een misbruik-vector).
   const { data: prof } = await admin
     .from("profiles")
     .select("flag_count, full_name, email")
@@ -65,13 +65,13 @@ async function flagConversation(
 
   // Alerting: waarschuw support één keer bij het bereiken van de drempel
   // (herhaald contactgegevens delen). Voorkomt spam; admin ziet de volledige
-  // lijst in /admin. Best-effort — mag het flaggen nooit blokkeren.
+  // lijst in /admin. Best-effort, mag het flaggen nooit blokkeren.
   const ALERT_THRESHOLD = 3
   if (newCount === ALERT_THRESHOLD) {
     try {
       await sendFlagAlertToSupport({
         name: prof?.full_name ?? senderId.slice(0, 8),
-        email: prof?.email ?? "—",
+        email: prof?.email ?? "-",
         count: newCount,
         reason,
         snippet: body.slice(0, 300),
@@ -146,7 +146,7 @@ export async function sendMessage(formData: FormData) {
   })
   if (!rl.ok) redirect(`/messages/${conversationId}?warn=slow`)
 
-  // Bevestig eerst dat de gebruiker deelnemer is (RLS-beschermde select) — anders
+  // Bevestig eerst dat de gebruiker deelnemer is (RLS-beschermde select), anders
   // kon iemand met een willekeurige conversation_id een vreemd gesprek laten
   // flaggen en het slachtoffer laten bestraffen (FIX #8).
   const { data: conv } = await supabase

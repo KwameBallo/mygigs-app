@@ -175,7 +175,7 @@ export default async function ManageEventsPage() {
             </Field>
             <Field label={d.labelGenre}>
               <select name="genre_id" className="input h-10 w-full">
-                <option value="">—</option>
+                <option value="">Geen</option>
                 {genres.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name}

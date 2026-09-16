@@ -69,7 +69,7 @@ export function EquipmentPlanner({
     <div className="mt-5">
       <h3 className="text-sm font-semibold">{d.equipmentHeading}</h3>
 
-      {/* Wat de DJ ter beschikking heeft — vink aan wat je nodig hebt */}
+      {/* Wat de DJ ter beschikking heeft, vink aan wat je nodig hebt */}
       {available.length > 0 ? (
         <div className="mt-2">
           <p className="text-xs font-medium text-green-400">

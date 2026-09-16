@@ -1,7 +1,7 @@
 const nl = {
   title: "DJ worden",
   intro:
-    "Wil je als DJ optredens ontvangen via MyGigs? Dien een aanvraag in — een beheerder beoordeelt deze. Na goedkeuring maak je je DJ-profiel aan.",
+    "Wil je als DJ optredens ontvangen via MyGigs? Dien een aanvraag in. Een beheerder beoordeelt deze. Na goedkeuring maak je je DJ-profiel aan.",
   pendingBefore: "Je aanvraag is ",
   pendingStrong: "in behandeling",
   pendingAfter:
@@ -18,7 +18,7 @@ const nl = {
 const en: typeof nl = {
   title: "Become a DJ",
   intro:
-    "Want to receive gigs as a DJ via MyGigs? Submit an application — an administrator will review it. Once approved, you can create your DJ profile.",
+    "Want to receive gigs as a DJ via MyGigs? Submit an application. An administrator will review it. Once approved, you can create your DJ profile.",
   pendingBefore: "Your application is ",
   pendingStrong: "under review",
   pendingAfter:

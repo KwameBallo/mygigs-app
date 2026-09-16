@@ -49,7 +49,7 @@ export async function cancelBooking(formData: FormData) {
 }
 
 // Tweezijdig aanwezigheidsbewijs: de klant bevestigt dat de DJ er was. Samen
-// met de GPS-check-in van de DJ maakt dit een gefakete no-show onmogelijk —
+// met de GPS-check-in van de DJ maakt dit een gefakete no-show onmogelijk -
 // van beide kanten. Kan alleen bij een betaalde/afgeronde eigen boeking.
 export async function confirmDjAttendance(formData: FormData) {
   const bookingId = String(formData.get("booking_id") ?? "")
@@ -90,7 +90,7 @@ export async function payBooking(formData: FormData) {
   const bookingId = String(formData.get("booking_id") ?? "")
   if (!bookingId) return
 
-  // Alleen digitale betaalmethoden — geen contant. Nu nog gesimuleerd; zodra
+  // Alleen digitale betaalmethoden, geen contant. Nu nog gesimuleerd; zodra
   // Stripe gekoppeld is komt hier een echte iDEAL/creditcard-PaymentIntent.
   const rawMethod = String(formData.get("payment_method") ?? "")
   const paymentMethod = ["ideal", "card"].includes(rawMethod)
@@ -118,7 +118,7 @@ export async function payBooking(formData: FormData) {
   const admin = createAdminClient()
 
   // 1) Atomisch claimen: alleen als de boeking NOG 'accepted' is zetten we 'm op
-  //    'paid'. Een tweede gelijktijdige/herhaalde poging raakt 0 rijen en stopt —
+  //    'paid'. Een tweede gelijktijdige/herhaalde poging raakt 0 rijen en stopt -
   //    zo geen dubbele betaling of dubbele uitbetaling (FIX #3).
   const { data: claimed } = await admin
     .from("bookings")
@@ -136,7 +136,7 @@ export async function payBooking(formData: FormData) {
     Math.round(Number(booking.service_fee ?? 0) * (1 + VAT_RATE) * 100) / 100
   const payout = Math.max(0, Number(booking.total) - commissionInclVat)
 
-  // 2) Betaling vastleggen — geld staat vast bij MyGigs (escrow).
+  // 2) Betaling vastleggen, geld staat vast bij MyGigs (escrow).
   await admin.from("payments").insert({
     booking_id: booking.id,
     amount: booking.total,

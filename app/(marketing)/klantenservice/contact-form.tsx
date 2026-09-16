@@ -27,7 +27,7 @@ export function ContactForm({
 
   return (
     <form action={action} className="flex flex-col gap-4">
-      {/* Honeypot — verborgen voor mensen, ingevuld door bots. */}
+      {/* Honeypot, verborgen voor mensen, ingevuld door bots. */}
       <input
         type="text"
         name="company"

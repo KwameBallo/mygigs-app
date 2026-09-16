@@ -48,7 +48,7 @@ const nl = {
   contact: {
     heading: "11. Contact",
     prefix: "Vragen? Mail ",
-    email: "support@mygigs.nl",
+    email: "info@mygigs.nl",
     suffix: ".",
   },
   updatedDate: "31 juli 2026",
@@ -104,7 +104,7 @@ const en: typeof nl = {
   contact: {
     heading: "11. Contact",
     prefix: "Questions? Email ",
-    email: "support@mygigs.nl",
+    email: "info@mygigs.nl",
     suffix: ".",
   },
   updatedDate: "31 July 2026",

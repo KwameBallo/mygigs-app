@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
 
-// AVG — recht op verwijdering: wist het account en (via cascade) de gekoppelde
+// AVG, recht op verwijdering: wist het account en (via cascade) de gekoppelde
 // gegevens. Best-effort: bij een FK-conflict wordt niets half verwijderd.
 export async function deleteAccount() {
   const supabase = await createClient()

@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 
 // Generieke foutpagina: toont nooit stacktraces of interne details aan de
-// gebruiker (ISO 27002 A.8.28 — voorkomen van information disclosure).
+// gebruiker (ISO 27002 A.8.28, voorkomen van information disclosure).
 export default function Error({
   error,
   reset,

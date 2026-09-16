@@ -54,7 +54,7 @@ function priceFor(a: Artist): number {
 }
 
 // Kaartpositie: exacte coördinaten indien bekend, anders het middelpunt van
-// de opgegeven provincie — zo verschijnt élke echte DJ op de kaart.
+// de opgegeven provincie, zo verschijnt élke echte DJ op de kaart.
 function artistPos(a: Artist): { lat: number; lng: number } | null {
   if (a.lat != null && a.lng != null) return { lat: a.lat, lng: a.lng }
   const c = provinceCentroid(a.province)
@@ -101,7 +101,7 @@ export function DiscoverClient({
 
   const recommended = Boolean(filters.rec)
 
-  // Mobiel: standaard geen DJ's in beeld — pas na 'Aanbevolen' of een filter.
+  // Mobiel: standaard geen DJ's in beeld, pas na 'Aanbevolen' of een filter.
   // Start op false zodat server- en eerste client-render gelijk zijn (geen
   // hydration-mismatch); na mount bepalen we het echte viewport.
   const [isMobile, setIsMobile] = useState(false)

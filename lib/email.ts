@@ -89,7 +89,7 @@ export async function sendSupportMessage(opts: {
   subject: string
   message: string
 }) {
-  const to = process.env.SUPPORT_EMAIL || "support@mygigs.nl"
+  const to = process.env.SUPPORT_EMAIL || "info@mygigs.nl"
   const rows =
     row("Naam", opts.name) +
     row("E-mail", opts.email) +
@@ -120,7 +120,7 @@ export async function sendFlagAlertToSupport(opts: {
   reason: string
   snippet: string
 }) {
-  const to = process.env.SUPPORT_EMAIL || "support@mygigs.nl"
+  const to = process.env.SUPPORT_EMAIL || "info@mygigs.nl"
   const rows =
     row("Gebruiker", opts.name) +
     row("E-mail", opts.email) +
@@ -148,8 +148,8 @@ export async function sendPaymentReceipt(opts: {
 }) {
   const nl = opts.locale === "nl"
   const subject = nl
-    ? `Betaalbewijs — je boeking van ${opts.djName} is betaald`
-    : `Payment receipt — your booking of ${opts.djName} is paid`
+    ? `Betaalbewijs: je boeking van ${opts.djName} is betaald`
+    : `Payment receipt: your booking of ${opts.djName} is paid`
   const title = nl ? "Betaling geslaagd ✓" : "Payment successful ✓"
   const rows =
     row(nl ? "DJ" : "DJ", opts.djName) +
@@ -159,8 +159,8 @@ export async function sendPaymentReceipt(opts: {
     row(
       nl ? "Status" : "Status",
       nl
-        ? "Veilig in escrow — uitbetaling ná het optreden"
-        : "Held safely in escrow — paid out after the performance",
+        ? "Veilig in escrow, uitbetaling ná het optreden"
+        : "Held safely in escrow, paid out after the performance",
     )
   const cta = {
     href: `${siteUrl()}/bookings`,
@@ -169,7 +169,7 @@ export async function sendPaymentReceipt(opts: {
   return sendEmail({ to: opts.to, subject, html: shell(title, rows, cta) })
 }
 
-// Nieuwe aanvraag binnen — naar de DJ.
+// Nieuwe aanvraag binnen, naar de DJ.
 export async function sendNewRequestToDJ(opts: {
   to: string
   locale: "nl" | "en"
@@ -180,8 +180,8 @@ export async function sendNewRequestToDJ(opts: {
 }) {
   const nl = opts.locale === "nl"
   const subject = nl
-    ? `Nieuwe aanvraag${opts.occasion ? ` — ${opts.occasion}` : ""}`
-    : `New request${opts.occasion ? ` — ${opts.occasion}` : ""}`
+    ? `Nieuwe aanvraag${opts.occasion ? `: ${opts.occasion}` : ""}`
+    : `New request${opts.occasion ? `: ${opts.occasion}` : ""}`
   const rows =
     (opts.occasion ? row(nl ? "Gelegenheid" : "Occasion", opts.occasion) : "") +
     row(nl ? "Wanneer" : "When", opts.when) +
@@ -197,7 +197,7 @@ export async function sendNewRequestToDJ(opts: {
   })
 }
 
-// Aanvraag geaccepteerd door de DJ — naar de boeker (met betaal-CTA).
+// Aanvraag geaccepteerd door de DJ, naar de boeker (met betaal-CTA).
 export async function sendAcceptedToBooker(opts: {
   to: string
   locale: "nl" | "en"
@@ -225,7 +225,7 @@ export async function sendAcceptedToBooker(opts: {
   })
 }
 
-// Boeking betaald & bevestigd — naar de DJ (met uitbetaal-info).
+// Boeking betaald & bevestigd, naar de DJ (met uitbetaal-info).
 export async function sendBookingConfirmedToDJ(opts: {
   to: string
   locale: "nl" | "en"
@@ -283,7 +283,7 @@ export async function sendReviewRequestToBooker(opts: {
 }
 
 // Maandelijkse terugblik naar de DJ: wat heb je afgelopen maand gedaan?
-// Alleen aantallen/plaatsen/verdiensten — geen klantgegevens (AVG).
+// Alleen aantallen/plaatsen/verdiensten, geen klantgegevens (AVG).
 export async function sendMonthlyRecapToDJ(opts: {
   to: string
   locale: "nl" | "en"
@@ -294,8 +294,8 @@ export async function sendMonthlyRecapToDJ(opts: {
 }) {
   const nl = opts.locale === "nl"
   const subject = nl
-    ? `Je maand in het kort — ${opts.monthLabel}`
-    : `Your month in review — ${opts.monthLabel}`
+    ? `Je maand in het kort: ${opts.monthLabel}`
+    : `Your month in review: ${opts.monthLabel}`
   const rows =
     row(nl ? "Optredens" : "Gigs", String(opts.gigs), true) +
     (opts.cities ? row(nl ? "Waar" : "Where", opts.cities) : "") +
@@ -316,7 +316,7 @@ export async function sendMonthlyRecapToDJ(opts: {
   })
 }
 
-// De DJ heeft zich afgemeld — naar de organisator. Deze mail moet twee dingen
+// De DJ heeft zich afgemeld, naar de organisator. Deze mail moet twee dingen
 // doen: eerlijk zijn dat het optreden niet doorgaat, en meteen laten zien dat
 // het niet zijn probleem is om op te lossen. De reden van de DJ staat er
 // bewust NIET in: die is voor MyGigs, niet voor de klant.
@@ -381,7 +381,7 @@ export async function sendCancelAlertToSupport(opts: {
   refundNeeded: boolean
   bookingId: string
 }) {
-  const to = process.env.SUPPORT_EMAIL || "support@mygigs.nl"
+  const to = process.env.SUPPORT_EMAIL || "info@mygigs.nl"
   const late = opts.noticeHours < 24
   const rows =
     row("DJ", opts.djName) +

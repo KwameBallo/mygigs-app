@@ -76,7 +76,7 @@ export async function getConversations(
   return summaries
 }
 
-// Aantal personen (gesprekken) met minstens één ongelezen bericht — niet het
+// Aantal personen (gesprekken) met minstens één ongelezen bericht, niet het
 // totaal aantal berichten. De badge is dus 0 (verborgen) zodra alles gelezen is.
 export async function getUnreadCount(userId: string): Promise<number> {
   const convs = await getConversations(userId)

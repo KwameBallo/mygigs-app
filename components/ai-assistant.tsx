@@ -80,7 +80,7 @@ export function AiAssistant({ defaultMode }: { defaultMode: Mode }) {
 
   return (
     <>
-      {/* Launcher — op mobiel alleen het icoon en weg tijdens het scrollen. */}
+      {/* Launcher, op mobiel alleen het icoon en weg tijdens het scrollen. */}
       {!open && (
         <button
           onClick={() => setOpen(true)}

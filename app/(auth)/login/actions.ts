@@ -30,7 +30,7 @@ export async function signIn(formData: FormData) {
   })
   if (!rl.ok) redirect(`/login?error=too-many${tab}`)
   // Grovere per-IP-cap tegen credential-stuffing over veel accounts vanaf één IP
-  // (SEC #5) — de per-(ip,email)-teller alleen zou dat niet begrenzen.
+  // (SEC #5), de per-(ip,email)-teller alleen zou dat niet begrenzen.
   const rlIp = await rateLimit(ip, {
     limit: 30,
     windowSec: 900,
@@ -91,7 +91,7 @@ export async function signUp(formData: FormData) {
   const passwordConfirm = String(formData.get("password_confirm") ?? "")
   const fullName = String(formData.get("full_name") ?? "").trim()
   // Nieuwe accounts zijn ALTIJD 'booker'. DJ worden kan alleen via een aanvraag
-  // die een beheerder goedkeurt — de signup kan dus geen DJ/admin aanmaken.
+  // die een beheerder goedkeurt, de signup kan dus geen DJ/admin aanmaken.
   const rawRole = String(formData.get("role") ?? "booker")
   const wantsDj = rawRole === "artist" || rawRole === "both"
   const role: Role = "booker"
@@ -144,7 +144,7 @@ export async function signUp(formData: FormData) {
   }
 
   // Profiel aanvullen met naam/rol/gender/telefoon. Via de service-role zodat
-  // dit ook werkt als er (nog) geen sessie is — bijv. wanneer
+  // dit ook werkt als er (nog) geen sessie is, bijv. wanneer
   // e-mailbevestiging aan staat.
   if (data.user) {
     const admin = createAdminClient()

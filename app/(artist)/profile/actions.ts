@@ -93,7 +93,7 @@ export async function saveArtistProfile(formData: FormData) {
       .insert({ user_id: user.id, ...fields })
       .select("id")
       .single()
-    // Pas de rol ómzetten naar 'artist' als het profiel écht is aangemaakt —
+    // Pas de rol ómzetten naar 'artist' als het profiel écht is aangemaakt -
     // anders krijg je een fantoom-DJ (rol=artist zonder profiel).
     if (!created) return
     // De rol (artist/both) is al gezet bij goedkeuring van de DJ-aanvraag;
@@ -182,7 +182,7 @@ export async function saveArtistBilling(formData: FormData) {
   redirect("/profile?billing=ok")
 }
 
-// Profielfoto (avatar) instellen — verschijnt op het profiel en in de
+// Profielfoto (avatar) instellen, verschijnt op het profiel en in de
 // zoekresultaten i.p.v. de initialen.
 type AvatarSet = { variants: Record<string, string>; blur: string }
 
@@ -196,7 +196,7 @@ export async function setArtistAvatarSet(input: AvatarSet): Promise<boolean> {
   } = await supabase.auth.getUser()
   if (!user) return false
 
-  // Alleen eigen uploads uit Supabase Storage toestaan — geen externe URL's
+  // Alleen eigen uploads uit Supabase Storage toestaan, geen externe URL's
   // (tracking-pixels/hotlinking op een openbaar profiel). SEC #7.
   const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "")
   if (!base) return false
@@ -247,7 +247,7 @@ export async function setArtistAvatar(url: string) {
   } = await supabase.auth.getUser()
   if (!user) return
 
-  // Alleen een eigen upload uit Supabase Storage toestaan — geen externe URL's
+  // Alleen een eigen upload uit Supabase Storage toestaan, geen externe URL's
   // (tracking-pixels/hotlinking op een openbaar profiel). SEC #7.
   const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "")
   if (!base || !url.startsWith(`${base}/storage/`)) return

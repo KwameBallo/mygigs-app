@@ -18,7 +18,7 @@ const nl = {
     },
     {
       heading: "4. Delen met anderen",
-      body: "Een DJ krijgt ná acceptatie van de boeking alléén je naam te zien — niet je telefoonnummer of e-mailadres. Verder delen we gegevens met onze betaalprovider en met technische dienstverleners (zoals hosting), uitsluitend voor zover nodig. We verkopen je gegevens nooit.",
+      body: "Een DJ krijgt ná acceptatie van de boeking alléén je naam te zien, niet je telefoonnummer of e-mailadres. Verder delen we gegevens met onze betaalprovider en met technische dienstverleners (zoals hosting), uitsluitend voor zover nodig. We verkopen je gegevens nooit.",
     },
     {
       heading: "5. Bewaartermijn",
@@ -66,7 +66,7 @@ const en: typeof nl = {
     },
     {
       heading: "4. Sharing with others",
-      body: "After acceptance of the booking, a DJ only gets to see your name — not your phone number or email address. Furthermore, we share data with our payment provider and with technical service providers (such as hosting), only to the extent necessary. We never sell your data.",
+      body: "After acceptance of the booking, a DJ only gets to see your name, not your phone number or email address. Furthermore, we share data with our payment provider and with technical service providers (such as hosting), only to the extent necessary. We never sell your data.",
     },
     {
       heading: "5. Retention period",

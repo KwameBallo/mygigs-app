@@ -49,7 +49,7 @@ export function NavClient({
   const lastPersistAt = useRef(0)
 
   // Route + rijtijd ophalen bij OSRM (gratis). Alleen bij eerste fix, of als de
-  // DJ ~120 m verplaatst is, of elke 20 s — om de API niet te overvragen.
+  // DJ ~120 m verplaatst is, of elke 20 s, om de API niet te overvragen.
   async function refreshRoute(from: LatLng) {
     const now = Date.now()
     const moved = lastRoutePos.current ? meters(from, lastRoutePos.current) : Infinity

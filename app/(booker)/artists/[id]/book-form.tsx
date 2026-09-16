@@ -98,7 +98,7 @@ export function BookForm({
   }
 
   // Geverifieerd event-adres (PDOK). Zonder gekozen adres kan er niet geboekt
-  // worden — zo weten we zeker dat het adres bestaat.
+  // worden, zo weten we zeker dat het adres bestaat.
   const [addressId, setAddressId] = useState<string | null>(null)
   const cannotSubmit = dateBlocked || !addressId || !date || timeBlocked
   const { selected, equipmentCost } = useEquipmentSelection()
@@ -251,7 +251,7 @@ export function BookForm({
         />
       </label>
 
-      {/* Tijdvak — de gage volgt automatisch uit start- en eindtijd. */}
+      {/* Tijdvak, de gage volgt automatisch uit start- en eindtijd. */}
       <div className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">{b.timeLabel}</span>
         <div className="grid grid-cols-2 gap-2">
@@ -293,7 +293,7 @@ export function BookForm({
           <span className="text-xs text-muted">
             {b.bookedSlotsLabel}{" "}
             {bookedSlots
-              .map((s) => `${s.start}–${s.end}`)
+              .map((s) => `${s.start} - ${s.end}`)
               .join(", ")}
           </span>
         )}

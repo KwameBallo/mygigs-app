@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
     setPhase("sending")
     // De resetlink stuurt de gebruiker naar /reset-password, waar het nieuwe
     // wachtwoord wordt ingesteld. Supabase onthult niet of het adres bestaat
-    // (anti-enumeratie) — daarom tonen we altijd dezelfde melding.
+    // (anti-enumeratie), daarom tonen we altijd dezelfde melding.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     })

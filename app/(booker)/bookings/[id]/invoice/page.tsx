@@ -46,7 +46,7 @@ export default async function InvoicePage({
 
   const artist = booking.artists as { stage_name: string } | null
 
-  // FIX #16: alleen btw tonen als er ook echt btw is berekend — d.w.z. de DJ is
+  // FIX #16: alleen btw tonen als er ook echt btw is berekend, d.w.z. de DJ is
   // btw-plichtig. Bij een KOR-DJ zit er geen btw in het totaal, dus geen spook-btw.
   const { data: djBilling } = await createAdminClient()
     .from("artist_billing")

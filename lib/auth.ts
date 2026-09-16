@@ -20,7 +20,7 @@ export async function getProfile(): Promise<Profile | null> {
   return data
 }
 
-// Zoals getProfile(), maar geeft ook terug of het e-mailadres bevestigd is —
+// Zoals getProfile(), maar geeft ook terug of het e-mailadres bevestigd is -
 // nodig om boeken/betalen pas toe te staan na e-mailbevestiging.
 export async function getViewer(): Promise<{
   profile: Profile | null

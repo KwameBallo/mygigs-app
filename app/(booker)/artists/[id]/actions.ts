@@ -24,7 +24,7 @@ export async function createBooking(formData: FormData) {
   const venue = String(formData.get("venue_name") ?? "").trim() || null
   const message = String(formData.get("message") ?? "").trim() || null
 
-  // Tijdvak van het optreden (HH:MM). De duur — en dus de gage — volgt hieruit.
+  // Tijdvak van het optreden (HH:MM). De duur, en dus de gage, volgt hieruit.
   const startTime = String(formData.get("start_time") ?? "").trim() || null
   const endTime = String(formData.get("end_time") ?? "").trim() || null
 
@@ -232,7 +232,7 @@ export async function createBooking(formData: FormData) {
     )
   }
 
-  // Nieuwe-aanvraag-mail naar de DJ. Best-effort — mag de boeking niet blokkeren.
+  // Nieuwe-aanvraag-mail naar de DJ. Best-effort, mag de boeking niet blokkeren.
   try {
     const djEmail = artist.user_id ? await getUserEmail(artist.user_id) : null
     if (djEmail) {
@@ -258,7 +258,7 @@ export async function createBooking(formData: FormData) {
     console.error("new-request email failed:", e)
   }
 
-  // Push-melding op het moment van boeken — naar de DJ én de organisator.
+  // Push-melding op het moment van boeken, naar de DJ én de organisator.
   // Best-effort: mag de boeking nooit blokkeren.
   try {
     await Promise.all([

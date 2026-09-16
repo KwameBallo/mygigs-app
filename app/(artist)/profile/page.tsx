@@ -344,13 +344,13 @@ export default async function ProfilePage({
           <span className="text-xs text-muted">{p.baseGageHint}</span>
         </Field>
 
-        {/* Genres — zoek & kies meerdere stijlen */}
+        {/* Genres, zoek & kies meerdere stijlen */}
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-medium">{p.genresHeading}</legend>
           <GenrePicker genres={genres} initial={selectedGenres} />
         </fieldset>
 
-        {/* Apparatuur — met huurprijs per item */}
+        {/* Apparatuur, met huurprijs per item */}
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-medium">
             {p.equipmentHeading}

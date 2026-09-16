@@ -21,7 +21,7 @@ const nl = {
     },
     {
       title: "Eén aanspreekpunt",
-      body: "Aanvraag, contract en betaling — alles via MyGigs.",
+      body: "Aanvraag, contract en betaling. Alles via MyGigs.",
     },
     {
       title: "Geverifieerde DJ's",
@@ -75,7 +75,7 @@ const en: typeof nl = {
     },
     {
       title: "A single point of contact",
-      body: "Request, contract and payment — all via MyGigs.",
+      body: "Request, contract and payment. All via MyGigs.",
     },
     {
       title: "Verified DJs",

@@ -126,12 +126,12 @@ export default async function AdminPage({
   const timeRange = (s: string | null, e: string | null) => {
     const a = fmtTime(s)
     const b = fmtTime(e)
-    return a && b ? `${a}–${b}` : (a ?? b ?? "—")
+    return a && b ? `${a} - ${b}` : (a ?? b ?? "-")
   }
   const artistName = (id: string) =>
-    artists.find((a) => a.id === id)?.stage_name ?? "—"
+    artists.find((a) => a.id === id)?.stage_name ?? "-"
 
-  // Tijdreeksen voor de grafieken — per jaar, per maand (UTC-bucketing via de
+  // Tijdreeksen voor de grafieken, per jaar, per maand (UTC-bucketing via de
   // ISO-string, geen tijdzone-drift). Afgeleid uit de al opgehaalde data.
   const yearMap = new Map<number, MPoint[]>()
   const ensureYear = (y: number) => {
@@ -298,10 +298,10 @@ export default async function AdminPage({
             head={[d.colDj, d.colCity, d.colRating, d.colGage, d.colVerified]}
             rows={artists.map((a) => [
               a.stage_name,
-              a.home_city ?? "—",
+              a.home_city ?? "-",
               `${rating1(a.rating ?? 0)} (${a.reviews_count ?? 0})`,
               formatEuro(a.base_gage ?? 0),
-              a.verified ? d.yes : "—",
+              a.verified ? d.yes : "-",
             ])}
             empty={d.emptyDjs}
           />
@@ -314,9 +314,9 @@ export default async function AdminPage({
             rows={bookings
               .slice(0, 20)
               .map((b) => [
-                b.event_date ?? "—",
+                b.event_date ?? "-",
                 timeRange(b.start_time, b.end_time),
-                b.city ?? b.venue_name ?? "—",
+                b.city ?? b.venue_name ?? "-",
                 b.status,
                 formatEuro(b.total ?? 0),
                 formatEuro(b.service_fee ?? 0),
@@ -332,10 +332,10 @@ export default async function AdminPage({
             rows={reviews.map((r) => [
               artistName(r.artist_id),
               `${rating1(r.rating ?? 0)} ★`,
-              r.comment ?? "—",
+              r.comment ?? "-",
               r.created_at
                 ? new Date(r.created_at).toLocaleDateString(dateLocale)
-                : "—",
+                : "-",
             ])}
             empty={d.emptyReviews}
           />
@@ -399,7 +399,7 @@ export default async function AdminPage({
             head={[d.colName, d.colEmail, d.colRole]}
             rows={users
               .slice(0, 20)
-              .map((u) => [u.full_name ?? "—", u.email ?? "—", roleLabel(u.role, locale)])}
+              .map((u) => [u.full_name ?? "-", u.email ?? "-", roleLabel(u.role, locale)])}
             empty={d.emptyUsers}
           />
         </Panel>
@@ -461,8 +461,8 @@ export default async function AdminPage({
           <Table
             head={[d.colReason, d.colWhen]}
             rows={flags.map((f) => [
-              f.reason ?? "—",
-              f.created_at ? new Date(f.created_at).toLocaleString(dateLocale) : "—",
+              f.reason ?? "-",
+              f.created_at ? new Date(f.created_at).toLocaleString(dateLocale) : "-",
             ])}
             empty={d.emptyFlags}
           />
@@ -473,11 +473,11 @@ export default async function AdminPage({
             head={[d.colAction, d.colTarget, d.colActor, d.colWhen]}
             rows={auditLogs.map((l) => [
               l.action,
-              [l.target_type, l.target_id].filter(Boolean).join(" · ") || "—",
+              [l.target_type, l.target_id].filter(Boolean).join(" · ") || "-",
               l.actor_id ? `${l.actor_id.slice(0, 8)}…` : d.system,
               l.created_at
                 ? new Date(l.created_at).toLocaleString(dateLocale)
-                : "—",
+                : "-",
             ])}
             empty={d.emptyAudit}
           />

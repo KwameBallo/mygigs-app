@@ -21,7 +21,7 @@ export function rangeMinutes(start: string, end: string): number {
   return e - s
 }
 
-// Exacte duur in uren (pro rata, dus 2u15m = 2,25 uur — geen afronding naar
+// Exacte duur in uren (pro rata, dus 2u15m = 2,25 uur, geen afronding naar
 // halve uren). Bepaalt de gage: uurtarief × exacte duur.
 export function rangeHours(start: string, end: string): number {
   return Math.round((rangeMinutes(start, end) / 60) * 100) / 100

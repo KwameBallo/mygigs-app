@@ -32,11 +32,11 @@ type Dict = {
   djSteps: Step[]
 }
 
-// Rang-rijen voor de visuele uitleg in de rondleiding — kleuren gelijk aan de
+// Rang-rijen voor de visuele uitleg in de rondleiding, kleuren gelijk aan de
 // echte DjTierBadge (blauw/geel/rood).
 const RANK_ROWS = [
-  { range: "1–5", color: "#3b82f6" },
-  { range: "6–14", color: "#eab308" },
+  { range: "1 tot 5", color: "#3b82f6" },
+  { range: "6 tot 14", color: "#eab308" },
   { range: "15+", color: "#ef4444" },
 ]
 

@@ -110,7 +110,7 @@ export default async function LoginPage({
           action={isSignup ? signUp : signIn}
           className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6"
         >
-          {/* De gekozen tab bepaalt de rol — geen losse rolkeuze meer. */}
+          {/* De gekozen tab bepaalt de rol, geen losse rolkeuze meer. */}
           <input type="hidden" name="role" value={role} />
           {isSignup && (
             <>
@@ -166,7 +166,6 @@ export default async function LoginPage({
               mismatch: a.passwordMismatch,
               show: a.showPassword,
               hide: a.hidePassword,
-              incomplete: a.pwRuleIncomplete,
             }}
           />
           {!isSignup && (
