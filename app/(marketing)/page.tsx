@@ -31,9 +31,6 @@ export default async function Home() {
           <h1 className="text-balance text-2xl font-semibold leading-tight tracking-tight sm:text-4xl">
             Be the <span className="text-brand">star</span> you want to be.
           </h1>
-          <p className="mt-4 max-w-xl text-balance text-base font-medium text-muted">
-            {h.brandTagline}
-          </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             {isArtist ? (
               <Link

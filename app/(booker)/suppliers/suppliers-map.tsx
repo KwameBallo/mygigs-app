@@ -2,9 +2,10 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
+import { MapContainer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import { VectorBasemap } from "@/components/vector-basemap"
 import { useT } from "@/components/i18n-provider"
 import { formatEuro } from "@/lib/utils/pricing"
 import { categoryLabel } from "@/lib/data/suppliers-meta"
@@ -76,11 +77,7 @@ export function SuppliersMap({
       className="h-full w-full"
       style={{ background: "var(--surface-2)" }}
     >
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        subdomains="abcd"
-      />
+      <VectorBasemap variant="dark" />
       <FitBounds suppliers={located} />
       <Highlight suppliers={located} activeId={activeId} />
       {located.map((s) => (

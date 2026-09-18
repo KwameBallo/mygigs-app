@@ -3,7 +3,6 @@
 import { useEffect } from "react"
 import {
   MapContainer,
-  TileLayer,
   Marker,
   Popup,
   ZoomControl,
@@ -11,6 +10,7 @@ import {
 } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import { VectorBasemap } from "@/components/vector-basemap"
 
 export type BookingPoint = {
   id: string
@@ -60,13 +60,7 @@ export function BookingMap({ points }: { points: BookingPoint[] }) {
       className="h-full w-full"
       style={{ background: "#e6e6e6" }}
     >
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        subdomains="abcd"
-        keepBuffer={4}
-        updateWhenZooming={false}
-      />
+      <VectorBasemap />
       <ZoomControl position="bottomright" />
       <FitBounds points={points} />
       {points.map((p) => (

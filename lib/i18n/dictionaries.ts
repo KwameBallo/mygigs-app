@@ -23,7 +23,6 @@ const nl = {
     hot: "Hot",
   },
   home: {
-    brandTagline: "Het nummer 1 boekingsplatform.",
     bookDj: "Boek een DJ",
     becomeDj: "Word DJ",
     toDashboard: "Naar dashboard",
@@ -816,7 +815,6 @@ const en: typeof nl = {
     hot: "Hot",
   },
   home: {
-    brandTagline: "The number 1 booking platform.",
     bookDj: "Book a DJ",
     becomeDj: "Become a DJ",
     toDashboard: "To dashboard",
