@@ -10,7 +10,7 @@ import {
 } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import { VectorBasemap } from "@/components/vector-basemap"
+import { Basemap } from "@/components/basemap"
 
 export type LatLng = { lat: number; lng: number }
 
@@ -73,7 +73,7 @@ export function RouteMap({
       className="h-full w-full"
       style={{ background: "#e6e6e6" }}
     >
-      <VectorBasemap />
+      <Basemap />
       <ZoomControl position="bottomright" />
       {route.length > 1 && (
         <Polyline

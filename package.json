@@ -9,11 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.107.0",
     "leaflet": "^1.9.4",
-    "maplibre-gl": "^6.10.0",
     "next": "16.3.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { MapContainer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import { VectorBasemap } from "@/components/vector-basemap"
+import { Basemap } from "@/components/basemap"
 import { useT } from "@/components/i18n-provider"
 import { formatEuro } from "@/lib/utils/pricing"
 import { categoryLabel } from "@/lib/data/suppliers-meta"
@@ -77,7 +77,7 @@ export function SuppliersMap({
       className="h-full w-full"
       style={{ background: "var(--surface-2)" }}
     >
-      <VectorBasemap variant="dark" />
+      <Basemap variant="dark" />
       <FitBounds suppliers={located} />
       <Highlight suppliers={located} activeId={activeId} />
       {located.map((s) => (

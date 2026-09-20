@@ -11,7 +11,7 @@ import {
 } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import { VectorBasemap } from "@/components/vector-basemap"
+import { Basemap } from "@/components/basemap"
 
 export type MapPoint = {
   id: string
@@ -43,13 +43,58 @@ function pinIcon(label: string, active: boolean) {
   })
 }
 
-function FitBounds({ points }: { points: MapPoint[] }) {
+// Heel Nederland, van Zeeuws-Vlaanderen tot boven de Wadden.
+const NL_BOUNDS = L.latLngBounds([50.72, 3.31], [53.56, 7.23])
+
+// Breedte van het resultatenpaneel links (340px plus de marge eromheen) en de
+// hoogte van de zwevende zoekbalk bovenin. Die liggen over de kaart heen, dus
+// zonder deze correctie centreert Leaflet Nederland achter dat paneel.
+const PANEL_W = 364
+const SEARCHBAR_H = 96
+const PANEL_FROM = 1024 // vanaf lg-breedte staat het paneel in beeld
+
+// Houdt heel Nederland in het zichtbare deel van de kaart.
+//
+// Het zichtbare deel is niet het hele venster: links ligt de DJ-lijst eroverheen
+// en bovenin de zoekbalk. Door die ruimte als marge mee te geven schuift
+// Nederland naar rechts en wordt het zo groot mogelijk getoond zonder achter het
+// paneel te verdwijnen. Wordt het scherm smaller en verdwijnt het paneel, dan
+// centreert hij vanzelf weer in het volle venster.
+function FitNetherlands() {
   const map = useMap()
+
   useEffect(() => {
-    if (points.length === 0) return
-    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]))
-    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 12 })
-  }, [points, map])
+    const fit = () => {
+      // Bij een vertraagd ingeladen kaart kan de container bij het opstarten nog
+      // geen afmetingen hebben. Leaflet rekent dan met nul en laat het beeld
+      // staan zoals het was. Vandaar eerst de maat opnieuw laten opnemen.
+      map.invalidateSize({ animate: false })
+      const size = map.getSize()
+      if (size.x < 50 || size.y < 50) return
+
+      const wide = size.x >= PANEL_FROM
+      map.fitBounds(NL_BOUNDS, {
+        paddingTopLeft: [wide ? PANEL_W : 16, SEARCHBAR_H],
+        paddingBottomRight: [16, 24],
+        animate: false,
+      })
+    }
+
+    // Meerdere momenten proberen: direct, zodra Leaflet klaar is, en nog een
+    // keer als de omliggende schermopbouw is bezonken.
+    fit()
+    map.whenReady(fit)
+    const t1 = setTimeout(fit, 150)
+    const t2 = setTimeout(fit, 600)
+    window.addEventListener("resize", fit)
+
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      window.removeEventListener("resize", fit)
+    }
+  }, [map])
+
   return null
 }
 
@@ -84,6 +129,7 @@ export function DiscoverMap({
     <MapContainer
       center={[52.15, 5.45]}
       zoom={8}
+      zoomSnap={0.25}
       minZoom={7}
       maxZoom={16}
       maxBounds={[
@@ -97,9 +143,9 @@ export function DiscoverMap({
       className="h-full w-full"
       style={{ background: "#e6e6e6" }}
     >
-      <VectorBasemap />
+      <Basemap />
       <ZoomControl position="bottomright" />
-      <FitBounds points={located} />
+      <FitNetherlands />
       <Highlight points={located} activeId={activeId} />
       {located.map((p) => (
         <Marker

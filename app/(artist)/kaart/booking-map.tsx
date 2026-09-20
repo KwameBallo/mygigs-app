@@ -10,7 +10,7 @@ import {
 } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import { VectorBasemap } from "@/components/vector-basemap"
+import { Basemap } from "@/components/basemap"
 
 export type BookingPoint = {
   id: string
@@ -60,7 +60,7 @@ export function BookingMap({ points }: { points: BookingPoint[] }) {
       className="h-full w-full"
       style={{ background: "#e6e6e6" }}
     >
-      <VectorBasemap />
+      <Basemap />
       <ZoomControl position="bottomright" />
       <FitBounds points={points} />
       {points.map((p) => (
