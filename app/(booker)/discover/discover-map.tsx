@@ -12,7 +12,6 @@ import {
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { Basemap } from "@/components/basemap"
-import { NlMask } from "@/components/nl-mask"
 
 export type MapPoint = {
   id: string
@@ -151,7 +150,6 @@ export function DiscoverMap({
       style={{ background: "#e6e6e6" }}
     >
       <Basemap />
-      <NlMask />
       <ZoomControl position="bottomright" />
       <FitNetherlands />
       <Highlight points={located} activeId={activeId} />
