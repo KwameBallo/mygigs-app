@@ -12,6 +12,7 @@ import {
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { Basemap } from "@/components/basemap"
+import { NlMask } from "@/components/nl-mask"
 
 export type MapPoint = {
   id: string
@@ -45,6 +46,15 @@ function pinIcon(label: string, active: boolean) {
 
 // Heel Nederland, van Zeeuws-Vlaanderen tot boven de Wadden.
 const NL_BOUNDS = L.latLngBounds([50.72, 3.31], [53.56, 7.23])
+
+// Hoe ver je mag wegslepen. Ruim genomen, want deze grens moet je in de buurt
+// van Nederland houden en verder niets.
+//
+// Hij lag eerst strak om het land heen (3.0 tot 7.6 oost). Op een breed scherm
+// is het kaartvenster breder dan dat hele gebied, en dan trekt Leaflet het beeld
+// terug naar het midden van die grens. Daardoor stond Nederland links in beeld,
+// half achter het DJ-paneel, in plaats van er netjes naast.
+const ROAM_BOUNDS = L.latLngBounds([48.0, -2.0], [57.0, 13.0])
 
 // Breedte van het resultatenpaneel links (340px plus de marge eromheen) en de
 // hoogte van de zwevende zoekbalk bovenin. Die liggen over de kaart heen, dus
@@ -132,11 +142,8 @@ export function DiscoverMap({
       zoomSnap={0.25}
       minZoom={7}
       maxZoom={16}
-      maxBounds={[
-        [50.6, 3.0],
-        [53.8, 7.6],
-      ]}
-      maxBoundsViscosity={0.8}
+      maxBounds={ROAM_BOUNDS}
+      maxBoundsViscosity={0.5}
       scrollWheelZoom
       zoomControl={false}
       preferCanvas
@@ -144,6 +151,7 @@ export function DiscoverMap({
       style={{ background: "#e6e6e6" }}
     >
       <Basemap />
+      <NlMask />
       <ZoomControl position="bottomright" />
       <FitNetherlands />
       <Highlight points={located} activeId={activeId} />
