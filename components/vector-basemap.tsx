@@ -53,26 +53,64 @@ export function VectorBasemap({
       try {
         const gl = layer.getMaplibreMap()
         const canvas = gl.getCanvas()
-        const ctx =
-          canvas.getContext("webgl2") ?? canvas.getContext("webgl")
+        const ctx = canvas.getContext("webgl2") ?? canvas.getContext("webgl")
         add(`webgl: ${ctx ? "ja" : "NEE"} | canvas ${canvas.width}x${canvas.height}`)
-        gl.on("error", (e) =>
-          add(`KAARTFOUT: ${e?.error?.message ?? "onbekend"}`),
-        )
-        gl.on("load", () => add("stijl geladen"))
-        gl.on("idle", () =>
-          add(`klaar | lagen: ${gl.getStyle()?.layers?.length ?? 0}`),
-        )
+
+        gl.on("error", (e) => add(`FOUT: ${e?.error?.message ?? "onbekend"}`))
+        gl.on("styledata", () => add("styledata"))
+        gl.on("sourcedata", () => add("sourcedata"))
+        gl.on("dataloading", () => add("dataloading"))
+        gl.on("load", () => add("LOAD"))
+        gl.on("idle", () => add("IDLE"))
+
+        // Na 8 seconden de tussenstand opnemen: hoe ver is hij gekomen?
+        setTimeout(() => {
+          try {
+            const st = gl.getStyle()
+            add(
+              `8s: stijlKlaar=${gl.isStyleLoaded()} lagen=${st?.layers?.length ?? 0} bronnen=${Object.keys(st?.sources ?? {}).length}`,
+            )
+            add(`sprite=${String(st?.sprite ?? "-").slice(0, 60)}`)
+            add(`glyphs=${String(st?.glyphs ?? "-").slice(0, 60)}`)
+          } catch (e) {
+            add(`8s fout: ${e instanceof Error ? e.message : String(e)}`)
+          }
+        }, 8000)
       } catch (e) {
         add(`OPSTARTFOUT: ${e instanceof Error ? e.message : String(e)}`)
       }
 
-      // Kan de browser het stijlbestand überhaupt ophalen?
-      fetch(style)
-        .then((r) => add(`stijl ophalen: ${r.status} ${r.statusText}`))
-        .catch((e) => add(`stijl ophalen MISLUKT: ${e.message}`))
+      // Welk beveiligingsbeleid stuurt de server nu echt mee?
+      fetch("/discover", { method: "HEAD" })
+        .then((r) => {
+          const csp = r.headers.get("content-security-policy") ?? ""
+          const m = csp.match(/script-src[^;]*/)
+          add(`CSP: ${m ? m[0].slice(0, 70) : "(geen)"}`)
+        })
+        .catch(() => add("CSP: niet te lezen"))
 
-      setTimeout(() => add("(10s verstreken)"), 10000)
+      // Komen de losse onderdelen van de kaart binnen?
+      const base = "https://tiles.openfreemap.org"
+      fetch(`${base}/styles/positron`)
+        .then((r) => r.json())
+        .then(async (st) => {
+          add(`stijl: ${st.layers?.length ?? 0} lagen`)
+          const src = st.sources?.openmaptiles?.url
+          if (src) {
+            const r = await fetch(src)
+            const tj = await r.json()
+            add(`tegelbron: ${r.status}, tegels=${tj.tiles?.[0]?.slice(0, 45) ?? "-"}`)
+            if (tj.tiles?.[0]) {
+              const one = tj.tiles[0]
+                .replace("{z}", "8")
+                .replace("{x}", "131")
+                .replace("{y}", "84")
+              const rt = await fetch(one)
+              add(`losse tegel: ${rt.status} ${rt.headers.get("content-type")}`)
+            }
+          }
+        })
+        .catch((e) => add(`stijl/tegel MISLUKT: ${e.message}`))
     }
 
     return () => {
