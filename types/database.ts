@@ -778,6 +778,7 @@ export type Database = {
           base_gage: number | null
           bio: string | null
           claim_expires_at: string | null
+          claim_sent_at: string | null
           claim_token_hash: string | null
           claimed_at: string | null
           created_at: string
@@ -789,6 +790,9 @@ export type Database = {
           id: string
           instagram_handle: string | null
           mixcloud_url: string | null
+          photo_blur: string | null
+          photo_consent_at: string | null
+          photo_paths: Json | null
           raw_from: string | null
           raw_subject: string | null
           raw_text: string | null
@@ -811,6 +815,7 @@ export type Database = {
           base_gage?: number | null
           bio?: string | null
           claim_expires_at?: string | null
+          claim_sent_at?: string | null
           claim_token_hash?: string | null
           claimed_at?: string | null
           created_at?: string
@@ -822,6 +827,9 @@ export type Database = {
           id?: string
           instagram_handle?: string | null
           mixcloud_url?: string | null
+          photo_blur?: string | null
+          photo_consent_at?: string | null
+          photo_paths?: Json | null
           raw_from?: string | null
           raw_subject?: string | null
           raw_text?: string | null
@@ -844,6 +852,7 @@ export type Database = {
           base_gage?: number | null
           bio?: string | null
           claim_expires_at?: string | null
+          claim_sent_at?: string | null
           claim_token_hash?: string | null
           claimed_at?: string | null
           created_at?: string
@@ -855,6 +864,9 @@ export type Database = {
           id?: string
           instagram_handle?: string | null
           mixcloud_url?: string | null
+          photo_blur?: string | null
+          photo_consent_at?: string | null
+          photo_paths?: Json | null
           raw_from?: string | null
           raw_subject?: string | null
           raw_text?: string | null

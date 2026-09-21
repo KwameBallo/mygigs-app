@@ -3,7 +3,17 @@ import { notFound, redirect } from "next/navigation"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getI18n } from "@/lib/i18n"
 import { checkAdmin } from "../guard"
-import { reextractLead, rejectLead, reopenLead, saveLead } from "../actions"
+import {
+  reextractLead,
+  rejectLead,
+  removeLeadPhoto,
+  reopenLead,
+  saveLead,
+  sendClaimMail,
+} from "../actions"
+import { isClaimLive, parseLeadPhotoPaths, signedLeadPhotoUrls } from "@/lib/dj-leads"
+import { LeadPhoto } from "./lead-photo"
+import { ClaimLink } from "./claim-link"
 import { SubmitButton } from "../submit-button"
 import { dict } from "../i18n"
 import { AdminHeader, Flash, Panel, StatusPill, sourceLabel } from "../ui"
@@ -66,6 +76,13 @@ export default async function LeadPage({
   }
 
   const editable = lead.status === "new" || lead.status === "reviewing"
+  // De foto mag tot het opeisen nog veranderen, ook na goedkeuren.
+  const photoEditable = editable || lead.status === "approved"
+  const photoPaths = parseLeadPhotoPaths(lead.photo_paths, lead.id)
+  const photoUrls = await signedLeadPhotoUrls(photoPaths)
+  const photoUrl = photoUrls["512"] ?? photoUrls["1200"] ?? photoUrls["160"] ?? null
+  const hasPhoto = Object.keys(photoPaths).length > 0
+  const claimLive = isClaimLive(lead.claim_token_hash, lead.claim_expires_at)
   const fmt = (iso: string) =>
     new Date(iso).toLocaleString(dateLocale, {
       day: "numeric",
@@ -182,6 +199,101 @@ export default async function LeadPage({
 
           {/* Rechts: de velden */}
           <div className="flex flex-col gap-4">
+            {lead.status === "claimed" && (
+              <Panel title={d.claimedTitle}>
+                {lead.claimed_at && (
+                  <p className="text-sm">
+                    {d.claimedAt} {fmt(lead.claimed_at)}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-muted">
+                  {lead.photo_consent_at ? d.claimedPhoto : d.claimedNoPhoto}
+                </p>
+                {lead.artist_id && (
+                  <Link
+                    href={`/artists/${lead.artist_id}`}
+                    className="mt-3 inline-block rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-black transition hover:bg-brand-strong"
+                  >
+                    {d.claimedView}
+                  </Link>
+                )}
+              </Panel>
+            )}
+
+            {lead.status === "approved" && (
+              <Panel title={d.claimTitle}>
+                <p className="-mt-1 mb-3 text-sm text-muted">{d.claimIntro}</p>
+                <dl className="mb-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+                  {lead.claim_sent_at && (
+                    <>
+                      <dt className="text-muted">{d.claimSentAt}</dt>
+                      <dd>{fmt(lead.claim_sent_at)}</dd>
+                    </>
+                  )}
+                  {claimLive && lead.claim_expires_at ? (
+                    <>
+                      <dt className="text-muted">{d.claimExpires}</dt>
+                      <dd>{fmt(lead.claim_expires_at)}</dd>
+                    </>
+                  ) : (
+                    <dd className="col-span-2 text-muted">{d.claimNoLink}</dd>
+                  )}
+                </dl>
+                <div className="flex flex-col gap-3">
+                  {lead.email && (
+                    <form action={sendClaimMail}>
+                      <input type="hidden" name="id" value={lead.id} />
+                      <SubmitButton
+                        busyText={d.claimCreating}
+                        className="rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-black transition hover:bg-brand-strong"
+                      >
+                        {d.claimSendMail} {lead.email}
+                      </SubmitButton>
+                    </form>
+                  )}
+                  <ClaimLink
+                    leadId={lead.id}
+                    labels={{
+                      create: d.claimCreate,
+                      creating: d.claimCreating,
+                      copy: d.claimCopy,
+                      copied: d.claimCopied,
+                      hint: d.claimHint,
+                      error: d.claimError,
+                    }}
+                  />
+                </div>
+              </Panel>
+            )}
+
+            {(photoEditable || hasPhoto) && lead.status !== "claimed" && (
+              <Panel title={d.photoTitle}>
+                <LeadPhoto
+                  leadId={lead.id}
+                  initialUrl={photoUrl}
+                  editable={photoEditable}
+                  labels={{
+                    add: d.photoAdd,
+                    change: d.photoChange,
+                    failed: d.photoFailed,
+                    alt: d.photoAlt,
+                    none: d.photoNone,
+                  }}
+                />
+                <p className="mt-3 text-xs text-muted">{d.photoHint}</p>
+                {photoEditable && hasPhoto && (
+                  <form action={removeLeadPhoto} className="mt-3">
+                    <input type="hidden" name="id" value={lead.id} />
+                    <button
+                      type="submit"
+                      className="text-xs text-muted underline-offset-2 hover:text-red-300 hover:underline"
+                    >
+                      {d.photoRemove}
+                    </button>
+                  </form>
+                )}
+              </Panel>
+            )}
             <Panel title={d.fieldsTitle}>
               <form action={saveLead} className="flex flex-col gap-4">
                 <input type="hidden" name="id" value={lead.id} />

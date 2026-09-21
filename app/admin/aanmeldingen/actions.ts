@@ -5,6 +5,15 @@ import { redirect } from "next/navigation"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
 import { extractDj, sanitize } from "@/lib/ai/extract-dj"
+import { sendDjClaimMail } from "@/lib/email"
+import {
+  LEAD_PHOTO_BUCKET,
+  LEAD_PHOTO_WIDTHS,
+  claimUrl,
+  leadPhotoFolder,
+  newClaimToken,
+  removeLeadPhotoFolder,
+} from "@/lib/dj-leads"
 import type { TablesUpdate } from "@/types/database"
 import { checkAdmin } from "./guard"
 
@@ -165,9 +174,18 @@ export async function saveLead(formData: FormData) {
     targetId: id,
   })
 
+  // Bij goedkeuren meteen de opeismail sturen als we een mailadres hebben.
+  // Zonder mailadres maakt de beheerder een link om zelf te versturen.
+  let msg = approving ? "approved" : "saved"
+  if (approving && fields.email) {
+    const issued = await issueClaim(id)
+    const sent = issued ? await mailClaim(id, issued) : false
+    msg = sent ? "approvedMailed" : "claimMailFailed"
+  }
+
   revalidatePath(BASE)
   revalidatePath(`${BASE}/${id}`)
-  redirect(`${BASE}/${id}?msg=${approving ? "approved" : "saved"}`)
+  redirect(`${BASE}/${id}?msg=${msg}`)
 }
 
 // ------------------------------------------------------------------
@@ -188,6 +206,8 @@ export async function rejectLead(formData: FormData) {
       reject_reason: reason,
       reviewed_by: adminId,
       reviewed_at: new Date().toISOString(),
+      claim_token_hash: null,
+      claim_expires_at: null,
     })
     .eq("id", id)
     // Een opgeëist profiel wijs je niet meer af: dat is een echt account.
@@ -221,6 +241,9 @@ export async function reopenLead(formData: FormData) {
       reject_reason: null,
       reviewed_by: null,
       reviewed_at: null,
+      // Een uitstaande opeislink vervalt: het profiel moet eerst opnieuw worden goedgekeurd.
+      claim_token_hash: null,
+      claim_expires_at: null,
     })
     .eq("id", id)
     .in("status", ["rejected", "approved"])
@@ -287,4 +310,191 @@ export async function reextractLead(formData: FormData) {
 
   revalidatePath(`${BASE}/${id}`)
   redirect(`${BASE}/${id}?msg=${aiProblem ? "reextractedNoAi" : "reextracted"}`)
+}
+
+// ------------------------------------------------------------------
+// Foto bij een aanmelding.
+//
+// De browser van de beheerder snijdt de foto bij (dezelfde bijsnijder als bij
+// het gewone profiel) en uploadt de drie maten rechtstreeks naar de afgeschermde
+// opslag, via eenmalige uploadlinks die de server hier uitgeeft. Zo gaat de foto
+// niet door een server action heen (die hebben een groottegrens) en hoeft de
+// opslag geen enkele regel voor gebruikers te hebben.
+// ------------------------------------------------------------------
+
+type UploadSlot = { width: string; path: string; token: string }
+
+export async function startLeadPhotoUpload(input: {
+  id: string
+  files: { width: string; ext: string }[]
+}): Promise<{ ok: true; stamp: string; slots: UploadSlot[] } | { ok: false }> {
+  await requireAdmin()
+  if (!UUID_RE.test(input.id)) return { ok: false }
+
+  const service = createAdminClient()
+  const { data: lead } = await service
+    .from("dj_leads")
+    .select("status")
+    .eq("id", input.id)
+    .maybeSingle()
+  if (!lead || lead.status === "claimed" || lead.status === "rejected") return { ok: false }
+
+  const stamp = String(Date.now())
+  const slots: UploadSlot[] = []
+  for (const f of input.files) {
+    if (!(LEAD_PHOTO_WIDTHS as readonly string[]).includes(f.width)) continue
+    if (f.ext !== "webp" && f.ext !== "jpg") continue
+    const path = `${leadPhotoFolder(input.id)}/${stamp}-${f.width}.${f.ext}`
+    const { data, error } = await service.storage
+      .from(LEAD_PHOTO_BUCKET)
+      .createSignedUploadUrl(path)
+    if (error || !data) return { ok: false }
+    slots.push({ width: f.width, path, token: data.token })
+  }
+  if (slots.length === 0) return { ok: false }
+  return { ok: true, stamp, slots }
+}
+
+export async function finishLeadPhotoUpload(input: {
+  id: string
+  stamp: string
+  blur: string
+}): Promise<{ ok: boolean }> {
+  const adminId = await requireAdmin()
+  if (!UUID_RE.test(input.id) || !/^\d{10,16}$/.test(input.stamp)) return { ok: false }
+
+  // Alleen bestanden meenemen die echt in de opslag staan, met deze tijdstempel.
+  const service = createAdminClient()
+  const folder = leadPhotoFolder(input.id)
+  const { data: files } = await service.storage.from(LEAD_PHOTO_BUCKET).list(folder)
+  const paths: Record<string, string> = {}
+  for (const f of files ?? []) {
+    const m = f.name.match(/^(\d+)-(160|512|1200)\.(webp|jpg)$/)
+    if (m && m[1] === input.stamp) paths[m[2]] = `${folder}/${f.name}`
+  }
+  if (Object.keys(paths).length === 0) return { ok: false }
+
+  const blur =
+    typeof input.blur === "string" &&
+    input.blur.startsWith("data:image/jpeg;base64,") &&
+    input.blur.length < 4000
+      ? input.blur
+      : null
+
+  const { error } = await service
+    .from("dj_leads")
+    .update({ photo_paths: paths, photo_blur: blur })
+    .eq("id", input.id)
+  if (error) return { ok: false }
+
+  // Eerdere foto's van deze aanmelding opruimen.
+  await removeLeadPhotoFolder(input.id, `${input.stamp}-`)
+
+  await logAudit({
+    actorId: adminId,
+    action: "dj_lead.photo",
+    targetType: "dj_lead",
+    targetId: input.id,
+  })
+  revalidatePath(`${BASE}/${input.id}`)
+  return { ok: true }
+}
+
+export async function removeLeadPhoto(formData: FormData) {
+  const adminId = await requireAdmin()
+  const id = leadId(formData)
+  const service = createAdminClient()
+  await service.from("dj_leads").update({ photo_paths: null, photo_blur: null }).eq("id", id)
+  await removeLeadPhotoFolder(id)
+  await logAudit({ actorId: adminId, action: "dj_lead.photo_remove", targetType: "dj_lead", targetId: id })
+  revalidatePath(`${BASE}/${id}`)
+  redirect(`${BASE}/${id}?msg=photoRemoved`)
+}
+
+// ------------------------------------------------------------------
+// Opeislink en opeismail.
+//
+// Elke nieuwe link maakt de vorige ongeldig: er staat maar één hash in de
+// database. De link zelf bewaren we nergens.
+// ------------------------------------------------------------------
+
+async function issueClaim(id: string) {
+  const service = createAdminClient()
+  const { data: lead } = await service
+    .from("dj_leads")
+    .select("status, stage_name, email, home_city, genres, self_submitted, source_note")
+    .eq("id", id)
+    .maybeSingle()
+  if (!lead || lead.status !== "approved" || !lead.stage_name) return null
+
+  const { token, hash, expiresAt } = newClaimToken()
+  const { error } = await service
+    .from("dj_leads")
+    .update({ claim_token_hash: hash, claim_expires_at: expiresAt })
+    .eq("id", id)
+    .eq("status", "approved")
+  if (error) return null
+  return { lead, token, expiresAt }
+}
+
+async function mailClaim(
+  id: string,
+  issued: NonNullable<Awaited<ReturnType<typeof issueClaim>>>,
+): Promise<boolean> {
+  const { lead, token, expiresAt } = issued
+  if (!lead.email || !lead.stage_name) return false
+  const res = await sendDjClaimMail({
+    to: lead.email,
+    stageName: lead.stage_name,
+    city: lead.home_city,
+    genres: lead.genres,
+    claimUrl: claimUrl(token),
+    selfSubmitted: lead.self_submitted,
+    sourceNote: lead.source_note,
+    expiresOn: new Date(expiresAt).toLocaleDateString("nl-NL", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
+  })
+  if (res.ok) {
+    await createAdminClient()
+      .from("dj_leads")
+      .update({ claim_sent_at: new Date().toISOString() })
+      .eq("id", id)
+  }
+  return res.ok
+}
+
+// Voor de knop "Maak opeislink": geeft de link één keer terug om te kopiëren,
+// bijvoorbeeld voor een DM op Instagram. Via useActionState, zodat de link
+// nooit in de adresbalk of in een logboek terechtkomt.
+export async function createClaimLink(
+  _prev: { link?: string; error?: string } | null,
+  formData: FormData,
+): Promise<{ link?: string; error?: string }> {
+  const adminId = await requireAdmin()
+  const id = str(formData, "id")
+  if (!UUID_RE.test(id)) return { error: "error" }
+  const issued = await issueClaim(id)
+  if (!issued) return { error: "error" }
+  await logAudit({ actorId: adminId, action: "dj_lead.claim_link", targetType: "dj_lead", targetId: id })
+  return { link: claimUrl(issued.token) }
+}
+
+export async function sendClaimMail(formData: FormData) {
+  const adminId = await requireAdmin()
+  const id = leadId(formData)
+  const issued = await issueClaim(id)
+  if (!issued) redirect(`${BASE}/${id}?msg=error`)
+  const ok = await mailClaim(id, issued)
+  await logAudit({
+    actorId: adminId,
+    action: "dj_lead.claim_mail",
+    targetType: "dj_lead",
+    targetId: id,
+    metadata: { sent: ok },
+  })
+  revalidatePath(`${BASE}/${id}`)
+  redirect(`${BASE}/${id}?msg=${ok ? "claimMailed" : "claimMailFailed"}`)
 }

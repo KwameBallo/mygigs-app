@@ -104,17 +104,32 @@ Facebook-pagina, en goedkeuring voor het beheren van berichten. Reken op weken.
 - Alle knoppen controleren zelf of je beheerder bent met bevestigde 2FA, en
   schrijven naar het audit-log.
 
-**Nog te doen, in deze volgorde:**
+**Gebouwd op 21 september 2026, tweede ronde:**
 
-1. Beslissen: profielen van zelf gevonden DJ's zichtbaar of verborgen tot ze
-   zijn opgeeist. Bepaalt stap 2.
-2. Goedkeuren laat nu alleen de status veranderen. Nog bouwen: het profiel in
-   `artists` aanmaken en de opeismail versturen, met de opeispagina erbij.
-3. Binnenkomende mail op aanmelden@mygigs.nl koppelen.
-4. Plakveld op de site voor DJ's zelf.
-5. Instagram, na goedkeuring door Meta.
-6. Afgewezen aanmeldingen na een vaste termijn automatisch opruimen (AVG:
-   niet langer bewaren dan nodig).
+- De uitlezer zegt waarom de AI niet meedeed, en een aanmelding kan opnieuw
+  worden uitgelezen.
+- Foto bij een aanmelding, in de afgeschermde opslag `lead-photos`
+  (migratie `0038_dj_lead_profile.sql`). Niet openbaar tot de DJ toestemming
+  geeft.
+- Goedkeuren stuurt meteen een opeismail als er een mailadres is. Zonder
+  mailadres maakt de beheerder een link om zelf te sturen (bijvoorbeeld in een
+  DM). In de database staat alleen de hash van de link.
+- Opeispagina `/opeisen/[link]`: voorbeeld van het profiel, wachtwoord kiezen,
+  vinkjes voor 18+, voorwaarden, "dit ben ik" en de foto. Pas bij het opeisen
+  ontstaan het account en de rij in `artists`. Zonder fototoestemming gaat het
+  profiel online zonder foto.
+- Op dezelfde pagina: "Verwijder mijn gegevens", zonder account. Dat is de
+  AVG-uitweg voor DJ's die we zelf hebben gevonden.
+
+**Nog te doen:**
+
+1. Binnenkomende mail op aanmelden@mygigs.nl koppelen.
+2. Plakveld op de site voor DJ's zelf.
+3. Instagram, na goedkeuring door Meta. Daarmee kan de bot ook zelf naam, bio
+   en profielfoto ophalen van zakelijke en creator-accounts.
+4. Afgewezen aanmeldingen na een vaste termijn automatisch opruimen.
+5. Goedkeuren van gewone DJ-aanvragen strenger maken: eerst een compleet
+   profiel met muzieklink, en een aparte stap om Instagram te verifieren.
 
 Losse vondst: het genre "Feest / Après-ski" staat met een kapotte è in de
 database ("AprÃ¨s-ski"). Eén regel SQL om te herstellen.

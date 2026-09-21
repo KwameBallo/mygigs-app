@@ -427,3 +427,81 @@ export async function getUserEmail(userId: string): Promise<string | null> {
   const { data } = await admin.auth.admin.getUserById(userId)
   return data.user?.email ?? null
 }
+
+// ------------------------------------------------------------------
+// Aanmeldbot: "je profiel staat klaar". Gaat naar een DJ van wie de beheerder
+// een aanmelding heeft goedgekeurd. De link opent de opeispagina, waar hij zijn
+// profiel ziet, een wachtwoord kiest en het met één klik online zet.
+//
+// Heeft de DJ zich niet zelf aangemeld, dan is deze mail ook de melding die de
+// AVG vraagt: we zeggen waar zijn gegevens vandaan komen en hoe hij ze laat
+// verwijderen.
+// ------------------------------------------------------------------
+
+export async function sendDjClaimMail(opts: {
+  to: string
+  stageName: string
+  city: string | null
+  genres: string[]
+  claimUrl: string
+  selfSubmitted: boolean
+  sourceNote: string | null
+  expiresOn: string
+}) {
+  const p = (text: string, color = "#cfcfd4", size = 15) =>
+    `<p style="margin:0 0 16px;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:${size}px;line-height:1.65;color:${color};">${text}</p>`
+
+  const facts = [opts.city, opts.genres.slice(0, 3).join(", ")].filter(Boolean).join(" &middot; ")
+  const factsEsc = [opts.city ? esc(opts.city) : "", esc(opts.genres.slice(0, 3).join(", "))]
+    .filter(Boolean)
+    .join(" &middot; ")
+
+  const origin = opts.selfSubmitted
+    ? p("Bedankt voor je aanmelding. We hebben je profiel voor je klaargezet: je hoeft alleen nog een wachtwoord te kiezen en op opeisen te klikken.")
+    : p(
+        "We zijn je tegengekomen en denken dat je goed past bij MyGigs, het platform waar organisatoren rechtstreeks DJ's boeken. " +
+          "Daarom hebben we alvast een profiel voor je klaargezet. Het staat nog niet online: dat gebeurt pas als jij het opeist.",
+      )
+
+  const avg = opts.selfSubmitted
+    ? ""
+    : p(
+        `Dit profiel is samengesteld uit openbare informatie${
+          opts.sourceNote ? ` (${esc(opts.sourceNote.slice(0, 200))})` : ""
+        }. Wil je dit niet? Open de link en kies onderaan <strong style="color:#f5f4f2;">Verwijder mijn gegevens</strong>. Dan halen we alles direct weg.`,
+        "#8b8b93",
+        13,
+      )
+
+  const html = `<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>Je profiel staat klaar</title></head>
+<body style="margin:0;padding:0;background:#0b0b0c;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0b0b0c;"><tr><td align="center" style="padding:32px 16px;">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;">
+  <tr><td align="center" style="padding:0 0 24px;"><img src="${siteUrl()}/mail-logo.png" width="132" alt="MyGigs" style="display:block;width:132px;height:auto;border:0;"></td></tr>
+  <tr><td style="background:#161618;border-radius:18px;padding:32px 28px;">
+    <h1 style="margin:0 0 4px;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:24px;line-height:1.25;font-weight:700;color:#f5f4f2;">Je DJ-profiel staat klaar</h1>
+    <p style="margin:0 0 20px;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.6;color:#8b8b93;">${esc(opts.stageName)}${facts ? ` &middot; ${factsEsc}` : ""}</p>
+    ${origin}
+    ${p("Na het opeisen vinden organisatoren je op de kaart, zien ze je tarief en kunnen ze je direct boeken. Aanmelden en een profiel hebben is gratis.")}
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 20px;"><tr><td align="center" bgcolor="#ff6f14" style="border-radius:999px;">
+      <a href="${encodeURI(opts.claimUrl)}" style="display:inline-block;padding:14px 30px;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#000000;text-decoration:none;border-radius:999px;">Bekijk en claim je profiel</a>
+    </td></tr></table>
+    ${p(`Deze link is persoonlijk en werkt tot ${esc(opts.expiresOn)}. Stuur hem niet door.`, "#8b8b93", 13)}
+    ${avg}
+  </td></tr>
+  <tr><td style="padding:20px 6px 0;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.6;color:#8b8b93;">
+    Vragen? Mail ons op <a href="mailto:info@mygigs.nl" style="color:#ff8a3d;text-decoration:none;">info@mygigs.nl</a>. We helpen je graag verder.
+  </td></tr>
+  <tr><td style="padding:24px 6px 0;"><p style="margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:11px;line-height:1.7;color:#6c6c74;">
+    Dit is een automatisch bericht. Je kunt er niet op antwoorden.<br>
+    MyGigs &middot; <a href="${siteUrl()}/privacy" style="color:#8b8b93;text-decoration:none;">Privacyverklaring</a>
+    &middot; <a href="${siteUrl()}/voorwaarden" style="color:#8b8b93;text-decoration:none;">Algemene voorwaarden</a>
+  </p></td></tr>
+</table></td></tr></table></body></html>`
+
+  return sendEmail({
+    to: opts.to,
+    subject: `${opts.stageName}, je DJ-profiel op MyGigs staat klaar`,
+    html,
+  })
+}
