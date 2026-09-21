@@ -3,7 +3,8 @@ import { notFound, redirect } from "next/navigation"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getI18n } from "@/lib/i18n"
 import { checkAdmin } from "../guard"
-import { rejectLead, reopenLead, saveLead } from "../actions"
+import { reextractLead, rejectLead, reopenLead, saveLead } from "../actions"
+import { SubmitButton } from "../submit-button"
 import { dict } from "../i18n"
 import { AdminHeader, Flash, Panel, StatusPill, sourceLabel } from "../ui"
 
@@ -72,14 +73,17 @@ export default async function LeadPage({
       hour: "2-digit",
       minute: "2-digit",
     })
+  const by = lead.extracted_by ?? ""
   const readBy =
-    lead.extracted_by === "ai"
+    by === "ai"
       ? d.readByAi
-      : lead.extracted_by === "heuristic"
+      : by.startsWith("heuristic")
         ? d.readByHeuristic
-        : lead.extracted_by === "admin"
+        : by === "admin"
           ? d.readByAdmin
           : null
+  // "heuristic: <reden>" betekent dat de AI niet meedeed. De reden tonen we.
+  const aiProblem = by.startsWith("heuristic: ") ? by.slice("heuristic: ".length) : null
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -152,10 +156,28 @@ export default async function LeadPage({
                 </>
               )}
             </dl>
+            {aiProblem && (
+              <div className="mb-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                <p className="font-medium">{d.aiOffTitle}</p>
+                <p className="mt-0.5 break-words text-amber-200/80">{aiProblem}</p>
+              </div>
+            )}
             {/* Tekst van een onbekende afzender: als platte tekst tonen, nooit als HTML. */}
             <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap break-words rounded-xl border border-border bg-background p-3 font-mono text-sm leading-relaxed">
               {lead.raw_text}
             </pre>
+            {editable && lead.raw_text && (
+              <form action={reextractLead} className="mt-3">
+                <input type="hidden" name="id" value={lead.id} />
+                <SubmitButton
+                  busyText={d.reextractBusy}
+                  className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:border-brand/50"
+                >
+                  {d.reextractBtn}
+                </SubmitButton>
+                <p className="mt-1.5 text-xs text-muted">{d.reextractHint}</p>
+              </form>
+            )}
           </Panel>
 
           {/* Rechts: de velden */}

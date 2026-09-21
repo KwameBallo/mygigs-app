@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { getI18n } from "@/lib/i18n"
 import { checkAdmin } from "./guard"
 import { addManualLead } from "./actions"
+import { SubmitButton } from "./submit-button"
 import { dict } from "./i18n"
 import {
   AdminHeader,
@@ -181,12 +182,12 @@ export default async function AanmeldingenPage({
                   <span className="mt-0.5 block text-xs text-muted">{d.addSelfHint}</span>
                 </span>
               </label>
-              <button
-                type="submit"
+              <SubmitButton
+                busyText={d.addBusy}
                 className="rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong"
               >
                 {d.addBtn}
-              </button>
+              </SubmitButton>
             </form>
           </Panel>
         </div>

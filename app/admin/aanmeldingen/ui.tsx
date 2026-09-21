@@ -31,6 +31,8 @@ const MESSAGES: Record<string, { key: keyof D; tone: "ok" | "bad" }> = {
   approved: { key: "msgApproved", tone: "ok" },
   rejected: { key: "msgRejected", tone: "ok" },
   reopened: { key: "msgReopened", tone: "ok" },
+  reextracted: { key: "msgReextracted", tone: "ok" },
+  reextractedNoAi: { key: "msgReextractedNoAi", tone: "bad" },
   duplicate: { key: "msgDuplicate", tone: "bad" },
   needName: { key: "msgNeedName", tone: "bad" },
   needReason: { key: "msgNeedReason", tone: "bad" },

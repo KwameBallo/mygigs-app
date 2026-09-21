@@ -32,6 +32,13 @@ function leadId(formData: FormData): string {
   return id
 }
 
+// Wie de velden invulde, voor de regel "Uitgelezen door" op de pagina. Deed de
+// AI niet mee, dan staat de reden erbij, zodat je ziet wat er mis is zonder in
+// de serverlogboeken te hoeven kijken.
+function extractedByLabel(by: "ai" | "heuristic", aiProblem?: string) {
+  return (aiProblem ? `${by}: ${aiProblem}` : by).slice(0, 320)
+}
+
 async function knownGenres(): Promise<string[]> {
   const service = createAdminClient()
   const { data } = await service.from("genres").select("name").order("name")
@@ -51,7 +58,7 @@ export async function addManualLead(formData: FormData) {
   if (!raw) redirect(`${BASE}?msg=needRaw`)
   if (!sourceNote) redirect(`${BASE}?msg=needSource`)
 
-  const { fields, by } = await extractDj(raw, await knownGenres())
+  const { fields, by, aiProblem } = await extractDj(raw, await knownGenres())
 
   const service = createAdminClient()
   const { data, error } = await service
@@ -62,7 +69,7 @@ export async function addManualLead(formData: FormData) {
       raw_text: raw,
       source_note: sourceNote,
       ...fields,
-      extracted_by: by,
+      extracted_by: extractedByLabel(by, aiProblem),
       extracted_at: new Date().toISOString(),
       status: "new",
     })
@@ -81,7 +88,7 @@ export async function addManualLead(formData: FormData) {
     action: "dj_lead.add_manual",
     targetType: "dj_lead",
     targetId: data.id,
-    metadata: { extracted_by: by, self_submitted: selfSubmitted },
+    metadata: { extracted_by: by, ai_problem: aiProblem ?? null, self_submitted: selfSubmitted },
   })
 
   revalidatePath(BASE)
@@ -233,4 +240,51 @@ export async function reopenLead(formData: FormData) {
 
   revalidatePath(BASE)
   redirect(`${BASE}/${id}?msg=reopened`)
+}
+
+// ------------------------------------------------------------------
+// Opnieuw uitlezen: na het aanvullen van de tekst, of als de AI de eerste
+// keer niet meedeed. Overschrijft de velden met wat de bot nu vindt.
+// ------------------------------------------------------------------
+
+export async function reextractLead(formData: FormData) {
+  const adminId = await requireAdmin()
+  const id = leadId(formData)
+
+  const service = createAdminClient()
+  const { data: lead } = await service
+    .from("dj_leads")
+    .select("status, raw_text")
+    .eq("id", id)
+    .maybeSingle()
+  if (!lead || !lead.raw_text) redirect(`${BASE}/${id}?msg=error`)
+  if (lead.status !== "new" && lead.status !== "reviewing") {
+    redirect(`${BASE}/${id}?msg=error`)
+  }
+
+  const { fields, by, aiProblem } = await extractDj(lead.raw_text, await knownGenres())
+  const { error } = await service
+    .from("dj_leads")
+    .update({
+      ...fields,
+      extracted_by: extractedByLabel(by, aiProblem),
+      extracted_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+  if (error) {
+    if (error.code === "23505") redirect(`${BASE}/${id}?msg=duplicate`)
+    console.error("dj_leads reextract failed:", error.message)
+    redirect(`${BASE}/${id}?msg=error`)
+  }
+
+  await logAudit({
+    actorId: adminId,
+    action: "dj_lead.reextract",
+    targetType: "dj_lead",
+    targetId: id,
+    metadata: { extracted_by: by, ai_problem: aiProblem ?? null },
+  })
+
+  revalidatePath(`${BASE}/${id}`)
+  redirect(`${BASE}/${id}?msg=${aiProblem ? "reextractedNoAi" : "reextracted"}`)
 }

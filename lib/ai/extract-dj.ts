@@ -31,7 +31,14 @@ export type ExtractedDj = {
 export type ExtractResult = {
   fields: ExtractedDj
   by: "ai" | "heuristic"
+  // Waarom de AI niet meedeed, in gewone taal. Alleen gevuld als by = heuristic.
+  // Bevat nooit de sleutel zelf.
+  aiProblem?: string
 }
+
+type AiOutcome =
+  | { ok: true; fields: Partial<ExtractedDj> }
+  | { ok: false; problem: string }
 
 // Dezelfde grenzen als in de database (0036_dj_leads.sql).
 const MAX = {
@@ -294,9 +301,9 @@ function escapeRe(s: string) {
 async function withAi(
   text: string,
   knownGenres: string[],
-): Promise<Partial<ExtractedDj> | null> {
+): Promise<AiOutcome> {
   const key = process.env.ANTHROPIC_API_KEY
-  if (!key) return null
+  if (!key) return { ok: false, problem: "ANTHROPIC_API_KEY ontbreekt op de server" }
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -330,28 +337,49 @@ async function withAi(
         ],
       }),
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      // Anthropic zegt in de foutmelding wat er mis is (sleutel ongeldig, geen
+      // tegoed, verkeerde workspace). Die tekst nemen we over, ingekort.
+      let detail = ""
+      try {
+        const body = await res.json()
+        detail = [body?.error?.type, body?.error?.message].filter(Boolean).join(": ")
+      } catch {
+        /* geen leesbare foutmelding */
+      }
+      const problem = `Anthropic gaf HTTP ${res.status}${detail ? ` (${detail})` : ""}`.slice(0, 300)
+      console.error("extract-dj:", problem)
+      return { ok: false, problem }
+    }
     const data = await res.json()
     const out: string = data?.content?.[0]?.text ?? ""
     const match = out.match(/\{[\s\S]*\}/)
-    if (!match) return null
+    if (!match) return { ok: false, problem: "AI gaf geen bruikbaar antwoord" }
     const raw = JSON.parse(match[0]) as Record<string, unknown>
 
     return {
-      stage_name: cleanText(raw.stage_name, MAX.stage_name),
-      email: cleanEmail(raw.email),
-      home_city: cleanCity(raw.home_city),
-      genres: cleanGenres(raw.genres, knownGenres),
-      base_gage: cleanGage(raw.base_gage),
-      bio: cleanBio(raw.bio),
-      instagram_handle: cleanHandle(raw.instagram_handle),
-      soundcloud_url: cleanUrl(raw.soundcloud_url, ["soundcloud.com"]),
-      mixcloud_url: cleanUrl(raw.mixcloud_url, ["mixcloud.com"]),
-      spotify_url: cleanUrl(raw.spotify_url, ["spotify.com"]),
-      website_url: cleanUrl(raw.website_url),
+      ok: true,
+      fields: {
+        stage_name: cleanText(raw.stage_name, MAX.stage_name),
+        email: cleanEmail(raw.email),
+        home_city: cleanCity(raw.home_city),
+        genres: cleanGenres(raw.genres, knownGenres),
+        base_gage: cleanGage(raw.base_gage),
+        bio: cleanBio(raw.bio),
+        instagram_handle: cleanHandle(raw.instagram_handle),
+        soundcloud_url: cleanUrl(raw.soundcloud_url, ["soundcloud.com"]),
+        mixcloud_url: cleanUrl(raw.mixcloud_url, ["mixcloud.com"]),
+        spotify_url: cleanUrl(raw.spotify_url, ["spotify.com"]),
+        website_url: cleanUrl(raw.website_url),
+      },
     }
-  } catch {
-    return null
+  } catch (e) {
+    const problem =
+      e instanceof Error && e.name === "TimeoutError"
+        ? "AI reageerde niet binnen 15 seconden"
+        : "Verbinding met de AI mislukte"
+    console.error("extract-dj:", problem)
+    return { ok: false, problem }
   }
 }
 
@@ -362,8 +390,9 @@ export async function extractDj(
   knownGenres: string[],
 ): Promise<ExtractResult> {
   const base = heuristic(text, knownGenres)
-  const ai = await withAi(text, knownGenres)
-  if (!ai) return { fields: base, by: "heuristic" }
+  const outcome = await withAi(text, knownGenres)
+  if (!outcome.ok) return { fields: base, by: "heuristic", aiProblem: outcome.problem }
+  const ai = outcome.fields
 
   // AI eerst, eenvoudige herkenning als aanvulling. Links en mailadressen die
   // letterlijk in de tekst staan zijn betrouwbaarder dan wat de AI ervan maakt,

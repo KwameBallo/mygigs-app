@@ -39,6 +39,13 @@ const nl = {
   addSelfHint:
     "Aanvinken als de DJ zelf contact opnam, bijvoorbeeld via WhatsApp of in persoon. Niet aanvinken als je hem zelf hebt opgezocht.",
   addBtn: "Toevoegen en uitlezen",
+  addBusy: "Bezig met uitlezen…",
+  reextractBtn: "Opnieuw uitlezen",
+  reextractBusy: "Bezig…",
+  reextractHint: "Leest het bericht opnieuw en overschrijft de velden rechts.",
+  aiOffTitle: "De AI deed niet mee. Reden:",
+  msgReextracted: "Opnieuw uitgelezen.",
+  msgReextractedNoAi: "Opnieuw uitgelezen, maar zonder AI. De reden staat links.",
 
   msgAdded: "Toegevoegd. Kijk de gegevens hieronder na.",
   msgDuplicate:
@@ -135,6 +142,13 @@ const en: typeof nl = {
   addSelfHint:
     "Tick if the DJ contacted us, for example via WhatsApp or in person. Leave unticked if you looked them up yourself.",
   addBtn: "Add and extract",
+  addBusy: "Extracting…",
+  reextractBtn: "Extract again",
+  reextractBusy: "Working…",
+  reextractHint: "Reads the message again and overwrites the fields on the right.",
+  aiOffTitle: "The AI did not run. Reason:",
+  msgReextracted: "Extracted again.",
+  msgReextractedNoAi: "Extracted again, but without AI. The reason is shown on the left.",
 
   msgAdded: "Added. Review the details below.",
   msgDuplicate:
