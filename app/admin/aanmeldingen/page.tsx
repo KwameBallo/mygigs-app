@@ -3,8 +3,7 @@ import { redirect } from "next/navigation"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getI18n } from "@/lib/i18n"
 import { checkAdmin } from "./guard"
-import { addManualLead } from "./actions"
-import { SubmitButton } from "./submit-button"
+import { AddLeadForm } from "./add-lead-form"
 import { dict } from "./i18n"
 import {
   AdminHeader,
@@ -148,47 +147,7 @@ export default async function AanmeldingenPage({
           {/* Zelf een DJ toevoegen */}
           <Panel title={d.addTitle} className="h-fit">
             <p className="-mt-1 mb-4 text-sm text-muted">{d.addIntro}</p>
-            <form action={addManualLead} className="flex flex-col gap-4">
-              <label className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">{d.addRawLabel}</span>
-                <textarea
-                  name="raw_text"
-                  required
-                  rows={7}
-                  maxLength={20000}
-                  placeholder={d.addRawPlaceholder}
-                  className="input min-h-40 resize-y font-mono text-sm"
-                />
-              </label>
-              <label className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">{d.addSourceLabel}</span>
-                <input
-                  name="source_note"
-                  required
-                  maxLength={1000}
-                  placeholder={d.addSourcePlaceholder}
-                  className="input"
-                />
-                <span className="text-xs text-muted">{d.addSourceHint}</span>
-              </label>
-              <label className="flex items-start gap-2.5">
-                <input
-                  type="checkbox"
-                  name="self_submitted"
-                  className="mt-1 h-4 w-4 flex-none accent-brand"
-                />
-                <span>
-                  <span className="text-sm font-medium">{d.addSelfLabel}</span>
-                  <span className="mt-0.5 block text-xs text-muted">{d.addSelfHint}</span>
-                </span>
-              </label>
-              <SubmitButton
-                busyText={d.addBusy}
-                className="rounded-full bg-brand px-6 py-3 font-medium text-black transition hover:bg-brand-strong"
-              >
-                {d.addBtn}
-              </SubmitButton>
-            </form>
+            <AddLeadForm d={d} />
           </Panel>
         </div>
       </main>

@@ -27,8 +27,8 @@ const nl = {
 
   addTitle: "DJ toevoegen",
   addIntro:
-    "Plak hier alles wat je van een DJ hebt: een Instagram-bio, een mail, een WhatsApp-bericht, links. De bot haalt de gegevens eruit, jij kijkt ze daarna na.",
-  addRawLabel: "Wat heb je van deze DJ?",
+    "Plak tekst van een DJ (bio, mail, WhatsApp-bericht, links), voeg een screenshot van zijn Instagram-profiel toe, of allebei. De bot haalt de gegevens eruit, jij kijkt ze daarna na.",
+  addRawLabel: "Tekst (optioneel als je een screenshot toevoegt)",
   addRawPlaceholder:
     "DJ Voorbeeld | Afro & Amapiano | Rotterdam\nBookings: boekingen@voorbeeld.nl\nsoundcloud.com/voorbeeld",
   addSourceLabel: "Waar komt dit vandaan?",
@@ -40,6 +40,15 @@ const nl = {
     "Aanvinken als de DJ zelf contact opnam, bijvoorbeeld via WhatsApp of in persoon. Niet aanvinken als je hem zelf hebt opgezocht.",
   addBtn: "Toevoegen en uitlezen",
   addBusy: "Bezig met uitlezen…",
+  addBusyShot: "Screenshot lezen, dit duurt even…",
+  addShotLabel: "Screenshot",
+  addShotPick: "Screenshot kiezen",
+  addShotBusy: "Verkleinen…",
+  addShotRemove: "Weghalen",
+  addShotHint:
+    "Bijvoorbeeld van een Instagram-profiel. Plakken met Ctrl+V werkt ook. We lezen alleen de tekst eruit; de screenshot zelf bewaren we niet.",
+  addShotNotImage: "Dit is geen afbeelding.",
+  addShotFailed: "Deze afbeelding kon niet worden ingelezen. Probeer een andere.",
   reextractBtn: "Opnieuw uitlezen",
   reextractBusy: "Bezig…",
   reextractHint: "Leest het bericht opnieuw en overschrijft de velden rechts.",
@@ -56,7 +65,7 @@ const nl = {
   msgReopened: "Weer opengezet.",
   msgNeedName: "Vul eerst een artiestennaam in.",
   msgNeedReason: "Geef een reden op voor het afwijzen.",
-  msgNeedRaw: "Plak eerst iets in het tekstvak.",
+  msgNeedRaw: "Plak eerst tekst of voeg een screenshot toe.",
   msgNeedSource: "Vul in waar de gegevens vandaan komen.",
   msgError: "Er ging iets mis. Probeer het opnieuw.",
 
@@ -163,8 +172,8 @@ const en: typeof nl = {
 
   addTitle: "Add a DJ",
   addIntro:
-    "Paste everything you have on a DJ: an Instagram bio, an email, a WhatsApp message, links. The bot extracts the details, you review them afterwards.",
-  addRawLabel: "What do you have on this DJ?",
+    "Paste text from a DJ (bio, email, WhatsApp message, links), add a screenshot of their Instagram profile, or both. The bot extracts the details, you review them afterwards.",
+  addRawLabel: "Text (optional if you add a screenshot)",
   addRawPlaceholder:
     "DJ Example | Afro & Amapiano | Rotterdam\nBookings: bookings@example.com\nsoundcloud.com/example",
   addSourceLabel: "Where does this come from?",
@@ -176,6 +185,15 @@ const en: typeof nl = {
     "Tick if the DJ contacted us, for example via WhatsApp or in person. Leave unticked if you looked them up yourself.",
   addBtn: "Add and extract",
   addBusy: "Extracting…",
+  addBusyShot: "Reading screenshot, this takes a moment…",
+  addShotLabel: "Screenshot",
+  addShotPick: "Choose screenshot",
+  addShotBusy: "Resizing…",
+  addShotRemove: "Remove",
+  addShotHint:
+    "For example of an Instagram profile. Pasting with Ctrl+V also works. We only read the text; the screenshot itself is not stored.",
+  addShotNotImage: "That is not an image.",
+  addShotFailed: "This image could not be read. Try another one.",
   reextractBtn: "Extract again",
   reextractBusy: "Working…",
   reextractHint: "Reads the message again and overwrites the fields on the right.",
@@ -192,7 +210,7 @@ const en: typeof nl = {
   msgReopened: "Reopened.",
   msgNeedName: "Fill in a stage name first.",
   msgNeedReason: "Give a reason for rejecting.",
-  msgNeedRaw: "Paste something in the text box first.",
+  msgNeedRaw: "Paste some text or add a screenshot first.",
   msgNeedSource: "Fill in where the details come from.",
   msgError: "Something went wrong. Please try again.",
 

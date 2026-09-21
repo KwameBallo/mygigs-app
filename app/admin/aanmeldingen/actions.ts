@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
-import { extractDj, sanitize } from "@/lib/ai/extract-dj"
+import { extractDj, parseScreenshot, sanitize } from "@/lib/ai/extract-dj"
 import { sendDjClaimMail } from "@/lib/email"
 import {
   LEAD_PHOTO_BUCKET,
@@ -64,10 +64,25 @@ export async function addManualLead(formData: FormData) {
   const raw = str(formData, "raw_text").trim().slice(0, 20_000)
   const sourceNote = str(formData, "source_note").trim().slice(0, 1000)
   const selfSubmitted = formData.get("self_submitted") === "on"
-  if (!raw) redirect(`${BASE}?msg=needRaw`)
+  // Een screenshot, bijvoorbeeld van een Instagram-bio. Wordt alleen gelezen,
+  // niet bewaard: wat erop stond komt als tekst in de aanmelding.
+  const screenshot = parseScreenshot(formData.get("screenshot"))
+  if (!raw && !screenshot) redirect(`${BASE}?msg=needRaw`)
   if (!sourceNote) redirect(`${BASE}?msg=needSource`)
 
-  const { fields, by, aiProblem } = await extractDj(raw, await knownGenres())
+  const { fields, by, aiProblem, transcript } = await extractDj(
+    raw,
+    await knownGenres(),
+    screenshot ?? undefined,
+  )
+  const rawText = [
+    raw,
+    transcript ? `[Van de screenshot]\n${transcript}` : "",
+    screenshot && !transcript ? "[Screenshot kon niet worden gelezen]" : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n")
+    .slice(0, 20_000)
 
   const service = createAdminClient()
   const { data, error } = await service
@@ -75,7 +90,7 @@ export async function addManualLead(formData: FormData) {
     .insert({
       source: "manual",
       self_submitted: selfSubmitted,
-      raw_text: raw,
+      raw_text: rawText,
       source_note: sourceNote,
       ...fields,
       extracted_by: extractedByLabel(by, aiProblem),
