@@ -772,6 +772,116 @@ export type Database = {
         }
         Relationships: []
       }
+      dj_leads: {
+        Row: {
+          artist_id: string | null
+          base_gage: number | null
+          bio: string | null
+          claim_expires_at: string | null
+          claim_token_hash: string | null
+          claimed_at: string | null
+          created_at: string
+          email: string | null
+          extracted_at: string | null
+          extracted_by: string | null
+          genres: string[]
+          home_city: string | null
+          id: string
+          instagram_handle: string | null
+          mixcloud_url: string | null
+          raw_from: string | null
+          raw_subject: string | null
+          raw_text: string | null
+          received_at: string
+          reject_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          self_submitted: boolean
+          soundcloud_url: string | null
+          source: Database["public"]["Enums"]["dj_lead_source"]
+          source_note: string | null
+          spotify_url: string | null
+          stage_name: string | null
+          status: Database["public"]["Enums"]["dj_lead_status"]
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          artist_id?: string | null
+          base_gage?: number | null
+          bio?: string | null
+          claim_expires_at?: string | null
+          claim_token_hash?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          email?: string | null
+          extracted_at?: string | null
+          extracted_by?: string | null
+          genres?: string[]
+          home_city?: string | null
+          id?: string
+          instagram_handle?: string | null
+          mixcloud_url?: string | null
+          raw_from?: string | null
+          raw_subject?: string | null
+          raw_text?: string | null
+          received_at?: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          self_submitted?: boolean
+          soundcloud_url?: string | null
+          source: Database["public"]["Enums"]["dj_lead_source"]
+          source_note?: string | null
+          spotify_url?: string | null
+          stage_name?: string | null
+          status?: Database["public"]["Enums"]["dj_lead_status"]
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          artist_id?: string | null
+          base_gage?: number | null
+          bio?: string | null
+          claim_expires_at?: string | null
+          claim_token_hash?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          email?: string | null
+          extracted_at?: string | null
+          extracted_by?: string | null
+          genres?: string[]
+          home_city?: string | null
+          id?: string
+          instagram_handle?: string | null
+          mixcloud_url?: string | null
+          raw_from?: string | null
+          raw_subject?: string | null
+          raw_text?: string | null
+          received_at?: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          self_submitted?: boolean
+          soundcloud_url?: string | null
+          source?: Database["public"]["Enums"]["dj_lead_source"]
+          source_note?: string | null
+          spotify_url?: string | null
+          stage_name?: string | null
+          status?: Database["public"]["Enums"]["dj_lead_status"]
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dj_leads_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dj_monthly_recap: {
         Row: {
           artist_id: string
@@ -1599,6 +1709,8 @@ export type Database = {
         | "completed"
         | "paid"
       booking_type: "prive" | "zakelijk"
+      dj_lead_source: "email" | "instagram" | "form" | "manual"
+      dj_lead_status: "new" | "reviewing" | "approved" | "rejected" | "claimed"
       invoice_kind: "dj_sale" | "mg_commission"
       payment_status: "pending" | "held" | "released" | "refunded" | "failed"
       payout_status: "scheduled" | "paid" | "failed" | "cancelled"
@@ -1755,6 +1867,8 @@ export const Constants = {
         "paid",
       ],
       booking_type: ["prive", "zakelijk"],
+      dj_lead_source: ["email", "instagram", "form", "manual"],
+      dj_lead_status: ["new", "reviewing", "approved", "rejected", "claimed"],
       invoice_kind: ["dj_sale", "mg_commission"],
       payment_status: ["pending", "held", "released", "refunded", "failed"],
       payout_status: ["scheduled", "paid", "failed", "cancelled"],

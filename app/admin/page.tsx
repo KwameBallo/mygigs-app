@@ -180,6 +180,12 @@ export default async function AdminPage({
         </div>
         <div className="flex items-center gap-2 text-sm">
           <Link
+            href="/admin/aanmeldingen"
+            className="rounded-full border border-brand/40 bg-brand/10 px-3 py-1.5 text-brand transition hover:border-brand"
+          >
+            {d.leadsLink}
+          </Link>
+          <Link
             href="/discover"
             className="rounded-full border border-border px-3 py-1.5 transition hover:border-brand/50"
           >
