@@ -15,9 +15,14 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      // Wie zich via de DJ-kant heeft aangemeld, sturen we na de bevestiging
+      // naar de aanvraag. De aanvraag zelf ontstaat pas als hij die opstuurt,
+      // zodat er geen lege aanvragen in het beheerscherm belanden.
+      const wantsDj = data.user?.user_metadata?.wants_dj === true
+      const target = wantsDj && next === "/discover" ? "/dj-aanvraag" : next
+      return NextResponse.redirect(`${origin}${target}`)
     }
   }
 

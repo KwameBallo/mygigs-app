@@ -2,6 +2,8 @@ import Link from "next/link"
 import { Logo } from "@/components/logo"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { getI18n } from "@/lib/i18n"
+import { Turnstile } from "@/components/turnstile"
+import { HONEYPOT_FIELD, STAMP_FIELD, formStamp } from "@/lib/antibot"
 import { signIn, signUp } from "./actions"
 import { PasswordFields } from "./password-fields"
 
@@ -33,6 +35,12 @@ export default async function LoginPage({
   const { locale, t } = await getI18n()
   const a = t.auth
 
+  // Botfilter. Het tijdstip wordt ondertekend zodat een bot er niet zelf een
+  // kan verzinnen; het vakje van Turnstile verschijnt alleen als de sleutel is
+  // ingesteld, zodat het formulier blijft werken zonder Cloudflare.
+  const stamp = isSignup ? formStamp() : ""
+  const turnstileKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""
+
   const title = isSignup
     ? isDj
       ? a.signupDjTitle
@@ -55,6 +63,8 @@ export default async function LoginPage({
     "too-many": a.errTooMany,
     "use-organiser": a.errUseOrganiser,
     "use-dj": a.errUseDj,
+    captcha: a.errCaptcha,
+    retry: a.errRetry,
   }
   const errorMsg = error ? (errorMap[error] ?? a.errGeneric) : null
 
@@ -114,6 +124,26 @@ export default async function LoginPage({
           <input type="hidden" name="role" value={role} />
           {isSignup && (
             <>
+              {/* Botfilter. Het eerste veld staat buiten het scherm en is voor
+                  een mens onzichtbaar: wie het invult is geen mens. Het tweede
+                  is een ondertekend tijdstip, waarmee de server ziet of er echt
+                  is getypt. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute left-[-9999px] h-0 w-0 overflow-hidden"
+              >
+                <label>
+                  Referentie
+                  <input
+                    name={HONEYPOT_FIELD}
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    defaultValue=""
+                  />
+                </label>
+              </div>
+              <input type="hidden" name={STAMP_FIELD} value={stamp} />
               <Field label={isDj ? a.nameLabelDj : a.nameLabel}>
                 <input
                   name="full_name"
@@ -205,6 +235,9 @@ export default async function LoginPage({
                 .
               </span>
             </label>
+          )}
+          {isSignup && turnstileKey && (
+            <Turnstile siteKey={turnstileKey} action="signup" />
           )}
           <button
             type="submit"

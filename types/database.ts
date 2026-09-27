@@ -70,6 +70,148 @@ export type Database = {
           },
         ]
       }
+      agent_alerts: {
+        Row: {
+          agent: string
+          detail: string | null
+          first_seen_at: string
+          id: string
+          key: string
+          last_seen_at: string
+          level: Database["public"]["Enums"]["agent_alert_level"]
+          notified_at: string | null
+          resolve_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          seen_count: number
+          target_id: string | null
+          target_type: string | null
+          title: string
+        }
+        Insert: {
+          agent: string
+          detail?: string | null
+          first_seen_at?: string
+          id?: string
+          key: string
+          last_seen_at?: string
+          level?: Database["public"]["Enums"]["agent_alert_level"]
+          notified_at?: string | null
+          resolve_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          seen_count?: number
+          target_id?: string | null
+          target_type?: string | null
+          title: string
+        }
+        Update: {
+          agent?: string
+          detail?: string | null
+          first_seen_at?: string
+          id?: string
+          key?: string
+          last_seen_at?: string
+          level?: Database["public"]["Enums"]["agent_alert_level"]
+          notified_at?: string | null
+          resolve_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          seen_count?: number
+          target_id?: string | null
+          target_type?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_alerts_agent_fkey"
+            columns: ["agent"]
+            isOneToOne: false
+            referencedRelation: "agent_settings"
+            referencedColumns: ["agent"]
+          },
+        ]
+      }
+      agent_runs: {
+        Row: {
+          agent: string
+          ai_cost_eur: number
+          error: string | null
+          finished_at: string | null
+          id: string
+          items_acted: number
+          items_seen: number
+          meta: Json
+          ok: boolean | null
+          started_at: string
+        }
+        Insert: {
+          agent: string
+          ai_cost_eur?: number
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          items_acted?: number
+          items_seen?: number
+          meta?: Json
+          ok?: boolean | null
+          started_at?: string
+        }
+        Update: {
+          agent?: string
+          ai_cost_eur?: number
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          items_acted?: number
+          items_seen?: number
+          meta?: Json
+          ok?: boolean | null
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runs_agent_fkey"
+            columns: ["agent"]
+            isOneToOne: false
+            referencedRelation: "agent_settings"
+            referencedColumns: ["agent"]
+          },
+        ]
+      }
+      agent_settings: {
+        Row: {
+          agent: string
+          config: Json
+          display_name: string
+          enabled: boolean
+          max_actions: number
+          role_label: string
+          schedule: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent: string
+          config?: Json
+          display_name: string
+          enabled?: boolean
+          max_actions?: number
+          role_label?: string
+          schedule?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent?: string
+          config?: Json
+          display_name?: string
+          enabled?: boolean
+          max_actions?: number
+          role_label?: string
+          schedule?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       artist_availability: {
         Row: {
           artist_id: string
@@ -1712,6 +1854,7 @@ export type Database = {
     Enums: {
       act_type: "dj" | "band" | "singer" | "mc" | "musician" | "duo" | "other"
       ad_placement: "events_top" | "event_detail" | "discover" | "sidebar"
+      agent_alert_level: "info" | "warn" | "critical"
       availability_status: "available" | "booked"
       booking_status:
         | "pending"
@@ -1869,6 +2012,7 @@ export const Constants = {
     Enums: {
       act_type: ["dj", "band", "singer", "mc", "musician", "duo", "other"],
       ad_placement: ["events_top", "event_detail", "discover", "sidebar"],
+      agent_alert_level: ["info", "warn", "critical"],
       availability_status: ["available", "booked"],
       booking_status: [
         "pending",

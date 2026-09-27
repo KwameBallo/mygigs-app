@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { rateLimit, clientIpFromHeaders } from "@/lib/ratelimit"
 import type { Database } from "@/types/database"
 import { passwordOk } from "@/lib/password"
+import { verifyForm, verifyTurnstile, TURNSTILE_FIELD } from "@/lib/antibot"
 
 type Role = Database["public"]["Enums"]["user_role"]
 
@@ -102,8 +103,37 @@ export async function signUp(formData: FormData) {
 
   // Rate limiting tegen signup-misbruik / e-mail-bombing (FIX #11).
   const ip = await clientIpFromHeaders()
-  const rl = await rateLimit(ip, { limit: 5, windowSec: 3600, scope: "signup" })
+  const rl = await rateLimit(ip, { limit: 3, windowSec: 3600, scope: "signup" })
   if (!rl.ok) signupError("too-many", isDj)
+
+  // Vangnet over alle IP's samen. Een normale dag zit hier ver onder; een bot
+  // die vanaf tientallen adressen aanmeldt loopt hier wel tegenaan.
+  const rlAll = await rateLimit("alles", {
+    limit: 40,
+    windowSec: 3600,
+    scope: "signup-totaal",
+  })
+  if (!rlAll.ok) signupError("too-many", isDj)
+
+  // Botfilter, laag 1 en 2: het verborgen veld en de invultijd.
+  // Het verborgen veld is nooit een mens. Daar doen we alsof het gelukt is,
+  // zodat de bot niet leert waarop hij afketst.
+  const vorm = verifyForm(formData)
+  if (vorm === "honeypot") {
+    console.warn("signup geweigerd: verborgen veld ingevuld")
+    redirect("/login?message=check-email")
+  }
+  if (vorm !== "ok") {
+    console.warn(`signup geweigerd: formulier ${vorm}`)
+    signupError("retry", isDj)
+  }
+
+  // Botfilter, laag 3: Turnstile van Cloudflare. Staat automatisch uit zolang
+  // TURNSTILE_SECRET_KEY niet is ingesteld.
+  const bewijs = String(formData.get(TURNSTILE_FIELD) ?? "")
+  if (!(await verifyTurnstile(bewijs, ip))) {
+    signupError("captcha", isDj)
+  }
 
   // Wachtwoordbeleid, server-side. Exact dezelfde eisen als het vinkjeslijstje
   // in het scherm, want beide halen ze uit lib/password.ts. Nooit alleen op de
@@ -130,6 +160,10 @@ export async function signUp(formData: FormData) {
       data: {
         full_name: fullName,
         role,
+        // Koos iemand de DJ-kant? Dat onthouden we hier, zodat we hem na de
+        // bevestiging naar de aanvraag kunnen sturen. De aanvraag zelf maken we
+        // pas als hij die opstuurt, zie hieronder.
+        wants_dj: wantsDj,
         gender,
         phone,
         terms_accepted_at: new Date().toISOString(),
@@ -156,15 +190,10 @@ export async function signUp(formData: FormData) {
       gender,
       phone,
     })
-    // Koos iemand de DJ-tab? Zet meteen een DJ-aanvraag klaar (ter goedkeuring).
-    if (wantsDj) {
-      await admin
-        .from("dj_applications")
-        .upsert(
-          { user_id: data.user.id, status: "pending" },
-          { onConflict: "user_id" },
-        )
-    }
+    // Bewust géén DJ-aanvraag aanmaken bij de aanmelding. Dat vulde het
+    // beheerscherm met lege aanvragen van accounts die hun e-mailadres nooit
+    // bevestigden. De aanvraag ontstaat op /dj-aanvraag, met motivatie, van
+    // iemand die is ingelogd.
   }
 
   // Geen sessie = e-mailbevestiging vereist.

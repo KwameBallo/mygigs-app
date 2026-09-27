@@ -112,6 +112,9 @@ const nl = {
       "Kies een wachtwoord van minimaal 12 tekens, met een hoofdletter, een kleine letter en een cijfer.",
     errTerms: "Je moet akkoord gaan met de voorwaarden en het privacybeleid.",
     errTooMany: "Te veel pogingen. Wacht een paar minuten en probeer opnieuw.",
+    errCaptcha:
+      "De controle ging niet goed. Vernieuw de pagina en probeer het opnieuw.",
+    errRetry: "Vul het formulier nog een keer in en neem er even de tijd voor.",
     errUseOrganiser: "Dit is een organisator-account. Log in via organisator.",
     errUseDj: "Dit is een DJ-account. Login via DJ.",
     errGeneric: "Er ging iets mis. Probeer het opnieuw.",
@@ -904,6 +907,8 @@ const en: typeof nl = {
       "Choose a password of at least 12 characters, with a capital letter, a lowercase letter and a digit.",
     errTerms: "You must agree to the terms and the privacy policy.",
     errTooMany: "Too many attempts. Wait a few minutes and try again.",
+    errCaptcha: "The check did not go through. Refresh the page and try again.",
+    errRetry: "Please fill in the form once more and take your time.",
     errUseOrganiser: "This is an organiser account. Log in via organiser.",
     errUseDj: "This is a DJ account. Log in via DJ.",
     errGeneric: "Something went wrong. Please try again.",

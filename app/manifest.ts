@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "MyGigs — Boek DJ's rechtstreeks",
+    name: "MyGigs",
     short_name: "MyGigs",
     description:
-      "Ontdek en boek DJ's rechtstreeks. Transparante tarieven, veilige betaling.",
+      "Ontdek en boek DJ's. Transparante tarieven, veilige betaling.",
     start_url: "/",
     scope: "/",
     display: "standalone",
