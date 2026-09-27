@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/review-requests",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/agents/waakhond",
+      "schedule": "0 13 * * *"
     }
   ]
 }
