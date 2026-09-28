@@ -11,6 +11,11 @@ import { updateSession } from "@/lib/supabase/middleware"
 // precies zo streng als het was.
 const isDev = process.env.NODE_ENV === "development"
 
+// Turnstile van Cloudflare tekent zijn vakje in een eigen iframe en laadt
+// daarvoor een script van deze host. Zonder deze uitzondering blokkeert het
+// beleid het vakje zonder zichtbare foutmelding.
+const TURNSTILE = "https://challenges.cloudflare.com"
+
 function buildCsp(nonce: string) {
   return [
     "default-src 'self'",
@@ -18,12 +23,15 @@ function buildCsp(nonce: string) {
     "object-src 'none'",
     "frame-ancestors 'self'",
     "form-action 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
+    // 'strict-dynamic' laat scripts toe die door een vertrouwd script geladen
+    // worden; de host erbij is de terugval voor oudere browsers die
+    // 'strict-dynamic' niet kennen.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${TURNSTILE}${isDev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     `connect-src 'self' https: wss:${isDev ? " ws:" : ""}`,
-    "frame-src 'self'",
+    `frame-src 'self' ${TURNSTILE}`,
     "worker-src 'self' blob:",
     ...(isDev ? [] : ["upgrade-insecure-requests"]),
   ].join("; ")

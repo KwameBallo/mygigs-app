@@ -56,11 +56,16 @@ export function Turnstile({
       if (!holder.current || !window.turnstile) return
       window.clearInterval(timer)
       if (holder.current.childElementCount > 0) return
-      widgetId = window.turnstile.render(holder.current, {
-        sitekey: siteKey,
-        theme: "dark",
-        action,
-      })
+      try {
+        widgetId = window.turnstile.render(holder.current, {
+          sitekey: siteKey,
+          theme: "dark",
+          action,
+        })
+      } catch (e) {
+        // Niet stil falen: anders zie je alleen een leeg gat in het formulier.
+        console.error("Turnstile kon niet geplaatst worden:", e)
+      }
     }, 120)
 
     return () => {
