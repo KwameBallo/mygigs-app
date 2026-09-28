@@ -29,7 +29,7 @@ AI-sleutel blijven aan de serverkant. Elke run schrijft een regel in
 | Naam | Taak | Wat hij doet | Wanneer | AI nodig |
 | --- | --- | --- | --- | --- |
 | Wolf | waakhond | Fouten, vastgelopen boekingen, mislukte betalingen en taken die niet draaien opsporen en melden | elk kwartier | nee |
-| Nova | boekingsbewaker | Aanvragen die blijven liggen opvolgen: DJ porren, boeker informeren, aanvraag sluiten | elk uur | nee |
+| Nova | boekingsbewaker | Herinneren aan het optreden, en aanvragen die blijven liggen opvolgen en sluiten | elk kwartier | nee |
 | Kas | geldloper | Betalingen, escrow en uitbetalingen naast elkaar leggen en afwijkingen melden | dagelijks | nee |
 | Fleur | klantcontact | Binnenkomende vragen lezen, antwoord voorstellen, moeilijke gevallen naar jou | elke 10 minuten | ja |
 | Sam | poortwachter | Nieuwe DJ-aanmeldingen beoordelen op echtheid en volledigheid, advies geven | bij elke aanmelding | ja |
@@ -54,15 +54,41 @@ Hij kijkt naar:
 Bij iets wat aandacht vraagt stuurt hij één bericht, niet tien. Dezelfde
 melding komt hooguit één keer per dag terug.
 
-**Stap 2: Nova, de boekingsbewaker.** Regels:
+**Stap 2: Nova, de boekingsbewaker.** Gebouwd, draait elk kwartier.
+
+Herinneren aan een optreden, naar de DJ én de boeker:
+
+| Moment | Toon |
+| --- | --- |
+| 48 uur ervoor | het komt eraan |
+| 24 uur ervoor | morgen is het zo ver |
+| 3 uur ervoor | praktisch: op tijd vertrekken, aankomst in de app zetten |
+
+Aanvragen die blijven liggen:
 
 | Situatie | Na | Actie |
 | --- | --- | --- |
-| DJ heeft aanvraag niet geopend | 4 uur | pushmelding naar de DJ |
-| DJ heeft niet gereageerd | 24 uur | mail naar de DJ, boeker krijgt bericht dat we erachteraan zitten |
-| DJ heeft niet gereageerd | 48 uur | aanvraag sluiten, boeker krijgt drie alternatieven |
-| Optreden over 7 dagen, contract niet getekend | dagelijks | beide partijen herinneren |
-| Optreden voorbij, geen review | 2 dagen | reviewverzoek (bestaat al) |
+| DJ reageert niet | 4 uur | por naar de DJ |
+| DJ reageert niet | 24 uur | laatste kans naar de DJ, boeker hoort dat we erachteraan zitten |
+| DJ reageert niet | 48 uur | aanvraag wordt gesloten, boeker krijgt bericht en een link naar Ontdek |
+| Optreden voorbij, geen review | 2 dagen | reviewverzoek (bestond al) |
+
+Keuzes die daarbij horen:
+
+- Elk moment heeft een eigen kolom op `bookings`, die Nova claimt met een update
+  die alleen slaagt als de kolom nog leeg is. Dubbele mail kan dus niet, ook
+  niet als twee runs elkaar overlappen, en een gemiste run haalt ze vanzelf in.
+- **Sluiten staat aan.** Uitzetten kan zonder code te wijzigen:
+  `update agent_settings set config = config || '{"auto_close": false}' where agent = 'boekingsbewaker';`
+- Wie `email_opt_out` aan heeft krijgt geen mail van Nova, ook niet vlak voor
+  het optreden. Wel een melding op de telefoon als die aan staat.
+- De oude taak `booking-reminders` is eruit. Die stuurde alleen een pushmelding
+  en niemand had push aanstaan. Nova vult `reminder_sent_at` op het moment van
+  24 uur, zodat Wolfs controle op gemiste herinneringen blijft kloppen.
+- Een contractherinnering kan nog niet: er is geen contractfunctie in de app.
+  Zodra die er is, hoort die regel hier weer thuis.
+- Alternatieve DJ's meesturen bij een afgelopen aanvraag is nog niet gebouwd;
+  de boeker krijgt nu een link naar Ontdek.
 
 ## Wat er in de database bij komt
 
@@ -87,3 +113,37 @@ maand.
 Bij `/admin/agents` komt één pagina: per agent de laatste run, de stand van
 zaken, de open meldingen en de schakelaar aan of uit. Zo zie je in tien
 seconden of alles loopt.
+
+**Nog niet gebouwd.** De knop in de meldingsmail wijst al naar `/admin/agents`,
+dus zolang die pagina er niet is levert die knop een 404 op. Bij het bouwen
+meteen controleren of die knop klopt.
+
+## Open punten
+
+Bijgewerkt 29 september 2026.
+
+| Punt | Stand |
+| --- | --- |
+| `/admin/agents` bouwen | open, knop in de mail wacht erop |
+| Nova, de boekingsbewaker | gebouwd, draait elk kwartier |
+| Gedeelde teller via Upstash bevestigen | gekoppeld, nog niet aantoonbaar werkend; zoek in de logs op `[ratelimit]` |
+| Testaccount opruimen | `ballokwame+test1@gmail.com` mag weg zodra het testen klaar is |
+
+## Hoe de agents gestart worden
+
+Niet via de planner van Vercel maar via **pg_cron in Supabase**, net als de
+bestaande taken. Elke taak roept de route aan met de sleutel uit de vault:
+
+```sql
+select net.http_get(
+  url := 'https://mygigs-app-t7ve.vercel.app/api/agents/<naam>',
+  headers := jsonb_build_object(
+    'Authorization',
+    'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+  )
+);
+```
+
+Daardoor gelden de beperkingen van het Hobby-abonnement van Vercel niet: Wolf
+draait elk kwartier. `vercel.json` bevat bewust geen taken meer, zodat alles op
+één plek staat en niets dubbel draait.

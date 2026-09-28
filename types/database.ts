@@ -561,6 +561,7 @@ export type Database = {
           address: string | null
           address_verified: boolean
           artist_id: string
+          auto_declined_at: string | null
           booker_confirmed_at: string | null
           booker_id: string
           booking_type: Database["public"]["Enums"]["booking_type"]
@@ -591,8 +592,13 @@ export type Database = {
           lat: number | null
           lng: number | null
           message: string | null
+          nudge_24h_at: string | null
+          nudge_4h_at: string | null
           occasion: string | null
           postal_code: string | null
+          reminder_24_at: string | null
+          reminder_3_at: string | null
+          reminder_48_at: string | null
           reminder_sent_at: string | null
           review_request_sent_at: string | null
           service_fee: number
@@ -608,6 +614,7 @@ export type Database = {
           address?: string | null
           address_verified?: boolean
           artist_id: string
+          auto_declined_at?: string | null
           booker_confirmed_at?: string | null
           booker_id: string
           booking_type?: Database["public"]["Enums"]["booking_type"]
@@ -638,8 +645,13 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           message?: string | null
+          nudge_24h_at?: string | null
+          nudge_4h_at?: string | null
           occasion?: string | null
           postal_code?: string | null
+          reminder_24_at?: string | null
+          reminder_3_at?: string | null
+          reminder_48_at?: string | null
           reminder_sent_at?: string | null
           review_request_sent_at?: string | null
           service_fee: number
@@ -655,6 +667,7 @@ export type Database = {
           address?: string | null
           address_verified?: boolean
           artist_id?: string
+          auto_declined_at?: string | null
           booker_confirmed_at?: string | null
           booker_id?: string
           booking_type?: Database["public"]["Enums"]["booking_type"]
@@ -685,8 +698,13 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           message?: string | null
+          nudge_24h_at?: string | null
+          nudge_4h_at?: string | null
           occasion?: string | null
           postal_code?: string | null
+          reminder_24_at?: string | null
+          reminder_3_at?: string | null
+          reminder_48_at?: string | null
           reminder_sent_at?: string | null
           review_request_sent_at?: string | null
           service_fee?: number
@@ -1660,6 +1678,30 @@ export type Database = {
           },
         ]
       }
+      spam_signup_log: {
+        Row: {
+          email_domain: string
+          id: string
+          reason: string
+          removed_at: string
+          signed_up_at: string
+        }
+        Insert: {
+          email_domain: string
+          id?: string
+          reason?: string
+          removed_at?: string
+          signed_up_at: string
+        }
+        Update: {
+          email_domain?: string
+          id?: string
+          reason?: string
+          removed_at?: string
+          signed_up_at?: string
+        }
+        Relationships: []
+      }
       suppliers: {
         Row: {
           category: Database["public"]["Enums"]["supplier_category"]
@@ -1733,12 +1775,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bookings_due_for_gig_reminder: {
+        Args: { stage_hours: number }
+        Returns: {
+          artist_id: string
+          booker_id: string
+          city: string
+          id: string
+          occasion: string
+          starts_at: string
+          venue_name: string
+        }[]
+      }
       bookings_due_for_reminder: {
         Args: never
         Returns: {
           address: string | null
           address_verified: boolean
           artist_id: string
+          auto_declined_at: string | null
           booker_confirmed_at: string | null
           booker_id: string
           booking_type: Database["public"]["Enums"]["booking_type"]
@@ -1769,8 +1824,13 @@ export type Database = {
           lat: number | null
           lng: number | null
           message: string | null
+          nudge_24h_at: string | null
+          nudge_4h_at: string | null
           occasion: string | null
           postal_code: string | null
+          reminder_24_at: string | null
+          reminder_3_at: string | null
+          reminder_48_at: string | null
           reminder_sent_at: string | null
           review_request_sent_at: string | null
           service_fee: number
@@ -1795,6 +1855,7 @@ export type Database = {
           address: string | null
           address_verified: boolean
           artist_id: string
+          auto_declined_at: string | null
           booker_confirmed_at: string | null
           booker_id: string
           booking_type: Database["public"]["Enums"]["booking_type"]
@@ -1825,8 +1886,13 @@ export type Database = {
           lat: number | null
           lng: number | null
           message: string | null
+          nudge_24h_at: string | null
+          nudge_4h_at: string | null
           occasion: string | null
           postal_code: string | null
+          reminder_24_at: string | null
+          reminder_3_at: string | null
+          reminder_48_at: string | null
           reminder_sent_at: string | null
           review_request_sent_at: string | null
           service_fee: number

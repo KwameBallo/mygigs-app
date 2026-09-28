@@ -505,3 +505,180 @@ export async function sendDjClaimMail(opts: {
     html,
   })
 }
+
+// =============================================================
+// Nova, de boekingsbewaker.
+//
+// Drie soorten bericht: een herinnering dat het optreden eraan komt, een por
+// naar een DJ die een aanvraag laat liggen, en het bericht aan de boeker als
+// een aanvraag afloopt. Allemaal dezelfde huisstijl als de rest.
+// =============================================================
+
+/**
+ * Herinnering dat het optreden eraan komt: 48 uur, 24 uur of 3 uur ervoor.
+ * Dezelfde functie voor de DJ en de boeker, alleen de tekst verschilt.
+ */
+export async function sendGigReminder(opts: {
+  to: string
+  locale: "nl" | "en"
+  forDj: boolean
+  stageHours: 48 | 24 | 3
+  when: string
+  place: string
+  counterparty: string
+}) {
+  const nl = opts.locale === "nl"
+
+  const moment = nl
+    ? opts.stageHours === 48
+      ? "over twee dagen"
+      : opts.stageHours === 24
+        ? "morgen"
+        : "straks"
+    : opts.stageHours === 48
+      ? "in two days"
+      : opts.stageHours === 24
+        ? "tomorrow"
+        : "in a few hours"
+
+  const title = opts.forDj
+    ? nl
+      ? `Je speelt ${moment}`
+      : `You are playing ${moment}`
+    : nl
+      ? `Je DJ komt ${moment}`
+      : `Your DJ arrives ${moment}`
+
+  // Vlak voor de tijd iets praktischer, verder vriendelijk en kort.
+  const hint = opts.forDj
+    ? nl
+      ? opts.stageHours === 3
+        ? "Ga je op tijd weg? Zet je aankomst in de app zodra je onderweg bent."
+        : "Weet je alles wat je nodig hebt? Stuur de organisator gerust een bericht."
+      : opts.stageHours === 3
+        ? "Leaving on time? Mark yourself as on the way in the app."
+        : "Got everything you need? Feel free to message the organiser."
+    : nl
+      ? opts.stageHours === 3
+        ? "Je DJ ziet in de app wanneer hij vertrekt. Alles klaar bij jullie?"
+        : "Alles geregeld? Stuur je DJ gerust een bericht met de laatste details."
+      : opts.stageHours === 3
+        ? "Your DJ marks their departure in the app. All set on your side?"
+        : "All arranged? Message your DJ with any last details."
+
+  const rows =
+    row(opts.forDj ? (nl ? "Organisator" : "Organiser") : "DJ", opts.counterparty) +
+    row(nl ? "Wanneer" : "When", opts.when, true) +
+    (opts.place ? row(nl ? "Locatie" : "Location", opts.place) : "") +
+    `<tr><td colspan="2" style="padding:12px 0 0;color:#cfcfd4">${esc(hint)}</td></tr>`
+
+  return sendEmail({
+    to: opts.to,
+    subject: title,
+    html: shell(title, rows, {
+      href: `${siteUrl()}${opts.forDj ? "/dashboard" : "/bookings"}`,
+      label: nl ? "Bekijk de boeking" : "View the booking",
+    }),
+  })
+}
+
+/** Por naar een DJ die een aanvraag laat liggen. */
+export async function sendRequestNudgeToDJ(opts: {
+  to: string
+  locale: "nl" | "en"
+  when: string
+  place: string
+  gage: string
+  hoursOpen: number
+  lastCall: boolean
+}) {
+  const nl = opts.locale === "nl"
+  const title = opts.lastCall
+    ? nl
+      ? "Laatste kans op deze aanvraag"
+      : "Last chance for this request"
+    : nl
+      ? "Er wacht een aanvraag op je"
+      : "A request is waiting for you"
+
+  const uitleg = opts.lastCall
+    ? nl
+      ? "Reageer je vandaag niet, dan sluiten we de aanvraag en gaat de organisator verder zoeken."
+      : "If you do not reply today we will close the request and the organiser will look elsewhere."
+    : nl
+      ? `Deze aanvraag staat al ${opts.hoursOpen} uur open. Een snel antwoord maakt het verschil, ook als het een nee is.`
+      : `This request has been open for ${opts.hoursOpen} hours. A quick answer matters, even if it is a no.`
+
+  const rows =
+    row(nl ? "Wanneer" : "When", opts.when) +
+    (opts.place ? row(nl ? "Locatie" : "Location", opts.place) : "") +
+    row(nl ? "Gage" : "Fee", opts.gage, true) +
+    `<tr><td colspan="2" style="padding:12px 0 0;color:#cfcfd4">${esc(uitleg)}</td></tr>`
+
+  return sendEmail({
+    to: opts.to,
+    subject: title,
+    html: shell(title, rows, {
+      href: `${siteUrl()}/dashboard`,
+      label: nl ? "Bekijk aanvraag" : "View request",
+    }),
+  })
+}
+
+/** Bericht aan de boeker dat we achter de DJ aan zitten. */
+export async function sendRequestWaitingToBooker(opts: {
+  to: string
+  locale: "nl" | "en"
+  djName: string
+  when: string
+}) {
+  const nl = opts.locale === "nl"
+  const title = nl ? "We zitten erachteraan" : "We are chasing it up"
+  const uitleg = nl
+    ? `${opts.djName} heeft nog niet gereageerd op je aanvraag. We hebben een herinnering gestuurd. Hoor je morgen nog niets, dan sluiten we de aanvraag zodat je verder kunt.`
+    : `${opts.djName} has not replied to your request yet. We sent a reminder. If there is still no answer tomorrow we will close the request so you can move on.`
+
+  const rows =
+    row("DJ", opts.djName) +
+    row(nl ? "Wanneer" : "When", opts.when) +
+    `<tr><td colspan="2" style="padding:12px 0 0;color:#cfcfd4">${esc(uitleg)}</td></tr>`
+
+  return sendEmail({
+    to: opts.to,
+    subject: title,
+    html: shell(title, rows, {
+      href: `${siteUrl()}/bookings`,
+      label: nl ? "Bekijk je aanvraag" : "View your request",
+    }),
+  })
+}
+
+/** Bericht aan de boeker dat de aanvraag is afgelopen. */
+export async function sendRequestExpiredToBooker(opts: {
+  to: string
+  locale: "nl" | "en"
+  djName: string
+  when: string
+  place: string
+}) {
+  const nl = opts.locale === "nl"
+  const title = nl ? "Je aanvraag is afgelopen" : "Your request has expired"
+  const uitleg = nl
+    ? `${opts.djName} heeft niet op tijd gereageerd, dus we hebben de aanvraag gesloten. Vervelend, maar zo blijf je niet wachten. Er staan meer DJ's klaar die wel op je datum kunnen.`
+    : `${opts.djName} did not reply in time, so we closed the request. Not ideal, but at least you are not left waiting. Other DJs are available on your date.`
+
+  const rows =
+    row("DJ", opts.djName) +
+    row(nl ? "Wanneer" : "When", opts.when) +
+    (opts.place ? row(nl ? "Locatie" : "Location", opts.place) : "") +
+    `<tr><td colspan="2" style="padding:12px 0 0;color:#cfcfd4">${esc(uitleg)}</td></tr>`
+
+  return sendEmail({
+    to: opts.to,
+    subject: title,
+    html: shell(title, rows, {
+      href: `${siteUrl()}/discover`,
+      label: nl ? "Zoek een andere DJ" : "Find another DJ",
+    }),
+  })
+}
