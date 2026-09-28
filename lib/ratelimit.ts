@@ -1,12 +1,29 @@
 import "server-only"
 import { headers } from "next/headers"
 
-// Lichte rate limiter. Gebruikt Upstash Redis (REST) als UPSTASH_REDIS_REST_URL/
-// _TOKEN zijn ingesteld, dat werkt betrouwbaar over serverless-instances heen.
-// Zonder Upstash valt hij terug op een best-effort in-memory teller per instance
-// (beter dan niets, maar niet gedeeld). Faalt "open" bij een limiter-fout.
+// Lichte rate limiter. Gebruikt Upstash Redis (REST) als de sleutels zijn
+// ingesteld, dat werkt betrouwbaar over serverless-instances heen. Zonder
+// Upstash valt hij terug op een best-effort teller in het geheugen van één
+// instantie (beter dan niets, maar niet gedeeld). Faalt "open" bij een fout in
+// de limiter zelf: liever een keer te veel doorlaten dan iedereen buitensluiten.
+//
+// De namen van de variabelen verschillen per manier van aansluiten. Koppel je
+// Upstash via de marktplaats van Vercel, dan heten ze KV_REST_API_*; maak je ze
+// zelf aan bij Upstash, dan heten ze UPSTASH_REDIS_REST_*. We accepteren beide,
+// zodat het werkt zonder dat je handmatig sleutels hoeft over te typen.
 
 type Result = { ok: boolean }
+
+function redisConfig(): { url: string; token: string } | null {
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || ""
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || ""
+  // Trim: een meegeplakte spatie of regeleinde maakt de hele teller stuk.
+  const u = url.trim()
+  const t = token.trim()
+  return u && t ? { url: u.replace(/\/$/, ""), token: t } : null
+}
 
 const memory = new Map<string, { count: number; reset: number }>()
 
@@ -26,9 +43,9 @@ async function upstashLimit(
   limit: number,
   windowSec: number,
 ): Promise<Result | null> {
-  const url = process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN
-  if (!url || !token) return null
+  const cfg = redisConfig()
+  if (!cfg) return null
+  const { url, token } = cfg
   try {
     const res = await fetch(`${url}/pipeline`, {
       method: "POST",
