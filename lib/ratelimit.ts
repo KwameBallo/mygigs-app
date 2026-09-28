@@ -59,11 +59,18 @@ async function upstashLimit(
       ]),
       cache: "no-store",
     })
-    if (!res.ok) return { ok: true }
+    if (!res.ok) {
+      // Niet stil falen: anders denk je dat je een gedeelde teller hebt terwijl
+      // elke poging wordt doorgelaten.
+      console.error("[ratelimit] Upstash antwoordde met", res.status)
+      return { ok: true }
+    }
     const data = (await res.json()) as Array<{ result?: number }>
     const count = Number(data?.[0]?.result ?? 0)
+    console.log("[ratelimit] teller", key, "staat op", count)
     return { ok: count <= limit }
-  } catch {
+  } catch (e) {
+    console.error("[ratelimit] Upstash niet bereikbaar:", e)
     return { ok: true }
   }
 }
