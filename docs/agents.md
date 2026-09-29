@@ -126,6 +126,7 @@ Bijgewerkt 29 september 2026.
 | --- | --- |
 | `/admin/agents` bouwen | open, knop in de mail wacht erop |
 | Nova, de boekingsbewaker | gebouwd, draait elk kwartier |
+| Nova in het echt zien werken | open. Er staat geen boeking in de toekomst en geen openstaande aanvraag, dus ze heeft niets te doen. Kwame wil hier later een testboeking voor laten aanmaken: een boeking met een datum over twee dagen, en een aanvraag op `pending` met een `created_at` van vijf uur geleden. |
 | Gedeelde teller via Upstash bevestigen | gekoppeld, nog niet aantoonbaar werkend; zoek in de logs op `[ratelimit]` |
 | Testaccount opruimen | `ballokwame+test1@gmail.com` mag weg zodra het testen klaar is |
 
@@ -147,3 +148,29 @@ select net.http_get(
 Daardoor gelden de beperkingen van het Hobby-abonnement van Vercel niet: Wolf
 draait elk kwartier. `vercel.json` bevat bewust geen taken meer, zodat alles op
 één plek staat en niets dubbel draait.
+
+## De agents laten leren
+
+Idee van Kwame, 29 september 2026: de agents moeten informatie delen en hun
+werk daarmee verbeteren. Uitwerking, te bouwen ná `/admin/agents`.
+
+Drie tabellen erbij:
+
+| Tabel | Waarvoor |
+| --- | --- |
+| `agent_facts` | Wat een agent opvalt, leesbaar voor de anderen. Bijvoorbeeld: aanmeldingen van dit domein zijn bijna altijd nep. Met een houdbaarheidsdatum, want een waarneming veroudert. |
+| `agent_outcomes` | Wat er gebeurde ná een actie. Nova port een DJ, en kijkt een dag later of hij reageerde. Zo ontstaat een percentage per grenswaarde. |
+| `agent_proposals` | Een voorstel van een agent om een grenswaarde te wijzigen, met de cijfers erbij. Jij keurt goed of af in het beheerscherm. |
+
+**Een agent past zijn eigen regels niet aan.** Hij stelt voor, jij beslist. Drie
+redenen, en ze wegen alle drie:
+
+1. Uitlegbaarheid. Bij een klacht of een AVG-vraag is "dat besloot het systeem
+   zelf" geen antwoord. Elke wijziging hoort een moment te hebben waarop een
+   mens ja zei.
+2. Een fout versterkt zichzelf. Sluit Nova te snel, dan haken boekers af, ziet
+   ze minder reacties, en sluit ze nog sneller. Zonder rem loopt dat weg.
+3. Jij moet slimmer worden van die cijfers, niet alleen de agents. Het gaat om
+   jouw bedrijf.
+
+Zelfde afspraak als bij de DJ-goedkeuring, en om dezelfde reden.

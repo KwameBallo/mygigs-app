@@ -1916,6 +1916,13 @@ export type Database = {
         Args: { p_prefix: string; p_scope: string; p_year: number }
         Returns: string
       }
+      stale_unconfirmed_users: {
+        Args: { older_than_days: number }
+        Returns: {
+          created_at: string
+          id: string
+        }[]
+      }
     }
     Enums: {
       act_type: "dj" | "band" | "singer" | "mc" | "musician" | "duo" | "other"
