@@ -934,6 +934,9 @@ export type Database = {
       }
       dj_leads: {
         Row: {
+          advice_level: string | null
+          advice_text: string | null
+          advised_at: string | null
           artist_id: string | null
           base_gage: number | null
           bio: string | null
@@ -971,6 +974,9 @@ export type Database = {
           website_url: string | null
         }
         Insert: {
+          advice_level?: string | null
+          advice_text?: string | null
+          advised_at?: string | null
           artist_id?: string | null
           base_gage?: number | null
           bio?: string | null
@@ -1008,6 +1014,9 @@ export type Database = {
           website_url?: string | null
         }
         Update: {
+          advice_level?: string | null
+          advice_text?: string | null
+          advised_at?: string | null
           artist_id?: string | null
           base_gage?: number | null
           bio?: string | null

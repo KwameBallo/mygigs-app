@@ -30,10 +30,10 @@ AI-sleutel blijven aan de serverkant. Elke run schrijft een regel in
 | --- | --- | --- | --- | --- |
 | Wolf | waakhond | Fouten, vastgelopen boekingen, mislukte betalingen en taken die niet draaien opsporen en melden | elk kwartier | nee |
 | Nova | boekingsbewaker | Herinneren aan het optreden, en aanvragen die blijven liggen opvolgen en sluiten | elk kwartier | nee |
-| Kas | geldloper | Betalingen, escrow en uitbetalingen naast elkaar leggen en afwijkingen melden | dagelijks | nee |
+| Eray | geldloper | Betalingen, escrow en uitbetalingen naast elkaar leggen en afwijkingen melden | dagelijks | nee |
 | Fleur | klantcontact | Binnenkomende vragen lezen, antwoord voorstellen, moeilijke gevallen naar jou | elke 10 minuten | ja |
 | Sam | poortwachter | Nieuwe DJ-aanmeldingen beoordelen op echtheid en volledigheid, advies geven | bij elke aanmelding | ja |
-| Juno | kwaliteit | Reviews ophalen, klachten signaleren, slapende profielen wakker maken | wekelijks | deels |
+| Michael | kwaliteit | Reviews ophalen, klachten signaleren, slapende profielen wakker maken | wekelijks | deels |
 | Rio | groei | Berichten voor social media voorbereiden, passende DJ's zoeken | wekelijks | ja |
 | Bo | opruimer | Afgewezen aanmeldingen en oude gegevens verwijderen volgens de AVG | dagelijks | nee |
 
@@ -120,12 +120,13 @@ meteen controleren of die knop klopt.
 
 ## Open punten
 
-Bijgewerkt 29 september 2026.
+Bijgewerkt 5 oktober 2026.
 
 | Punt | Stand |
 | --- | --- |
-| `/admin/agents` bouwen | open, knop in de mail wacht erop |
+| `/admin/agents` | gebouwd en live |
 | Nova, de boekingsbewaker | gebouwd, draait elk kwartier |
+| Bo, de opruimer | gebouwd, draait elke nacht, nog in de proefstand. Hij meldt niets omdat er nog niets oud genoeg is: de oudste afgewezen aanmelding is twee weken oud en zijn termijn is 90 dagen. |
 | Nova in het echt zien werken | open. Er staat geen boeking in de toekomst en geen openstaande aanvraag, dus ze heeft niets te doen. Kwame wil hier later een testboeking voor laten aanmaken: een boeking met een datum over twee dagen, en een aanvraag op `pending` met een `created_at` van vijf uur geleden. |
 | Gedeelde teller via Upstash bevestigen | gekoppeld, nog niet aantoonbaar werkend; zoek in de logs op `[ratelimit]` |
 | Testaccount opruimen | `ballokwame+test1@gmail.com` mag weg zodra het testen klaar is |
@@ -174,3 +175,31 @@ redenen, en ze wegen alle drie:
    jouw bedrijf.
 
 Zelfde afspraak als bij de DJ-goedkeuring, en om dezelfde reden.
+
+
+## Eray, de geldloper: bewust uitgesteld
+
+29 september 2026. Eray wacht tot de betaalrekening gekoppeld is.
+
+Wat de proef toen opleverde:
+
+- De interne boekhouding klopt met zichzelf. Geen boeking die betaald heet
+  zonder betaling, geen dubbele betaling, geen bedrag dat afwijkt van het
+  totaal, geen uitbetaling zonder betaling. Eén betaalde boeking zonder
+  factuur, dat is het enige punt.
+- De uitbetaling ligt tussen 91 en 96 procent van het betaalde bedrag, en die
+  verhouding verschilt per boeking. Er is dus nog geen vaste marge die Eray kan
+  controleren. Eerst moet vastliggen wat de juiste verhouding hoort te zijn.
+- De eerste controle vergeleek de uitbetaling met de gage. Dat is fout: een
+  uitbetaling dekt ook reiskosten en apparatuur. Vergelijk met het betaalde
+  bedrag, niet met de gage.
+
+Wat Eray moet doen zodra de rekening er is: de eigen administratie naast de
+opgave van de betaalprovider leggen. Dat is de controle die er echt toe doet;
+de app met zichzelf vergelijken vindt alleen fouten in de app.
+
+## Namen
+
+De naam staat in `agent_settings.display_name`, los van de sleutel waarmee de
+code werkt. Hernoemen is dus één regel SQL en breekt niets. Tot nu toe
+hernoemd: Iris werd Fleur, Juno werd Michael, Kas werd Eray.

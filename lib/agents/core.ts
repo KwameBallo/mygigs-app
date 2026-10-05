@@ -80,7 +80,13 @@ async function loadSettings(admin: Admin, agent: string): Promise<AgentSettings 
  */
 export async function runAgent(
   agent: string,
-  work: (ctx: AgentContext) => Promise<{ seen: number; acted: number; meta?: Record<string, unknown> }>,
+  work: (ctx: AgentContext) => Promise<{
+    seen: number
+    acted: number
+    /** Wat de AI deze run kostte, in euro. Blijft 0 bij agents zonder AI. */
+    aiCostEur?: number
+    meta?: Record<string, unknown>
+  }>,
 ): Promise<{
   status: number
   body: Record<string, unknown>
@@ -128,6 +134,9 @@ export async function runAgent(
           ok: true,
           items_seen: result.seen,
           items_acted: result.acted,
+          // Afgerond op vier decimalen, want dat is wat de kolom aankan en een
+          // tiende van een cent is nauwkeurig genoeg.
+          ai_cost_eur: Math.round((result.aiCostEur ?? 0) * 10000) / 10000,
           meta: (result.meta ?? {}) as unknown as Json,
         })
         .eq("id", runId)

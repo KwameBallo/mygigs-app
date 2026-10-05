@@ -142,6 +142,42 @@ export default async function LeadPage({
           </div>
         )}
 
+        {/* Het advies van Sam. Een advies, geen besluit: de knoppen verderop
+            blijven van jou. */}
+        {lead.advice_level && (
+          <div
+            className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+              lead.advice_level === "rood"
+                ? "border-red-500/40 bg-red-500/10 text-red-200"
+                : lead.advice_level === "oranje"
+                  ? "border-amber-500/40 bg-amber-500/10 text-amber-200"
+                  : "border-green-500/40 bg-green-500/10 text-green-200"
+            }`}
+          >
+            <p className="font-medium">
+              {lead.advice_level === "rood"
+                ? "Sam: dit ziet er niet echt uit"
+                : lead.advice_level === "oranje"
+                  ? "Sam: er klopt iets niet helemaal"
+                  : "Sam: dit ziet er echt uit"}
+            </p>
+            {lead.advice_text && (
+              <ul className="mt-1 list-disc pl-5 opacity-90">
+                {lead.advice_text
+                  .split("\n")
+                  .filter(Boolean)
+                  .map((reden, i) => (
+                    <li key={i}>{reden}</li>
+                  ))}
+              </ul>
+            )}
+            <p className="mt-2 text-xs opacity-70">
+              Dit is een advies, geen besluit. Jij keurt goed of af.
+              {lead.advised_at ? ` Beoordeeld op ${fmt(lead.advised_at)}.` : ""}
+            </p>
+          </div>
+        )}
+
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           {/* Links: het origineel */}
           <Panel title={d.rawTitle} className="h-fit">
