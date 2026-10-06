@@ -19,7 +19,13 @@ function ensureConfigured(): boolean {
   return true
 }
 
-export type PushPayload = { title: string; body: string; url?: string }
+export type PushPayload = {
+  title: string
+  body: string
+  url?: string
+  /** Zelfde tag betekent: vervang de vorige melding in plaats van stapelen. */
+  tag?: string
+}
 
 // Stuurt een melding naar alle apparaten van één gebruiker. Best-effort:
 // verlopen abonnementen (404/410) worden opgeruimd.
@@ -47,5 +53,25 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
         }
       }
     }),
+  )
+}
+
+// Stuurt een melding naar alle beheerders. Hiermee komt een kritieke
+// agentmelding op je telefoon terecht, zonder dat je het beheerscherm open
+// hoeft te hebben.
+//
+// Best-effort, net als hierboven: gaat dit mis, dan staat de melding nog
+// steeds in /admin/agents en gaat de mail van de waakhond gewoon door. Een
+// kapotte push mag nooit een agent laten vastlopen.
+export async function sendPushToAdmins(payload: PushPayload) {
+  if (!ensureConfigured()) return
+  const admin = createAdminClient()
+  const { data: beheerders } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("role", "admin")
+
+  await Promise.all(
+    (beheerders ?? []).map((b) => sendPushToUser(b.id, payload)),
   )
 }

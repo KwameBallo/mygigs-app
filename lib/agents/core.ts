@@ -1,5 +1,6 @@
 import "server-only"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { sendPushToAdmins } from "@/lib/push"
 import type { Database, Json } from "@/types/database"
 
 // =============================================================
@@ -216,7 +217,7 @@ async function raiseAlert(
     return
   }
 
-  await admin.from("agent_alerts").insert({
+  const { error } = await admin.from("agent_alerts").insert({
     agent,
     key: a.key.slice(0, 200),
     level: a.level ?? "warn",
@@ -225,6 +226,28 @@ async function raiseAlert(
     target_type: a.targetType ?? null,
     target_id: a.targetId ?? null,
   })
+  if (error) {
+    console.error("melding aanmaken mislukt:", error.message)
+    return
+  }
+
+  // Alleen bij een nieuwe kritieke melding een pushbericht. Hierboven staat de
+  // tak waarin de melding al open was; die hoogt alleen de teller op en duwt
+  // dus niet opnieuw. Zo krijg je één bericht per probleem, niet één per run.
+  if ((a.level ?? "warn") === "critical") {
+    try {
+      await sendPushToAdmins({
+        title: a.title.slice(0, 120),
+        body: a.detail?.slice(0, 200) || "Kijk in het beheerscherm.",
+        url: "/admin/agents",
+        // Zelfde probleem, zelfde tag: vervangt de vorige in plaats van te
+        // stapelen op je vergrendelscherm.
+        tag: `agent:${agent}:${a.key}`,
+      })
+    } catch (e) {
+      console.error("push bij kritieke melding mislukt:", e)
+    }
+  }
 }
 
 /**

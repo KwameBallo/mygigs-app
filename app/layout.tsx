@@ -27,6 +27,11 @@ export const metadata: Metadata = {
   description:
     "Het boekingsplatform voor DJ's en events. Transparante tarieven en veilige betaling via escrow.",
   manifest: "/manifest.webmanifest",
+  // iOS pakt het beginschermicoon hiervandaan, niet uit het manifest. Zonder
+  // deze regel zet een iPhone een schermafdruk van de pagina op je beginscherm.
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     // "black" (ondoorzichtig) zodat iOS de inhoud in de geïnstalleerde app onder
