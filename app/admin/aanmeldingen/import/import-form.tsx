@@ -2,7 +2,8 @@
 
 import { useActionState, useState } from "react"
 import { useFormStatus } from "react-dom"
-import { verwerkImport, type ImportState, type RijUitslag } from "./actions"
+import { verwerkImport } from "./actions"
+import type { ImportState, RijUitslag } from "./types"
 
 // =============================================================
 // Het formulier voor de lijstimport.

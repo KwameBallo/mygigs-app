@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
 import { leesLeads, MAX_RIJEN, type ImportRij } from "@/lib/leads-csv"
 import { checkAdmin } from "../guard"
+import type { ImportState, RijUitslag } from "./types"
 
 // =============================================================
 // Een lijst DJ's in één keer in de wachtrij zetten.
@@ -20,22 +21,13 @@ import { checkAdmin } from "../guard"
 // zet. Sam kijkt er ondertussen naar en zet er zijn advies bij.
 // =============================================================
 
+// LET OP: dit bestand mag ALLEEN async functies exporteren. Zet er een type,
+// een const of een gewone functie bij en Next weigert het hele bestand, met
+// als gevolg dat elke serveractie in de app uitvalt. De types staan daarom in
+// ./types.ts. Hier één keer misgegaan, 8 oktober 2026.
+
 const BASE = "/admin/aanmeldingen"
 const MAX_TEKENS = 500_000
-
-export type RijUitslag = ImportRij & {
-  /** Reden waarom deze rij niet geïmporteerd is, als dat zo is. */
-  overgeslagen?: string
-}
-
-export type ImportState = {
-  fase: "leeg" | "gecontroleerd" | "gedaan"
-  fout?: string
-  onbekendeKolommen?: string[]
-  rijen?: RijUitslag[]
-  /** Hoeveel rijen er echt zijn weggeschreven. Alleen in de fase 'gedaan'. */
-  toegevoegd?: number
-} | null
 
 async function requireAdmin(): Promise<string> {
   const check = await checkAdmin()
