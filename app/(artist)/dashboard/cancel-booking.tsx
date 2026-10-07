@@ -3,11 +3,8 @@
 import { useActionState, useState } from "react"
 import { useT } from "@/components/i18n-provider"
 import { hoursUntil } from "@/lib/time"
-import {
-  cancelBookingAsArtist,
-  CANCEL_REASONS,
-  type CancelState,
-} from "./actions"
+import { cancelBookingAsArtist } from "./actions"
+import { CANCEL_REASONS, type CancelState } from "./cancel-redenen"
 
 // De afmeldknop bij een aangenomen boeking (huisregel 2).
 //

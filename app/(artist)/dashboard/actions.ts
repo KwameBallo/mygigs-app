@@ -19,6 +19,7 @@ import {
   CHECKIN_RADIUS_M,
 } from "@/lib/geo"
 import type { Database } from "@/types/database"
+import { CANCEL_REASONS, type CancelState } from "./cancel-redenen"
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"]
 
@@ -320,17 +321,12 @@ export async function checkInBooking(formData: FormData) {
 // terugboeking hier.
 // ---------------------------------------------------------------------------
 
-export const CANCEL_REASONS = [
-  "ziekte",
-  "ongeval",
-  "dubbele-boeking",
-  "vervoer",
-  "prive",
-  "anders",
-] as const
-export type CancelReason = (typeof CANCEL_REASONS)[number]
-
-export type CancelState = { error?: "reason" | "late" | "generic"; ok?: boolean }
+// CANCEL_REASONS en de bijbehorende types stonden hier, maar een bestand met
+// "use server" mag alleen async functies exporteren. Een export const laat
+// Next het hele bestand weigeren, waardoor elke actie hierin uitvalt. Ze staan
+// nu in ./cancel-redenen.ts; daar staat ook het hele verhaal.
+//
+// Zet hier dus nooit iets anders neer dan een async function.
 
 export async function cancelBookingAsArtist(
   _prev: CancelState,
