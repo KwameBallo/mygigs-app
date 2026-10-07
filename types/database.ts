@@ -389,6 +389,7 @@ export type Database = {
           base_gage: number
           bio: string | null
           bookings_30d: number
+          can_receive_payments: boolean
           created_at: string
           equipment: string | null
           equipment_items: string[]
@@ -404,6 +405,9 @@ export type Database = {
           lat: number | null
           lng: number | null
           mixcloud_url: string | null
+          mollie_organization_id: string | null
+          onboarding_checked_at: string | null
+          onboarding_status: string | null
           online: boolean
           province: string | null
           rating: number
@@ -432,6 +436,7 @@ export type Database = {
           base_gage?: number
           bio?: string | null
           bookings_30d?: number
+          can_receive_payments?: boolean
           created_at?: string
           equipment?: string | null
           equipment_items?: string[]
@@ -447,6 +452,9 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           mixcloud_url?: string | null
+          mollie_organization_id?: string | null
+          onboarding_checked_at?: string | null
+          onboarding_status?: string | null
           online?: boolean
           province?: string | null
           rating?: number
@@ -475,6 +483,7 @@ export type Database = {
           base_gage?: number
           bio?: string | null
           bookings_30d?: number
+          can_receive_payments?: boolean
           created_at?: string
           equipment?: string | null
           equipment_items?: string[]
@@ -490,6 +499,9 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           mixcloud_url?: string | null
+          mollie_organization_id?: string | null
+          onboarding_checked_at?: string | null
+          onboarding_status?: string | null
           online?: boolean
           province?: string | null
           rating?: number
@@ -1418,6 +1430,38 @@ export type Database = {
           },
         ]
       }
+      mollie_connections: {
+        Row: {
+          artist_id: string
+          connected_at: string
+          last_refresh_at: string | null
+          refresh_token: string
+          scopes: string | null
+        }
+        Insert: {
+          artist_id: string
+          connected_at?: string
+          last_refresh_at?: string | null
+          refresh_token: string
+          scopes?: string | null
+        }
+        Update: {
+          artist_id?: string
+          connected_at?: string
+          last_refresh_at?: string | null
+          refresh_token?: string
+          scopes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mollie_connections_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: true
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -1425,8 +1469,12 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          paid_at: string | null
           provider: string | null
+          provider_payment_id: string | null
           provider_ref: string | null
+          provider_status: string | null
+          route_id: string | null
           status: Database["public"]["Enums"]["payment_status"]
         }
         Insert: {
@@ -1435,8 +1483,12 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          paid_at?: string | null
           provider?: string | null
+          provider_payment_id?: string | null
           provider_ref?: string | null
+          provider_status?: string | null
+          route_id?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
         }
         Update: {
@@ -1445,8 +1497,12 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          paid_at?: string | null
           provider?: string | null
+          provider_payment_id?: string | null
           provider_ref?: string | null
+          provider_status?: string | null
+          route_id?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
         }
         Relationships: [
@@ -1465,7 +1521,10 @@ export type Database = {
           artist_id: string
           booking_id: string | null
           created_at: string
+          fail_reason: string | null
           id: string
+          provider_transfer_id: string | null
+          routed_at: string | null
           status: Database["public"]["Enums"]["payout_status"]
         }
         Insert: {
@@ -1473,7 +1532,10 @@ export type Database = {
           artist_id: string
           booking_id?: string | null
           created_at?: string
+          fail_reason?: string | null
           id?: string
+          provider_transfer_id?: string | null
+          routed_at?: string | null
           status?: Database["public"]["Enums"]["payout_status"]
         }
         Update: {
@@ -1481,7 +1543,10 @@ export type Database = {
           artist_id?: string
           booking_id?: string | null
           created_at?: string
+          fail_reason?: string | null
           id?: string
+          provider_transfer_id?: string | null
+          routed_at?: string | null
           status?: Database["public"]["Enums"]["payout_status"]
         }
         Relationships: [
