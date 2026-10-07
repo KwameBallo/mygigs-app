@@ -5,14 +5,8 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
-import { generateInvoicesForBooking } from "@/lib/invoicing"
-import {
-  sendPaymentReceipt,
-  sendBookingConfirmedToDJ,
-  getUserEmail,
-} from "@/lib/email"
-import { getI18n } from "@/lib/i18n"
-import { formatEuro, VAT_RATE } from "@/lib/utils/pricing"
+import { maakBetaling, mollieKlaar } from "@/lib/mollie"
+import { siteUrl } from "@/lib/dj-leads"
 
 // De boeker annuleert een eigen aanvraag. Alleen als de boeking nog niet
 // definitief is (in afwachting of geaccepteerd) en van deze gebruiker is.
@@ -83,19 +77,32 @@ export async function confirmDjAttendance(formData: FormData) {
   revalidatePath("/dashboard")
 }
 
-// De boeker betaalt een geaccepteerde boeking. Het geld wordt bij MyGigs
-// vastgehouden (escrow) en binnen 5 werkdagen na het optreden uitbetaald aan
-// de DJ. Simulatie: er is nog geen echte betaalprovider gekoppeld.
+
+// =============================================================
+// De boeker betaalt een geaccepteerde boeking.
+//
+// Hier gebeurt vanaf nu bijna niets meer. We controleren of deze boeking van
+// deze gebruiker is en open staat, zetten een betaling klaar bij Mollie, en
+// sturen de klant daarheen. Verder niets.
+//
+// Dat is met opzet. Of er betaald is weten we pas als Mollie het zegt, en dat
+// zegt hij via de webhook, niet via de browser van de klant. De klant kan na
+// het betalen zijn telefoon in zijn zak steken, op terug drukken of door een
+// tunnel rijden; de webhook komt hoe dan ook. Alles wat ertoe doet staat
+// daarom in lib/payments.ts en wordt daarvandaan aangeroepen.
+//
+// De boeking blijft tot dat moment op 'accepted'. Geen geld, geen status.
+// =============================================================
+
 export async function payBooking(formData: FormData) {
   const bookingId = String(formData.get("booking_id") ?? "")
   if (!bookingId) return
 
-  // Alleen digitale betaalmethoden, geen contant. Nu nog gesimuleerd; zodra
-  // Stripe gekoppeld is komt hier een echte iDEAL/creditcard-PaymentIntent.
-  const rawMethod = String(formData.get("payment_method") ?? "")
-  const paymentMethod = ["ideal", "card"].includes(rawMethod)
-    ? rawMethod
-    : "ideal"
+  // Leeg betekent: laat de klant bij Mollie kiezen. Dat scherm is beter dan
+  // het onze, en kent de banken die wij niet bijhouden.
+  const gekozen = String(formData.get("payment_method") ?? "")
+  const methode =
+    gekozen === "ideal" ? "ideal" : gekozen === "card" ? "creditcard" : undefined
 
   const supabase = await createClient()
   const {
@@ -107,113 +114,69 @@ export async function payBooking(formData: FormData) {
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select(
-      "id, artist_id, total, service_fee, status, event_date, city, venue_name, artists(stage_name, user_id)",
-    )
+    .select("id, total, status, event_date, city, artists(stage_name)")
     .eq("id", bookingId)
     .eq("booker_id", user.id)
     .maybeSingle()
   if (!booking || booking.status !== "accepted") return
 
+  if (!mollieKlaar()) {
+    console.error("betalen gevraagd maar MOLLIE_API_KEY ontbreekt")
+    redirect(`/bookings/${bookingId}/pay?fout=nietingesteld`)
+  }
+
+  const artiest = Array.isArray(booking.artists)
+    ? booking.artists[0]
+    : booking.artists
+  const omschrijving = `MyGigs boeking ${bookingId.slice(0, 8)} - ${
+    artiest?.stage_name ?? "DJ"
+  }`
+
   const admin = createAdminClient()
 
-  // 1) Atomisch claimen: alleen als de boeking NOG 'accepted' is zetten we 'm op
-  //    'paid'. Een tweede gelijktijdige/herhaalde poging raakt 0 rijen en stopt -
-  //    zo geen dubbele betaling of dubbele uitbetaling (FIX #3).
-  const { data: claimed } = await admin
-    .from("bookings")
-    .update({ status: "paid" })
-    .eq("id", booking.id)
-    .eq("status", "accepted")
-    .select("id")
-  if (!claimed || claimed.length === 0) {
-    redirect("/bookings")
-  }
+  // Geen try/catch om deze aanroep heen: redirect() werkt in Next door een
+  // fout te gooien, en die zou dan in onze eigen catch belanden. Vandaar
+  // .catch() op de aanroep zelf en de redirect erbuiten.
+  const betaling = await maakBetaling({
+    bedragEur: Number(booking.total),
+    omschrijving,
+    terugUrl: `${siteUrl()}/bookings/${bookingId}/betaald`,
+    webhookUrl: `${siteUrl()}/api/webhooks/mollie`,
+    metadata: { booking_id: bookingId, booker_id: user.id },
+    methode,
+  }).catch((e) => {
+    console.error("Mollie-betaling aanmaken mislukt:", e)
+    return null
+  })
 
-  // Commissie incl. 21% btw wordt ingehouden (gelijk aan de commissie-factuur);
-  // de DJ ontvangt het restant netto. Grondslag staat in de algemene voorwaarden.
-  const commissionInclVat =
-    Math.round(Number(booking.service_fee ?? 0) * (1 + VAT_RATE) * 100) / 100
-  const payout = Math.max(0, Number(booking.total) - commissionInclVat)
+  if (!betaling) redirect(`/bookings/${bookingId}/pay?fout=provider`)
 
-  // 2) Betaling vastleggen, geld staat vast bij MyGigs (escrow).
-  await admin.from("payments").insert({
-    booking_id: booking.id,
+  // De betaalregel wordt nu al aangemaakt, op pending. Zo kan de webhook hem
+  // straks terugvinden op het nummer van Mollie, en zie jij in de database ook
+  // de pogingen die nooit afgerond zijn.
+  const { error } = await admin.from("payments").insert({
+    booking_id: bookingId,
     amount: booking.total,
     currency: "eur",
-    provider: "mock",
-    provider_ref: `sim-${paymentMethod}`,
-    status: "held",
+    provider: "mollie",
+    provider_ref: betaling.id,
+    provider_payment_id: betaling.id,
+    provider_status: "open",
+    status: "pending",
   })
-
-  // 3) Uitbetaling inplannen (bedrag minus commissie). De unieke index op
-  //    payouts.booking_id is de backstop tegen dubbele rijen.
-  await admin.from("payouts").insert({
-    artist_id: booking.artist_id,
-    booking_id: booking.id,
-    amount: payout,
-    status: "scheduled",
-  })
-
-  // 4) Facturen aanmaken (verkoopfactuur DJ->klant + commissie MyGigs->DJ).
-  //    Best-effort: een factuurfout mag de betaling niet blokkeren.
-  try {
-    await generateInvoicesForBooking(booking.id)
-  } catch (e) {
-    console.error("invoice generation failed:", e)
+  if (error) {
+    console.error("betaalregel aanmaken mislukt:", error.message)
+    redirect(`/bookings/${bookingId}/pay?fout=opslaan`)
   }
 
-  // 5) Mails: betaalbewijs naar de boeker + bevestiging naar de DJ. Best-effort.
-  try {
-    const { locale } = await getI18n()
-    const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
-    const artist = Array.isArray(booking.artists)
-      ? booking.artists[0]
-      : booking.artists
-    const when = new Date(booking.event_date).toLocaleDateString(dateLocale, {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
-    const place = [booking.city, booking.venue_name].filter(Boolean).join(" · ")
-
-    const bookerEmail = await getUserEmail(user.id)
-    if (bookerEmail) {
-      await sendPaymentReceipt({
-        to: bookerEmail,
-        locale,
-        djName: artist?.stage_name ?? "DJ",
-        when,
-        place,
-        amount: formatEuro(booking.total),
-      })
-    }
-
-    const djEmail = artist?.user_id ? await getUserEmail(artist.user_id) : null
-    if (djEmail) {
-      await sendBookingConfirmedToDJ({
-        to: djEmail,
-        locale,
-        when,
-        place,
-        payout: formatEuro(payout),
-      })
-    }
-  } catch (e) {
-    console.error("payment emails failed:", e)
-  }
-
-  // Audit: betaling in escrow + geplande uitbetaling (A.8.15).
   await logAudit({
     actorId: user.id,
-    action: "payment.hold",
+    action: "payment.started",
     targetType: "booking",
-    targetId: booking.id,
-    metadata: { amount: booking.total, method: paymentMethod, payout },
+    targetId: bookingId,
+    metadata: { bedrag: booking.total, methode: methode ?? "keuze bij Mollie", mollie: betaling.id },
   })
 
-  revalidatePath("/bookings")
-  revalidatePath("/dashboard")
-  redirect("/bookings?paid=1")
+  // Naar de betaalpagina van Mollie. Vanaf hier is het hun scherm.
+  redirect(betaling.checkoutUrl)
 }

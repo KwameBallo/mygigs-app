@@ -1,7 +1,20 @@
 # Betaalprovider voor MyGigs — Mollie Connect of Stripe Connect
 
-Datum: 14 augustus 2026. Status: besluitstuk, nog niet geïmplementeerd.
-Tarieven gecontroleerd op de officiële prijspagina's van beide partijen.
+Datum: 14 augustus 2026. Tarieven gecontroleerd op de officiële prijspagina's
+van beide partijen.
+
+**Bijgewerkt 7 oktober 2026. Status: besloten, Mollie Connect. Bouw begonnen.**
+
+Op 7 oktober is de vergelijking opnieuw gemaakt, zonder dit stuk erbij, en de
+uitkomst was dezelfde. Drie dingen uit augustus kloppen niet meer:
+
+- Stripe rekent **€ 2** per actief account, niet $ 2, en **0,25% + € 0,10** per
+  uitbetaling.
+- Er ontbrak een kostenpost: Stripe rekent daarbovenop **0,25% voor het
+  doorsluizen** van het geld. Het verschil met Mollie is dus groter dan de
+  rekensom hieronder laat zien, niet kleiner.
+- De migratie staat hieronder als 0032. Dat nummer is inmiddels vergeven; dit
+  wordt **0048**.
 
 ## Wat MyGigs nodig heeft
 

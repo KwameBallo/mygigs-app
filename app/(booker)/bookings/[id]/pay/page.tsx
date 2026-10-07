@@ -4,6 +4,7 @@ import { StatusBadge } from "@/lib/utils/status"
 import { formatEuro, formatPercent, vatBreakdown, VAT_RATE } from "@/lib/utils/pricing"
 import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
+import { mollieTestmodus } from "@/lib/mollie"
 import { PayForm } from "./pay-form"
 
 type ArtistLite = {
@@ -14,10 +15,13 @@ type ArtistLite = {
 
 export default async function PayPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ fout?: string }>
 }) {
   const { id } = await params
+  const { fout } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -63,7 +67,7 @@ export default async function PayPage({
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-5">
         {/* Betaalmethode + bevestigen */}
         <div className="lg:col-span-3">
-          <PayForm bookingId={booking.id} total={booking.total} />
+          <PayForm bookingId={booking.id} total={booking.total} fout={fout} />
 
           {/* Vertrouwen / zekerheid voor de klant */}
           <div className="mt-4 rounded-2xl border border-border bg-surface p-6">
@@ -76,10 +80,14 @@ export default async function PayPage({
             </ul>
           </div>
 
-          {/* Eerlijk zolang de echte betaalprovider nog niet live is. */}
-          <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
-            {p.demoNote}
-          </p>
+          {/* Eerlijk zolang we op oefengeld draaien. Zodra de live sleutel
+              erin staat verdwijnt deze balk vanzelf, zonder deploy. */}
+          {mollieTestmodus() && (
+            <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+              Testmodus. Er wordt geen echt geld afgeschreven en je boeking is
+              een oefening.
+            </p>
+          )}
         </div>
 
         {/* Samenvatting van de boeking */}

@@ -8,28 +8,25 @@ import { formatEuro } from "@/lib/utils/pricing"
 
 type Method = "ideal" | "card"
 
-// De Nederlandse iDEAL-banken. Puur voor de betaalbeleving; de simulatie doet
-// er nog niets mee, straks stuurt Stripe de klant door naar de juiste bank.
-const IDEAL_BANKS = [
-  "ABN AMRO",
-  "ASN Bank",
-  "bunq",
-  "ING",
-  "Knab",
-  "Rabobank",
-  "RegioBank",
-  "Revolut",
-  "SNS",
-  "Triodos Bank",
-  "Van Lanschot",
-]
+// =============================================================
+// De keuze tussen iDEAL en kaart, en verder niets.
+//
+// De lijst met Nederlandse banken die hier stond is weg. Die was voor de
+// simulatie en deed niets; erger nog, hij zou nu verouderen zodra er een bank
+// bijkomt of verdwijnt. Mollie toont zijn eigen banklijst en houdt die bij.
+//
+// De klant kiest hier alleen nog de soort betaling, zodat hij weet waar hij
+// aan toe is voordat hij de site verlaat.
+// =============================================================
 
 export function PayForm({
   bookingId,
   total,
+  fout,
 }: {
   bookingId: string
   total: number
+  fout?: string
 }) {
   const { t } = useT()
   const p = t.pay
@@ -62,32 +59,40 @@ export function PayForm({
         />
       </div>
 
-      {method === "ideal" && (
-        <label className="mt-4 flex flex-col gap-1.5">
-          <span className="text-sm font-medium">{p.chooseBank}</span>
-          <select name="ideal_bank" defaultValue="" className="input">
-            <option value="" disabled>
-              {p.selectBank}
-            </option>
-            {IDEAL_BANKS.map((bank) => (
-              <option key={bank} value={bank}>
-                {bank}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
+      <p className="mt-4 rounded-xl border border-border bg-surface-2 p-4 text-sm text-muted">
+        {method === "ideal"
+          ? "Je kiest je bank op de volgende pagina, bij onze betaalpartner."
+          : "Je vult je kaartgegevens in op de volgende pagina, bij onze betaalpartner. MyGigs ziet je kaartnummer niet."}
+      </p>
 
-      {method === "card" && (
-        <div className="mt-4 rounded-xl border border-dashed border-border bg-surface-2 p-4 text-sm text-muted">
-          {p.cardNote}
-        </div>
-      )}
+      {fout && <Foutmelding soort={fout} />}
 
       <SubmitButton total={total} />
 
       <p className="mt-3 text-center text-xs text-muted">{p.secureNote}</p>
     </form>
+  )
+}
+
+// Wat er mis kan gaan voordat de klant ook maar bij Mollie is. Bewust in
+// gewone taal: "provider" of "502" zegt een boeker niets.
+function Foutmelding({ soort }: { soort: string }) {
+  const tekst =
+    soort === "provider"
+      ? "Het lukte niet om de betaling te starten. Probeer het zo nog eens; er is niets afgeschreven."
+      : soort === "nietingesteld"
+        ? "Betalen kan op dit moment niet. We zijn ervan op de hoogte."
+        : soort === "opslaan"
+          ? "Er ging iets mis bij het vastleggen van je betaling. Probeer het opnieuw; er is niets afgeschreven."
+          : "Er ging iets mis. Probeer het opnieuw."
+
+  return (
+    <p
+      role="alert"
+      className="mt-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+    >
+      {tekst}
+    </p>
   )
 }
 

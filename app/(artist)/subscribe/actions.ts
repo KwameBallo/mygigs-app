@@ -29,14 +29,19 @@ export async function startSubscription(formData: FormData) {
     redirect("/login?next=/subscribe")
   }
 
-  // Stripe Checkout hoort hier zodra STRIPE_SECRET_KEY is gezet. Zonder Stripe
-  // starten we direct de 14-daagse proefperiode zodat de tool te gebruiken is.
+  // Hier hoort een incasso via Mollie te komen. Zolang die er niet is starten
+  // we direct de proefperiode van 14 dagen, zodat de DJ gewoon kan werken.
+  //
+  // Let op bij het bouwen daarvan: een abonnement is een terugkerende incasso
+  // en loopt dus langs een ander deel van Mollie dan een boeking. Niet in
+  // lib/payments.ts proppen; dat bestand gaat over geld van een boeker dat
+  // naar een DJ moet, en dat is hier niet aan de orde.
   const now = new Date()
   const trialEnd = addDays(now, TRIAL_DAYS)
   const periodEnd = addMonths(trialEnd, plan.months)
 
   // Abonnementsvelden zijn client-side niet meer wijzigbaar (kolomrechten):
-  // deze status wordt met de service-role gezet. Straks vervangt Stripe dit.
+  // deze status wordt met de service-role gezet. Straks zet Mollie dit.
   const admin = createAdminClient()
   const { error } = await admin
     .from("profiles")

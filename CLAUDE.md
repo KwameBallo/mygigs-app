@@ -2,7 +2,7 @@
 
 Two-sided marketplace (web + later mobile) that connects artists/DJs directly
 with bookers. Next.js (App Router) + TypeScript + Tailwind v4 + Supabase +
-Stripe Connect. Tagline: "Be the star you want to be." Theme: black + orange
+Mollie Connect. Tagline: "Be the star you want to be." Theme: black + orange
 (`#FF6A00`), dark, sleek.
 
 ## ABSOLUTE RULE: MyGigs is fully separate from Fresh Creatives / "Fresh Ones"
@@ -27,6 +27,9 @@ If you ever see `dstcrrylnjxjuqvmslaw` in a MyGigs context: STOP, it is wrong.
   client bundle, never committed.
 - Payment and booking logic runs server-side (route handlers / server actions /
   Edge Functions), never in the client.
+- A payment counts as paid only when Mollie says so, via the webhook in
+  `app/api/webhooks/mollie`. Never on the strength of a return URL: that proves
+  nothing, and a customer who pays and closes the browser never reaches it.
 - Generate and use DB types from the database (`types/database.ts`).
 - Keep the black/orange dark theme consistent.
 
