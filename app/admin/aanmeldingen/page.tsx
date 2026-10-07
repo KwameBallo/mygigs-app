@@ -145,10 +145,24 @@ export default async function AanmeldingenPage({
           </section>
 
           {/* Zelf een DJ toevoegen */}
-          <Panel title={d.addTitle} className="h-fit">
-            <p className="-mt-1 mb-4 text-sm text-muted">{d.addIntro}</p>
-            <AddLeadForm d={d} />
-          </Panel>
+          <div className="flex h-fit flex-col gap-4">
+            <Panel title={d.addTitle}>
+              <p className="-mt-1 mb-4 text-sm text-muted">{d.addIntro}</p>
+              <AddLeadForm d={d} />
+            </Panel>
+
+            {/* Meer dan een paar tegelijk: dan gaat het per lijst. */}
+            <Link
+              href="/admin/aanmeldingen/import"
+              className="rounded-2xl border border-border bg-surface p-4 transition hover:border-brand/50"
+            >
+              <p className="text-sm font-medium">Een hele lijst inlezen</p>
+              <p className="mt-1 text-sm text-muted">
+                Tot 200 DJ&apos;s tegelijk uit een CSV. Je ziet eerst wat er zou gebeuren,
+                daarna pas voeg je toe.
+              </p>
+            </Link>
+          </div>
         </div>
       </main>
     </div>

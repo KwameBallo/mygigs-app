@@ -120,7 +120,7 @@ meteen controleren of die knop klopt.
 
 ## Open punten
 
-Bijgewerkt 5 oktober 2026.
+Bijgewerkt 6 oktober 2026.
 
 | Punt | Stand |
 | --- | --- |
