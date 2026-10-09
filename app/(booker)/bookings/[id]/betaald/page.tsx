@@ -84,16 +84,10 @@ export default async function BetaaldPage({
 
         <div className="mt-6 flex flex-col gap-2">
           <Link
-            href={`/bookings/${id}`}
+            href="/bookings?paid=1"
             className="rounded-full bg-brand px-6 py-3 text-sm font-medium text-black transition hover:bg-brand-strong"
           >
-            Naar je boeking
-          </Link>
-          <Link
-            href="/bookings"
-            className="rounded-full border border-border px-6 py-3 text-sm font-medium transition hover:border-brand/50"
-          >
-            Al je boekingen
+            Naar je boekingen
           </Link>
         </div>
       </div>
