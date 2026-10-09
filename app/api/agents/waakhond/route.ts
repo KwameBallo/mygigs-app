@@ -48,6 +48,22 @@ export async function GET(request: Request) {
     let seen = 0
     let acted = 0
 
+    // Boekingen die al betaald zijn. Een mislukte of hangende betaalpoging op
+    // zo'n boeking is geen probleem meer: de klant heeft het daarna opnieuw en
+    // wél gedaan. Hiermee blijft een afgeronde boeking niet als alarm staan.
+    async function alBetaald(
+      bookingIds: (string | null)[],
+    ): Promise<Set<string>> {
+      const ids = [...new Set(bookingIds.filter((x): x is string => !!x))]
+      if (ids.length === 0) return new Set<string>()
+      const { data } = await admin
+        .from("bookings")
+        .select("id")
+        .in("id", ids)
+        .in("status", ["paid", "completed"])
+      return new Set((data ?? []).map((b) => b.id))
+    }
+
     // ---------------------------------------------------------
     // 1. Aanvragen die te lang wachten
     // ---------------------------------------------------------
@@ -83,7 +99,7 @@ export async function GET(request: Request) {
     // ---------------------------------------------------------
     // 2. Betaling gestart maar niet afgerond
     // ---------------------------------------------------------
-    const betaalMinuten = ctx.num("unfinished_payment_minutes", 45)
+    const betaalMinuten = ctx.num("unfinished_payment_minutes", 60)
     const { data: hangend } = await admin
       .from("payments")
       .select("id, booking_id, amount, created_at, provider")
@@ -92,19 +108,24 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: true })
       .limit(50)
 
+    const hangendBetaald = await alBetaald(
+      (hangend ?? []).map((p) => p.booking_id),
+    )
     const hangendKeys: string[] = []
     for (const p of hangend ?? []) {
+      // Boeking is intussen tóch betaald (nieuwe poging gelukt): geen probleem.
+      if (p.booking_id && hangendBetaald.has(p.booking_id)) continue
       seen++
       const key = `payment_stuck:${p.id}`
       hangendKeys.push(key)
       if (!ctx.allowAction()) break
       await ctx.alert({
         key,
-        level: "critical",
-        title: "Betaling blijft hangen",
+        level: "warn",
+        title: "Betaling niet afgerond",
         detail: `Bedrag ${Number(p.amount).toFixed(2)} euro via ${
           p.provider ?? "onbekend"
-        }, gestart op ${datumNL(p.created_at)}. Controleer of het geld is aangekomen.`,
+        }, gestart op ${datumNL(p.created_at)}. Meestal een afgebroken betaling; controleer of het geld tóch is aangekomen.`,
         targetType: "booking",
         targetId: p.booking_id ?? undefined,
       })
@@ -122,19 +143,25 @@ export async function GET(request: Request) {
       .gt("created_at", geleden(7 * 24 * uur))
       .limit(50)
 
+    const misluktBetaald = await alBetaald(
+      (misluktBetaling ?? []).map((p) => p.booking_id),
+    )
     const misluktKeys: string[] = []
     for (const p of misluktBetaling ?? []) {
+      // Boeking is daarna alsnog betaald: een mislukte poging ervoor is geen
+      // probleem meer. Zo verdwijnt ook een eerdere valse melding vanzelf.
+      if (p.booking_id && misluktBetaald.has(p.booking_id)) continue
       seen++
       const key = `payment_failed:${p.id}`
       misluktKeys.push(key)
       if (!ctx.allowAction()) break
       await ctx.alert({
         key,
-        level: "critical",
-        title: "Betaling mislukt",
+        level: "warn",
+        title: "Betaalpoging mislukt",
         detail: `Bedrag ${Number(p.amount).toFixed(2)} euro, op ${datumNL(
           p.created_at,
-        )}. De boeking heeft geen geldige betaling.`,
+        )}. De klant kan opnieuw betalen; onderneem alleen actie als het blijft mislukken.`,
         targetType: "booking",
         targetId: p.booking_id ?? undefined,
       })
