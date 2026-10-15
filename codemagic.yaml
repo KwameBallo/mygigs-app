@@ -25,9 +25,8 @@ workflows:
     integrations:
       app_store_connect: MyGigs ASC Key
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.mygigs.app
+      groups:
+        - signing
       node: 20
       xcode: latest
       cocoapods: default
@@ -43,7 +42,10 @@ workflows:
       - name: Ondertekening instellen en zo nodig aanmaken
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "com.mygigs.app" --type IOS_APP_STORE --create
+          app-store-connect fetch-signing-files "com.mygigs.app" \
+            --type IOS_APP_STORE \
+            --certificate-key="@env:CERTIFICATE_PRIVATE_KEY" \
+            --create
           keychain add-certificates
           xcode-project use-profiles
       - name: Bouw de ipa
