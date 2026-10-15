@@ -13,7 +13,7 @@ import { houseRules, housePromises } from "@/lib/rules"
 // omdat twaalf keer doorrammen in twee seconden geen "gelezen" is. Wie
 // terugbladert houdt zijn ontgrendelde regels: alleen de eerste keer telt.
 
-const DWELL_MS = 1500
+const DWELL_MS = 600
 
 type Slide =
   | { kind: "intro" }
