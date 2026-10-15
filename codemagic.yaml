@@ -35,8 +35,9 @@ workflows:
         script: npm ci
       - name: iOS project aanmaken en synchroniseren
         script: |
-          npx cap add ios || true
+          npx cap add ios
           npx cap sync ios
+          cd ios/App && pod install
       - name: App icoon en splash erop zetten
         script: npx @capacitor/assets generate --ios || true
       - name: Ondertekening instellen en zo nodig aanmaken
