@@ -1,0 +1,56 @@
+# =============================================================
+# Codemagic: de iOS app van MyGigs bouwen in de cloud, zonder eigen Mac.
+#
+# Wat deze workflow doet:
+#   1. haalt de code uit GitHub
+#   2. installeert de npm packages
+#   3. maakt het iOS project aan met Capacitor en synchroniseert het
+#   4. zet het app icoon en de splash uit de map assets erop
+#   5. bouwt en ondertekent de ipa
+#   6. stuurt de build naar TestFlight in App Store Connect
+#
+# Ondertekenen gaat via een App Store Connect API sleutel. Die voeg je in
+# Codemagic toe onder Teams, Integrations, App Store Connect, en je geeft 'm
+# de naam die hieronder bij integrations staat: MyGigs ASC Key.
+#
+# De eerste build kan op een klein detail struikelen. Dat is normaal bij iOS
+# in de cloud. Stuur dan de laatste regels van het bouwlog, dan pas ik dit aan.
+# =============================================================
+
+workflows:
+  ios-testflight:
+    name: MyGigs iOS naar TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: MyGigs ASC Key
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.mygigs.app
+      node: 20
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Installeer npm packages
+        script: npm ci
+      - name: iOS project aanmaken en synchroniseren
+        script: |
+          npx cap add ios || true
+          npx cap sync ios
+      - name: App icoon en splash erop zetten
+        script: npx @capacitor/assets generate --ios || true
+      - name: Ondertekenprofielen ophalen
+        script: xcode-project use-profiles
+      - name: Bouw de ipa
+        script: |
+          xcode-project build-ipa \
+            --project "ios/App/App.xcodeproj" \
+            --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
