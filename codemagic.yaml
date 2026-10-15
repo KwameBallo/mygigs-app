@@ -37,7 +37,6 @@ workflows:
         script: |
           npx cap add ios
           npx cap sync ios
-          cd ios/App && pod install
       - name: App icoon en splash erop zetten
         script: npx @capacitor/assets generate --ios || true
       - name: Ondertekening instellen en zo nodig aanmaken
@@ -52,7 +51,7 @@ workflows:
       - name: Bouw de ipa
         script: |
           xcode-project build-ipa \
-            --workspace "ios/App/App.xcworkspace" \
+            --project "ios/App/App.xcodeproj" \
             --scheme "App"
     artifacts:
       - build/ios/ipa/*.ipa
