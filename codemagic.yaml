@@ -40,12 +40,16 @@ workflows:
           npx cap sync ios
       - name: App icoon en splash erop zetten
         script: npx @capacitor/assets generate --ios || true
-      - name: Ondertekenprofielen ophalen
-        script: xcode-project use-profiles
+      - name: Ondertekening instellen en zo nodig aanmaken
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "com.mygigs.app" --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
       - name: Bouw de ipa
         script: |
           xcode-project build-ipa \
-            --project "ios/App/App.xcodeproj" \
+            --workspace "ios/App/App.xcworkspace" \
             --scheme "App"
     artifacts:
       - build/ios/ipa/*.ipa
