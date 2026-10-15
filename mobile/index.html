@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>MyGigs</title>
+    <style>
+      :root { color-scheme: dark; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #0A0A0B;
+        color: #F5F5F7;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+      .wrap {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px;
+      }
+      .mark { width: 56px; height: 56px; margin-bottom: 20px; }
+      h1 { font-size: 22px; font-weight: 700; margin: 0 0 8px; }
+      h1 .g { color: #FF6500; }
+      p { font-size: 14px; color: #A1A1AA; margin: 0 0 20px; max-width: 280px; }
+      button {
+        appearance: none;
+        border: none;
+        border-radius: 999px;
+        background: #FF6500;
+        color: #0A0A0B;
+        font-size: 15px;
+        font-weight: 700;
+        padding: 12px 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <svg class="mark" viewBox="-16 -16 32 32" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,-12 L4.2,-4.2 L12,0 L4.2,4.2 L0,12 L-4.2,4.2 L-12,0 L-4.2,-4.2 Z" fill="#FF6500" />
+      </svg>
+      <h1>My<span class="g">Gigs</span></h1>
+      <p>Geen verbinding. Controleer je internet en probeer het opnieuw.</p>
+      <button onclick="location.reload()">Opnieuw proberen</button>
+    </div>
+  </body>
+</html>
