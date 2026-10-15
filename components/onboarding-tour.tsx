@@ -267,9 +267,11 @@ export function OnboardingTour({
     : null
 
   const vw = typeof window !== "undefined" ? window.innerWidth : 1200
+  const isMobile = vw < 640
   const cw = Math.min(340, vw - 28)
   let callout: CSSProperties
-  if (rect) {
+  if (rect && !isMobile) {
+    // Desktop: naast het element, daar is ruimte zat.
     const left = Math.min(Math.max(rect.left, 14), vw - cw - 14)
     callout = above
       ? {
@@ -287,12 +289,15 @@ export function OnboardingTour({
           zIndex: 100001,
         }
   } else {
+    // Telefoon en terugval: een vaste balk onderaan. Die beweegt niet mee met
+    // het scrollen en ligt nooit over het uitgelichte element heen.
     callout = {
       position: "fixed",
-      left: "50%",
-      bottom: "9vh",
-      transform: "translateX(-50%)",
-      width: cw,
+      left: 12,
+      right: 12,
+      bottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)",
+      maxHeight: "68vh",
+      overflowY: "auto",
       zIndex: 100001,
     }
   }
