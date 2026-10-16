@@ -100,7 +100,10 @@ export function AvatarUploader({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-4">
-        <div className="flex h-20 w-20 flex-none items-center justify-center overflow-hidden rounded-full border border-border bg-surface-2 text-xl font-semibold text-muted">
+        <div
+          data-tour="profile-photo"
+          className="flex h-20 w-20 flex-none items-center justify-center overflow-hidden rounded-full border border-border bg-surface-2 text-xl font-semibold text-muted"
+        >
           {url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt={p.avatarAlt} className="h-full w-full object-cover" />

@@ -315,7 +315,8 @@ export function OnboardingTour({
             top: spot.top,
             width: spot.width,
             height: spot.height,
-            borderRadius: 14,
+            borderRadius:
+              rect && Math.abs(rect.width - rect.height) <= 6 ? 9999 : 14,
             outline: "2px solid var(--brand)",
             transition: "left .25s, top .25s, width .25s, height .25s",
           }}
