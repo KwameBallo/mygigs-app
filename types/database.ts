@@ -382,6 +382,7 @@ export type Database = {
       artists: {
         Row: {
           act_type: Database["public"]["Enums"]["act_type"]
+          auto_accept: boolean
           avatar_blur: string | null
           avatar_updated_at: string | null
           avatar_url: string | null
@@ -429,6 +430,7 @@ export type Database = {
         }
         Insert: {
           act_type?: Database["public"]["Enums"]["act_type"]
+          auto_accept?: boolean
           avatar_blur?: string | null
           avatar_updated_at?: string | null
           avatar_url?: string | null
@@ -476,6 +478,7 @@ export type Database = {
         }
         Update: {
           act_type?: Database["public"]["Enums"]["act_type"]
+          auto_accept?: boolean
           avatar_blur?: string | null
           avatar_updated_at?: string | null
           avatar_url?: string | null
