@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { priceBreakdown, VAT_RATE, formatEuro } from "@/lib/utils/pricing"
 import { getI18n } from "@/lib/i18n"
-import { sendNewRequestToDJ, getUserEmail } from "@/lib/email"
+import { sendNewRequestToDJ, sendAcceptedToBooker, getUserEmail } from "@/lib/email"
 import { sendPushToUser } from "@/lib/push"
 import { rateLimit } from "@/lib/ratelimit"
 import { pdokLookup } from "@/lib/geo"
@@ -81,7 +81,7 @@ export async function createBooking(formData: FormData) {
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("base_gage, equipment_prices, user_id, stage_name")
+    .select("base_gage, equipment_prices, user_id, stage_name, auto_accept")
     .eq("id", artistId)
     .maybeSingle()
 
@@ -198,7 +198,7 @@ export async function createBooking(formData: FormData) {
       ? Math.round(grossIncl * (1 + VAT_RATE) * 100) / 100
       : grossIncl
 
-  const { error } = await supabase.from("bookings").insert({
+  const { data: newBooking, error } = await supabase.from("bookings").insert({
     artist_id: artistId,
     booker_id: user.id,
     event_date: eventDate,
@@ -222,14 +222,64 @@ export async function createBooking(formData: FormData) {
     vat_number: vatNumber,
     invoice_email: invoiceEmail,
     equipment_items: equipmentItems,
-  })
+  }).select("id").single()
 
-  if (error) {
-    console.error("createBooking failed:", error.message)
+  if (error || !newBooking) {
+    console.error("createBooking failed:", error?.message)
     const { locale } = await getI18n()
     redirect(
       `/artists/${artistId}?error=${encodeURIComponent(dict[locale].bookingFailed)}`,
     )
+  }
+
+  // Test-DJ (bot): accepteert meteen en stuurt een berichtje in de chat. De
+  // boeker krijgt de accept-mail (met betaal-knop) en kan door. Geen
+  // aanvraagmail naar de bot, die heeft geen echt mailadres.
+  if (artist.auto_accept) {
+    const bot = createAdminClient()
+    await bot.from("bookings").update({ status: "accepted" }).eq("id", newBooking.id)
+    const { data: conv } = await bot
+      .from("conversations")
+      .insert({ artist_id: artistId, booker_id: user.id, booking_id: newBooking.id })
+      .select("id")
+      .single()
+    if (conv?.id && artist.user_id) {
+      await bot.from("messages").insert({
+        conversation_id: conv.id,
+        sender_id: artist.user_id,
+        body: "Bedankt voor je boeking! Ik heb 'm bevestigd. Tot snel op je event.",
+      })
+    }
+    try {
+      const { locale } = await getI18n()
+      const dateLocale = locale === "nl" ? "nl-NL" : "en-GB"
+      const bookerEmail = await getUserEmail(user.id)
+      if (bookerEmail) {
+        await sendAcceptedToBooker({
+          to: bookerEmail,
+          locale,
+          djName: artist.stage_name,
+          when: eventDate
+            ? new Date(eventDate).toLocaleDateString(dateLocale, {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })
+            : "",
+          place: [city, venue].filter(Boolean).join(" · "),
+          amount: formatEuro(total),
+        })
+      }
+      await sendPushToUser(user.id, {
+        title: `${artist.stage_name} accepteerde je boeking`,
+        body: "Je kunt nu betalen en een berichtje sturen.",
+        url: "/bookings",
+      })
+    } catch (e) {
+      console.error("auto-accept mail/push mislukt:", e)
+    }
+    redirect("/bookings?created=1&accepted=1")
   }
 
   // Nieuwe-aanvraag-mail naar de DJ. Best-effort, mag de boeking niet blokkeren.
