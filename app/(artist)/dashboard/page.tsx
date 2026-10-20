@@ -4,11 +4,17 @@ import { Stars } from "@/components/stars"
 import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
 import { BookingsBoard, type DashBooking } from "./bookings-board"
+import { connectKlaar } from "@/lib/mollie-connect"
 import { BookingsMapSection } from "./bookings-map-section"
 import { DjTierBadge } from "@/components/dj-tier-badge"
 import { computeDjTier, startOfMonthISO } from "@/lib/dj-tier"
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ connect?: string }>
+}) {
+  const { connect } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -132,6 +138,54 @@ export default async function DashboardPage() {
           {d.viewPublic}
         </Link>
       </div>
+
+      {/* Uitbetalen via Mollie: koppelen en status. */}
+      {connect === "gelukt" && (
+        <div className="mt-6 rounded-2xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+          Je Mollie-account is gekoppeld.{" "}
+          {artist.can_receive_payments
+            ? "Je kunt nu uitbetaald worden."
+            : "Mollie controleert je gegevens nog."}
+        </div>
+      )}
+      {(connect === "mislukt" || connect === "geweigerd") && (
+        <div className="mt-6 rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          Koppelen met Mollie is niet gelukt. Probeer het opnieuw.
+        </div>
+      )}
+      {connectKlaar() && !artist.mollie_organization_id && (
+        <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/5 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold">Koppel je Mollie-account</p>
+              <p className="mt-0.5 text-sm text-muted">
+                Zonder gekoppeld Mollie-account kun je na een optreden niet
+                uitbetaald worden.
+              </p>
+            </div>
+            <a
+              href="/api/connect/mollie/start"
+              className="flex-none rounded-full bg-brand px-4 py-2 text-sm font-medium text-black transition hover:bg-brand-strong"
+            >
+              Koppel Mollie
+            </a>
+          </div>
+        </div>
+      )}
+      {connectKlaar() &&
+        artist.mollie_organization_id &&
+        !artist.can_receive_payments && (
+          <div className="mt-6 rounded-2xl border border-brand/40 bg-brand/5 px-4 py-3 text-sm text-muted">
+            Je Mollie-account is gekoppeld. De gegevens worden nog door Mollie
+            gecontroleerd voordat je uitbetaald kunt worden.
+          </div>
+        )}
+      {connectKlaar() && artist.can_receive_payments && (
+        <div className="mt-6 flex items-center gap-2 rounded-2xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+          <span className="h-2 w-2 rounded-full bg-green-400" /> Mollie gekoppeld,
+          je kunt uitbetaald worden.
+        </div>
+      )}
 
       {/* Slanke aansporing: alleen als de agenda nog dicht staat (dan kom je
           niet in beeld bij boekers). Verdiensten en cijfers staan bij Verdiensten. */}
