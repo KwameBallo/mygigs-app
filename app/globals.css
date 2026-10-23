@@ -27,12 +27,15 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   overscroll-behavior: none;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 * {
   -webkit-tap-highlight-color: transparent;

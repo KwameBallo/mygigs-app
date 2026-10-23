@@ -260,7 +260,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <main className="min-h-0 flex-1 overflow-y-auto">
+        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
           {profile && <PushOptin />}
           {children}
         </main>
