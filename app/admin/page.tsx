@@ -186,6 +186,12 @@ export default async function AdminPage({
             {d.leadsLink}
           </Link>
           <Link
+            href="/admin/meldingen"
+            className="rounded-full border border-border px-3 py-1.5 transition hover:border-brand/50"
+          >
+            {locale === "nl" ? "Meldingen" : "Reports"}
+          </Link>
+          <Link
             href="/discover"
             className="rounded-full border border-border px-3 py-1.5 transition hover:border-brand/50"
           >

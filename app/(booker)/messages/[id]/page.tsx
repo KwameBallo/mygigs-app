@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server"
 import { getI18n } from "@/lib/i18n"
 import { sendMessage } from "./actions"
 import { MarkRead } from "./mark-read"
+import { ReportBlock } from "@/components/report-block"
+import { blockedBetween, blocksByViewer } from "@/lib/blocks"
 
 export default async function ThreadPage({
   params,
@@ -21,7 +23,7 @@ export default async function ThreadPage({
 
   if (!user) redirect(`/login?next=/messages/${id}`)
 
-  const { t } = await getI18n()
+  const { locale, t } = await getI18n()
   const mt = t.messages
 
   const { data: conv } = await supabase
@@ -49,6 +51,16 @@ export default async function ThreadPage({
     ? (booker?.full_name ?? mt.fallbackBooker)
     : (artist?.stage_name ?? mt.fallbackDj)
 
+  // Tegenpartij en blokkade-stand (voor melden/blokkeren en het verbergen van
+  // het invoerveld als er een blokkade is).
+  const otherUserId = iAmArtist ? conv.booker_id : (artist?.user_id ?? null)
+  const [blocked, iBlocked] = otherUserId
+    ? await Promise.all([
+        blockedBetween(user.id, otherUserId),
+        blocksByViewer(user.id, otherUserId),
+      ])
+    : [false, false]
+
   const { data: messages } = await supabase
     .from("messages")
     .select("id, body, sender_id, created_at")
@@ -68,6 +80,17 @@ export default async function ThreadPage({
           ←
         </Link>
         <h1 className="text-lg font-semibold">{otherName}</h1>
+        {otherUserId && (
+          <div className="ml-auto">
+            <ReportBlock
+              locale={locale}
+              targetType="conversation"
+              targetId={id}
+              reportedUserId={otherUserId}
+              initialBlocked={iBlocked}
+            />
+          </div>
+        )}
       </div>
 
       {warn === "contact" && (
@@ -103,25 +126,33 @@ export default async function ThreadPage({
         )}
       </div>
 
-      <form
-        action={sendMessage}
-        className="flex items-center gap-2 border-t border-border py-3"
-      >
-        <input type="hidden" name="conversation_id" value={id} />
-        <input
-          name="body"
-          required
-          autoComplete="off"
-          placeholder={mt.inputPlaceholder}
-          className="input h-11 flex-1"
-        />
-        <button
-          type="submit"
-          className="h-11 rounded-full bg-brand px-5 font-medium text-black transition hover:bg-brand-strong"
+      {blocked ? (
+        <div className="border-t border-border py-4 text-center text-sm text-muted">
+          {locale === "nl"
+            ? "Je kunt hier geen berichten sturen omdat er een blokkade is."
+            : "You cannot send messages here because of a block."}
+        </div>
+      ) : (
+        <form
+          action={sendMessage}
+          className="flex items-center gap-2 border-t border-border py-3"
         >
-          {mt.send}
-        </button>
-      </form>
+          <input type="hidden" name="conversation_id" value={id} />
+          <input
+            name="body"
+            required
+            autoComplete="off"
+            placeholder={mt.inputPlaceholder}
+            className="input h-11 flex-1"
+          />
+          <button
+            type="submit"
+            className="h-11 rounded-full bg-brand px-5 font-medium text-black transition hover:bg-brand-strong"
+          >
+            {mt.send}
+          </button>
+        </form>
+      )}
       <p className="pb-3 text-center text-[11px] text-muted">{mt.footerNote}</p>
     </div>
   )

@@ -11,6 +11,8 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { getViewer } from "@/lib/auth"
 import { formatFollowers } from "@/lib/utils/format"
 import { getI18n } from "@/lib/i18n"
+import { ReportBlock } from "@/components/report-block"
+import { blocksByViewer } from "@/lib/blocks"
 import { dict } from "./i18n"
 
 type Dict = (typeof dict)["nl"]
@@ -69,6 +71,20 @@ export default async function ArtistPage({
     end: r.end_time ?? null,
   }))
 
+  // Melden/blokkeren (UGC-moderatie). Alleen voor een ingelogde boeker die niet
+  // de DJ zelf is.
+  const { data: artistUserRow } = await supabase
+    .from("artists")
+    .select("user_id")
+    .eq("id", artist.id)
+    .maybeSingle()
+  const artistUserId = artistUserRow?.user_id ?? null
+  const canModerate = !!profile && !!artistUserId && profile.id !== artistUserId
+  const blockedArtist =
+    canModerate && artistUserId
+      ? await blocksByViewer(profile!.id, artistUserId)
+      : false
+
   // Reeds bevestigde boekingen (alleen tijden, geen PII) per dag, zodat de boeker
   // ziet welke tijdvakken al bezet zijn en die niet dubbel boekt.
   const { data: djBookings } = await supabase
@@ -93,7 +109,11 @@ export default async function ArtistPage({
         ? d.errAddress
         : error === "time"
           ? d.errTime
-          : null
+          : error === "blocked"
+            ? locale === "nl"
+              ? "Je kunt deze DJ niet boeken omdat er een blokkade is."
+              : "You cannot book this DJ because of a block."
+            : null
 
   // Btw-status van de DJ (via service-role; artist_billing is owner-only). Bepaalt
   // of een zakelijke boeking btw krijgt, nodig voor de juiste prijsweergave.
@@ -184,6 +204,17 @@ export default async function ArtistPage({
                 )}
               </div>
               <div className="p-6">
+                {canModerate && (
+                  <div className="mb-3 flex justify-end">
+                    <ReportBlock
+                      locale={locale}
+                      targetType="artist"
+                      targetId={artist.id}
+                      reportedUserId={artistUserId}
+                      initialBlocked={blockedArtist}
+                    />
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-3">
                   <h1 className="text-3xl font-semibold tracking-tight">
                     {artist.stage_name}

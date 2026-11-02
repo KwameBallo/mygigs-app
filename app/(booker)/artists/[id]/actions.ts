@@ -8,6 +8,7 @@ import { getI18n } from "@/lib/i18n"
 import { sendNewRequestToDJ, sendAcceptedToBooker, getUserEmail } from "@/lib/email"
 import { sendPushToUser } from "@/lib/push"
 import { rateLimit } from "@/lib/ratelimit"
+import { blockedBetween } from "@/lib/blocks"
 import { pdokLookup } from "@/lib/geo"
 import {
   rangeHours,
@@ -87,6 +88,11 @@ export async function createBooking(formData: FormData) {
 
   if (!artist) {
     redirect(`/artists/${artistId}?error=notfound`)
+  }
+
+  // Blokkade: als DJ en boeker elkaar geblokkeerd hebben, geen boeking mogelijk.
+  if (artist.user_id && (await blockedBetween(user.id, artist.user_id))) {
+    redirect(`/artists/${artistId}?error=blocked`)
   }
 
   // Agenda-check: de gekozen datum moet bij de DJ beschikbaar zijn.

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { scanForContactInfo } from "@/lib/utils/contact-guard"
+import { blockedBetween } from "@/lib/blocks"
 import { rateLimit } from "@/lib/ratelimit"
 import { sendFlagAlertToSupport } from "@/lib/email"
 import { logAudit } from "@/lib/audit"
@@ -151,10 +152,18 @@ export async function sendMessage(formData: FormData) {
   // flaggen en het slachtoffer laten bestraffen (FIX #8).
   const { data: conv } = await supabase
     .from("conversations")
-    .select("id")
+    .select("id, booker_id, artists(user_id)")
     .eq("id", conversationId)
     .maybeSingle()
   if (!conv) return
+
+  // Blokkade: heeft een van beide de ander geblokkeerd, dan geen berichten.
+  const artistUserId =
+    (conv.artists as { user_id: string | null } | null)?.user_id ?? null
+  const other = user.id === conv.booker_id ? artistUserId : conv.booker_id
+  if (other && (await blockedBetween(user.id, other))) {
+    redirect(`/messages/${conversationId}`)
+  }
 
   // MyGigs blijft exclusief: contactgegevens delen wordt geblokkeerd én geflagd.
   const scan = scanForContactInfo(body)
