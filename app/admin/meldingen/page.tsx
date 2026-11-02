@@ -49,7 +49,27 @@ export default async function MeldingenPage() {
     return null
   }
 
-  const openCount = list.filter((r) => r.status === "open").length
+  // Telling per categorie en status, over de volledige tabel, voor analyse.
+  const { data: statRows } = await admin
+    .from("reports")
+    .select("reason, status, created_at")
+  const stats = statRows ?? []
+  const monthStart = new Date()
+  monthStart.setDate(1)
+  monthStart.setHours(0, 0, 0, 0)
+  const monthStartISO = monthStart.toISOString()
+  const total = stats.length
+  const openCount = stats.filter((r) => r.status === "open").length
+  const thisMonth = stats.filter((r) => r.created_at >= monthStartISO).length
+  const byReason = new Map<string, number>()
+  for (const r of stats) byReason.set(r.reason, (byReason.get(r.reason) ?? 0) + 1)
+  const reasonOrder = ["inappropriate", "harassment", "spam", "scam", "other"]
+  const reasonCounts = [
+    ...reasonOrder.map((k) => ({ key: k, n: byReason.get(k) ?? 0 })),
+    ...[...byReason.keys()]
+      .filter((k) => !reasonOrder.includes(k))
+      .map((k) => ({ key: k, n: byReason.get(k) ?? 0 })),
+  ]
 
   const reasonLabel: Record<string, [string, string]> = {
     inappropriate: ["Ongepaste inhoud", "Inappropriate content"],
@@ -81,6 +101,33 @@ export default async function MeldingenPage() {
       </header>
 
       <main className="mx-auto w-full max-w-4xl px-4 py-6">
+        <div className="mb-5 grid grid-cols-3 gap-3">
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <p className="text-2xl font-semibold">{total}</p>
+            <p className="text-xs text-muted">{nl ? "Totaal" : "Total"}</p>
+          </div>
+          <div className="rounded-2xl border border-brand/40 bg-brand/5 p-4">
+            <p className="text-2xl font-semibold text-brand">{openCount}</p>
+            <p className="text-xs text-muted">{nl ? "Open" : "Open"}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <p className="text-2xl font-semibold">{thisMonth}</p>
+            <p className="text-xs text-muted">{nl ? "Deze maand" : "This month"}</p>
+          </div>
+        </div>
+        {total > 0 && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            {reasonCounts.map((rc) => (
+              <span
+                key={rc.key}
+                className="rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs text-muted"
+              >
+                {reasonText(rc.key)}:{" "}
+                <span className="font-semibold text-foreground">{rc.n}</span>
+              </span>
+            ))}
+          </div>
+        )}
         {list.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border bg-surface p-10 text-center text-sm text-muted">
             {nl ? "Geen meldingen." : "No reports."}

@@ -137,6 +137,49 @@ export async function sendFlagAlertToSupport(opts: {
   })
 }
 
+// Alert naar support zodra een gebruiker iets of iemand meldt (UGC-moderatie).
+export async function sendReportAlertToSupport(opts: {
+  reason: string
+  targetType: string
+  reporterName: string
+  reportedName?: string
+  details?: string | null
+}) {
+  const to = process.env.SUPPORT_EMAIL || "info@mygigs.nl"
+  const rows =
+    row("Reden", opts.reason, true) +
+    row("Soort", opts.targetType) +
+    row("Melder", opts.reporterName) +
+    (opts.reportedName ? row("Gemeld", opts.reportedName) : "") +
+    (opts.details ? row("Toelichting", opts.details) : "")
+  return sendEmail({
+    to,
+    subject: `Nieuwe melding: ${opts.reason}`,
+    html: shell("Nieuwe melding ontvangen", rows, {
+      href: `${siteUrl()}/admin/meldingen`,
+      label: "Bekijk meldingen",
+    }),
+  })
+}
+
+// Automatische bevestiging naar de melder, zodat die weet dat het is ontvangen.
+export async function sendReportConfirmation(opts: {
+  to: string
+  locale: "nl" | "en"
+}) {
+  const nl = opts.locale !== "en"
+  const title = nl ? "We hebben je melding ontvangen" : "We received your report"
+  const line = nl
+    ? "Bedankt voor je melding. Ons team bekijkt het en onderneemt waar nodig actie. Je hoeft zelf niets te doen."
+    : "Thanks for your report. Our team will review it and take action where needed. You do not need to do anything."
+  const rows = `<tr><td colspan="2" style="padding:5px 0;color:#cfcfd4">${esc(line)}</td></tr>`
+  return sendEmail({
+    to: opts.to,
+    subject: nl ? "Je melding is ontvangen" : "Your report was received",
+    html: shell(title, rows, { href: siteUrl(), label: "Open MyGigs" }),
+  })
+}
+
 // Betaalbewijs naar de (hoofd)boeker na een geslaagde betaling.
 export async function sendPaymentReceipt(opts: {
   to: string

@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { rateLimit } from "@/lib/ratelimit"
+import { getI18n } from "@/lib/i18n"
+import {
+  sendReportAlertToSupport,
+  sendReportConfirmation,
+} from "@/lib/email"
 
 // Server-acties voor melden en blokkeren (UGC-moderatie, Apple 1.2). Schrijven
 // via de service-role zodat we niet afhankelijk zijn van kolomrechten.
@@ -45,7 +50,41 @@ export async function submitReport(input: {
     reason,
     details,
   })
-  return { ok: !error }
+  if (error) return { ok: false }
+
+  // Notificaties: alert naar support + automatische bevestiging naar de melder.
+  // Best-effort, mag het melden nooit laten mislukken.
+  try {
+    const { data: me } = await admin
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", user.id)
+      .maybeSingle()
+    let reportedName: string | undefined
+    if (input.reportedUserId) {
+      const { data: rp } = await admin
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", input.reportedUserId)
+        .maybeSingle()
+      reportedName = rp?.full_name ?? rp?.email ?? undefined
+    }
+    const { locale } = await getI18n()
+    await sendReportAlertToSupport({
+      reason,
+      targetType: input.targetType,
+      reporterName: me?.full_name ?? me?.email ?? user.email ?? user.id.slice(0, 8),
+      reportedName,
+      details,
+    })
+    if (user.email) {
+      await sendReportConfirmation({ to: user.email, locale })
+    }
+  } catch (e) {
+    console.error("melding-notificatie mislukt:", e)
+  }
+
+  return { ok: true }
 }
 
 export async function toggleBlock(input: {
