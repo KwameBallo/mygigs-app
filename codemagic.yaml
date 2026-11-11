@@ -38,6 +38,8 @@ workflows:
           npx cap add ios
           npx cap sync ios
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "ios/App/App/Info.plist" 2>/dev/null || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" "ios/App/App/Info.plist"
+          # iPhone-only: device family naar 1 (geen iPad). Voorlopig, iPad komt later terug.
+          sed -i '' -E 's/TARGETED_DEVICE_FAMILY = "?[0-9, ]+"?;/TARGETED_DEVICE_FAMILY = "1";/g' "ios/App/App.xcodeproj/project.pbxproj"
       - name: App icoon en splash erop zetten
         script: npx @capacitor/assets generate --ios || true
       - name: Ondertekening instellen en zo nodig aanmaken
