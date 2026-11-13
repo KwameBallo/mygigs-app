@@ -10,6 +10,7 @@ import { LogoutIcon, Icon } from "@/components/icons"
 import { AiAssistant } from "@/components/ai-assistant"
 import { OnboardingTour } from "@/components/onboarding-tour"
 import { PushOptin } from "@/components/push-optin"
+import { NativePush } from "@/components/native-push"
 import { getProfile } from "@/lib/auth"
 import { getUnreadCount } from "@/lib/data/messages"
 import { getPendingBookingCount } from "@/lib/data/bookings"
@@ -262,6 +263,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
         <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
           {profile && <PushOptin />}
+          {profile && <NativePush />}
           {children}
         </main>
 
