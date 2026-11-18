@@ -334,7 +334,7 @@ export default async function ArtistPage({
             )}
           </div>
 
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+          <aside className="lg:self-start">
             <BookForm
               artistId={artist.id}
               baseGage={artist.base_gage}
