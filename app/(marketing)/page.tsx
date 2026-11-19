@@ -7,7 +7,7 @@ import { getProfile } from "@/lib/auth"
 import { getI18n } from "@/lib/i18n"
 
 export default async function Home() {
-  const [artists, profile, { t }] = await Promise.all([
+  const [artists, profile, { locale, t }] = await Promise.all([
     getArtists(),
     getProfile(),
     getI18n(),
@@ -18,6 +18,14 @@ export default async function Home() {
   // bezoekers; ingelogde klanten regelen DJ-worden via de aanvraag.
   const showDjRecruitment = !profile
   const isArtist = profile?.role === "artist" || profile?.role === "both"
+
+  // "Ik ben DJ": een DJ gaat naar zijn dashboard, een ingelogde klant naar de
+  // aanvraag om DJ te worden, een uitgelogde bezoeker naar aanmelden als DJ.
+  const djHref = isArtist
+    ? "/dashboard"
+    : profile
+      ? "/dj-aanvraag"
+      : "/login?mode=signup&type=dj"
 
   return (
     <>
@@ -31,65 +39,19 @@ export default async function Home() {
           <h1 className="text-balance text-2xl font-semibold leading-tight tracking-tight sm:text-4xl">
             Be the <span className="text-brand">star</span> you want to be.
           </h1>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            {isArtist ? (
-              <Link
-                href="/dashboard"
-                className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
-              >
-                {h.toDashboard}
-              </Link>
-            ) : (
-              <Link
-                href="/discover"
-                className="rounded-full bg-brand px-7 py-3.5 font-medium text-black transition hover:bg-brand-strong"
-              >
-                {h.bookDj}
-              </Link>
-            )}
-            {showDjRecruitment && (
-              <Link
-                href="/login?mode=signup&type=dj"
-                className="rounded-full border border-border bg-surface px-7 py-3.5 font-medium transition hover:border-brand/50"
-              >
-                {h.becomeDj}
-              </Link>
-            )}
-          </div>
-        </section>
-
-        <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-12">
-          {/* Zonder de DJ-werving-kaart blijven er twee over: dan een smaller
-              grid zodat het paar gecentreerd staat i.p.v. links uitgelijnd. */}
-          <div
-            className={`mx-auto grid grid-cols-1 gap-5 ${
-              showDjRecruitment
-                ? "sm:grid-cols-3"
-                : "sm:max-w-3xl sm:grid-cols-2"
-            }`}
-          >
-            <SideCard
-              title={h.card1Title}
-              body={h.card1Body}
-              cta={h.card1Cta}
+          <div className="mt-10 flex w-full max-w-md flex-col gap-3 sm:flex-row">
+            <Link
               href="/discover"
-              primary
-            />
-            {showDjRecruitment && (
-              <SideCard
-                tag={h.card2Tag}
-                title={h.card2Title}
-                body={h.card2Body}
-                cta={h.card2Cta}
-                href="/login?mode=signup&type=dj"
-              />
-            )}
-            <SideCard
-              title={h.card3Title}
-              body={h.card3Body}
-              cta={h.card3Cta}
-              href="/zakelijk"
-            />
+              className="flex-1 rounded-full bg-brand px-8 py-4 font-medium text-black transition hover:bg-brand-strong"
+            >
+              {h.bookDj}
+            </Link>
+            <Link
+              href={djHref}
+              className="flex-1 rounded-full border border-border bg-surface px-8 py-4 font-medium transition hover:border-brand/50"
+            >
+              {locale === "nl" ? "Ik ben DJ" : "I am a DJ"}
+            </Link>
           </div>
         </section>
 
@@ -145,48 +107,6 @@ export default async function Home() {
         </footer>
       </main>
     </>
-  )
-}
-
-function SideCard({
-  tag,
-  title,
-  body,
-  cta,
-  href,
-  primary,
-}: {
-  tag?: string
-  title: string
-  body: string
-  cta: string
-  href: string
-  primary?: boolean
-}) {
-  return (
-    <div className="flex flex-col rounded-3xl border border-border bg-surface p-7">
-      {tag && (
-        <span className="text-xs font-semibold uppercase tracking-wider text-brand">
-          {tag}
-        </span>
-      )}
-      <h3
-        className={`text-2xl font-semibold tracking-tight ${tag ? "mt-3" : ""}`}
-      >
-        {title}
-      </h3>
-      <p className="mt-2 flex-1 text-sm text-muted">{body}</p>
-      <Link
-        href={href}
-        className={`mt-6 inline-block self-start rounded-full px-6 py-3 text-sm font-medium transition ${
-          primary
-            ? "bg-brand text-black hover:bg-brand-strong"
-            : "border border-border hover:border-brand/50"
-        }`}
-      >
-        {cta}
-      </Link>
-    </div>
   )
 }
 
