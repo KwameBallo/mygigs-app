@@ -8,17 +8,15 @@ import { useEffect } from "react"
 export function NativePush() {
   useEffect(() => {
     let active = true
-    // TIJDELIJKE diagnose: toont op het toestel waar de push-registratie strandt.
-    const note = (m: string) => {
-      try {
-        window.alert("Push: " + m)
-      } catch {}
-    }
+    // Per app-sessie maar één keer registreren (voorkomt herhaald proberen bij
+    // elke paginawissel).
+    const w = window as unknown as { __mgPushDone?: boolean }
+    if (w.__mgPushDone) return
+    w.__mgPushDone = true
     ;(async () => {
       try {
         const { Capacitor } = await import("@capacitor/core")
         if (!Capacitor?.isNativePlatform?.()) return
-        note("native actief, start registratie")
 
         const { PushNotifications } = await import(
           "@capacitor/push-notifications"
@@ -31,15 +29,11 @@ export function NativePush() {
         ) {
           perm = await PushNotifications.requestPermissions()
         }
-        if (!active) return
-        if (perm.receive !== "granted") {
-          note("geen toestemming (" + perm.receive + ")")
-          return
-        }
+        if (!active || perm.receive !== "granted") return
 
         await PushNotifications.addListener("registration", async (token) => {
           try {
-            const res = await fetch("/api/push/native", {
+            await fetch("/api/push/native", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -47,15 +41,10 @@ export function NativePush() {
                 platform: Capacitor.getPlatform() === "android" ? "android" : "ios",
               }),
             })
-            note("token ontvangen, server antwoordde " + res.status)
-          } catch (e) {
-            note("versturen token mislukt: " + (e as Error).message)
-          }
+          } catch {}
         })
 
-        await PushNotifications.addListener("registrationError", (err) => {
-          note("registratiefout: " + JSON.stringify(err))
-        })
+        await PushNotifications.addListener("registrationError", () => {})
 
         // Tik op een melding: open de meegestuurde url.
         await PushNotifications.addListener(
@@ -69,8 +58,8 @@ export function NativePush() {
         )
 
         await PushNotifications.register()
-      } catch (e) {
-        note("fout: " + (e as Error).message)
+      } catch {
+        // Stil: zonder native plugin of toestemming blijft de app gewoon werken.
       }
     })()
     return () => {
