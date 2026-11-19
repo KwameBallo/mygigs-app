@@ -100,6 +100,25 @@ export function rangesOverlap(
   return as < be && bs < ae
 }
 
+// Relatieve dag tot het optreden, in Nederlandse kloktijd: "vandaag", "morgen"
+// of "over N dagen". Zo klopt een herinneringstekst altijd met de echte datum,
+// ook bij een last-minute boeking (waar een vaste tekst per fase zou missen).
+export function gigMoment(startsAt: string | Date, nl = true): string {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Amsterdam",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+  const dayMs = (d: Date) => Date.parse(fmt.format(d))
+  const diff = Math.round(
+    (dayMs(new Date(startsAt)) - dayMs(new Date())) / 86400000,
+  )
+  if (diff <= 0) return nl ? "vandaag" : "today"
+  if (diff === 1) return nl ? "morgen" : "tomorrow"
+  return nl ? `over ${diff} dagen` : `in ${diff} days`
+}
+
 // Valt [start,end] binnen het beschikbaarheidsvenster [winStart,winEnd]? Zonder
 // venster (DJ = hele dag beschikbaar) is elk tijdstip toegestaan. Houdt rekening
 // met vensters/optredens die middernacht overschrijden.

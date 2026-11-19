@@ -1,4 +1,5 @@
 import "server-only"
+import { gigMoment } from "@/lib/time"
 
 // Transactionele e-mail via Resend (REST API, geen extra dependency nodig).
 // AVG/ISO: verzending gaat over TLS bij de provider, we sturen minimale gegevens
@@ -566,23 +567,22 @@ export async function sendGigReminder(opts: {
   locale: "nl" | "en"
   forDj: boolean
   stageHours: 48 | 24 | 3
+  startsAt: string
   when: string
   place: string
   counterparty: string
 }) {
   const nl = opts.locale === "nl"
 
-  const moment = nl
-    ? opts.stageHours === 48
-      ? "over twee dagen"
-      : opts.stageHours === 24
-        ? "morgen"
-        : "straks"
-    : opts.stageHours === 48
-      ? "in two days"
-      : opts.stageHours === 24
-        ? "tomorrow"
+  // De tekst volgt de echte dag (vandaag/morgen/over N dagen), zodat hij ook
+  // bij last-minute boekingen klopt. Alleen de laatste herinnering (3 uur) blijft
+  // "straks", want dan is het optreden vandaag maar heel dichtbij.
+  const moment =
+    opts.stageHours === 3
+      ? nl
+        ? "straks"
         : "in a few hours"
+      : gigMoment(opts.startsAt, nl)
 
   const title = opts.forDj
     ? nl

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { runAgent, authorizeCron } from "@/lib/agents/core"
 import { notifyOpenAlerts } from "@/lib/agents/mail"
 import { sendPushToUser } from "@/lib/push"
+import { gigMoment } from "@/lib/time"
 import {
   sendGigReminder,
   sendRequestNudgeToDJ,
@@ -166,6 +167,7 @@ export async function GET(request: Request) {
             locale: "nl",
             forDj: true,
             stageHours: moment.uren,
+            startsAt: b.starts_at,
             when: wanneer,
             place: waar,
             counterparty: boeker?.naam ?? "de organisator",
@@ -177,6 +179,7 @@ export async function GET(request: Request) {
             locale: "nl",
             forDj: false,
             stageHours: moment.uren,
+            startsAt: b.starts_at,
             when: wanneer,
             place: waar,
             counterparty: artiest?.stageName ?? "je DJ",
@@ -184,12 +187,11 @@ export async function GET(request: Request) {
         }
 
         // Melding op de telefoon voor wie die aan heeft staan.
+        const dag = gigMoment(b.starts_at, true)
         const kop =
           moment.uren === 3
             ? "Straks is het zo ver"
-            : moment.uren === 24
-              ? "Morgen is het zo ver"
-              : "Over twee dagen is het zo ver"
+            : `${dag.charAt(0).toUpperCase()}${dag.slice(1)} is het zo ver`
         await Promise.all([
           artiest?.userId
             ? sendPushToUser(artiest.userId, {
