@@ -1,19 +1,15 @@
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { Logo } from "@/components/logo"
-import { ArtistCard } from "@/components/artist-card"
-import { getArtists } from "@/lib/data/artists"
 import { getProfile } from "@/lib/auth"
 import { getI18n } from "@/lib/i18n"
 
 export default async function Home() {
-  const [artists, profile, { locale, t }] = await Promise.all([
-    getArtists(),
+  const [profile, { locale, t }] = await Promise.all([
     getProfile(),
     getI18n(),
   ])
   const h = t.home
-  const featured = artists.slice(0, 4)
   // DJ-werving (Word DJ / Word geboekt) tonen we alleen aan uitgelogde
   // bezoekers; ingelogde klanten regelen DJ-worden via de aanvraag.
   const showDjRecruitment = !profile
@@ -54,27 +50,6 @@ export default async function Home() {
             </Link>
           </div>
         </section>
-
-        {featured.length > 0 && (
-          <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-12">
-            <div className="mb-6 flex items-end justify-between">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                {h.featuredTitle}
-              </h2>
-              <Link
-                href="/discover"
-                className="text-sm font-medium text-brand hover:underline"
-              >
-                {h.viewAll}
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {featured.map((artist) => (
-                <ArtistCard key={artist.id} artist={artist} />
-              ))}
-            </div>
-          </section>
-        )}
 
         <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-16">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
