@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
@@ -13,6 +14,7 @@ import {
   getUserEmail,
 } from "@/lib/email"
 import { hoursUntil } from "@/lib/time"
+import { routingKlaar } from "@/lib/mollie"
 import {
   haversineMeters,
   estimateTravelSeconds,
@@ -44,10 +46,17 @@ export async function updateBookingStatus(formData: FormData) {
   // Verifieer dat de boeking bij de ingelogde DJ hoort.
   const { data: artist } = await supabase
     .from("artists")
-    .select("id, stage_name")
+    .select("id, stage_name, can_receive_payments")
     .eq("user_id", user.id)
     .maybeSingle()
   if (!artist) return
+
+  // Slot: zodra uitbetalen live staat, mag een DJ pas accepteren als zijn
+  // Mollie-account gekoppeld is, anders kan hij straks niet uitbetaald worden.
+  // Stuur hem dan eerst naar de koppeling. Inert tot MOLLIE_ROUTING_ENABLED.
+  if (status === "accepted" && routingKlaar() && !artist.can_receive_payments) {
+    redirect("/api/connect/mollie/start")
+  }
 
   const { data: booking } = await supabase
     .from("bookings")
