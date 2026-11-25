@@ -148,3 +148,37 @@ export async function haalBetaling(id: string): Promise<MolliePayment> {
   }
   return verzoek<MolliePayment>(`/payments/${id}`)
 }
+
+/**
+ * Een route op een betaalde betaling: zet (een deel van) het bedrag door naar
+ * een gekoppelde organisatie (Mollie Delayed Routing). De betaling komt eerst
+ * gewoon binnen op de MyGigs-balans; pas als het optreden bevestigd is maken we
+ * een route aan die het DJ-deel vrijgeeft. Pas aanroepen als de betaling op
+ * 'paid' staat en de bestemming KYB-geverifieerd is, anders geeft Mollie 404.
+ */
+export async function maakRoute(
+  paymentId: string,
+  opts: { bedragEur: number; omschrijving: string; organizationId: string },
+): Promise<{ id: string }> {
+  if (!/^tr_[A-Za-z0-9]+$/.test(paymentId)) {
+    throw new MollieFout("Dat is geen geldig betalingsnummer", 0)
+  }
+  const route = await verzoek<{ id: string }>(`/payments/${paymentId}/routes`, {
+    method: "POST",
+    body: {
+      amount: { currency: "EUR", value: bedrag(opts.bedragEur) },
+      description: opts.omschrijving.slice(0, 255),
+      destination: { type: "organization", organizationId: opts.organizationId },
+    },
+  })
+  return { id: route.id }
+}
+
+/**
+ * Mag de app nu echt uitbetalen via Delayed Routing? Staat uit tot Mollie de
+ * functie op ons account aanzet en we end-to-end getest hebben. Zet dan
+ * MOLLIE_ROUTING_ENABLED=true in de omgeving.
+ */
+export function routingKlaar(): boolean {
+  return mollieKlaar() && process.env.MOLLIE_ROUTING_ENABLED === "true"
+}
